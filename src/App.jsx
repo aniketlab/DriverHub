@@ -10,6 +10,20 @@ function cn(...inputs) {
 
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanResults, setScanResults] = useState(null);
+
+  const handleScan = async () => {
+    setIsScanning(true);
+    try {
+      const results = await window.electronAPI.scanPc();
+      setScanResults(results);
+    } catch (err) {
+      console.error("Scan failed:", err);
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
@@ -56,8 +70,11 @@ function App() {
               <p className="text-slate-500 text-[13px]">Pick what you need, then install in a single click.</p>
             </div>
             <div className="flex gap-2 shrink-0">
-              <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap">
-                Scan PC
+              <button 
+                onClick={handleScan}
+                disabled={isScanning}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50">
+                {isScanning ? 'Scanning...' : 'Scan PC'}
               </button>
               <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap">
                 Install selected (3)
@@ -74,11 +91,12 @@ function App() {
               title="ADB Platform-Tools"
               desc="adb + fastboot binaries, added to PATH automatically"
               tags={['adb', 'fastboot', 'PATH setup']}
-              status="Installed"
-              statusColor="text-green-600 bg-green-50"
-              checkboxLabel="Reinstall"
+              status={scanResults ? (scanResults.adb?.installed ? 'Installed' : 'Not installed') : 'Unknown'}
+              statusColor={scanResults?.adb?.installed ? 'text-green-600 bg-green-50' : 'text-slate-500 bg-slate-100'}
+              checkboxLabel={scanResults?.adb?.installed ? 'Reinstall' : 'Selected'}
               checked={true}
-              borderColor="border-green-200"
+              borderColor={scanResults?.adb?.installed ? 'border-green-200' : 'border-slate-200'}
+              onExplore={scanResults?.adb?.installed && scanResults.adb.path ? () => window.electronAPI.openFolder(scanResults.adb.path) : null}
             />
 
             {/* Google USB Card */}
@@ -165,7 +183,7 @@ function NavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, progress }) {
+function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, progress, onExplore }) {
   return (
     <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all", borderColor)}>
       {progress !== undefined && (
@@ -195,9 +213,19 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
         </div>
 
         <div className="flex flex-col items-end justify-between shrink-0 ml-2">
-          <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase", statusColor)}>
-            {status}
+          <div className="flex gap-2 items-center">
+            {onExplore && (
+              <button 
+                onClick={onExplore}
+                className="text-[10px] font-bold text-slate-500 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors">
+                Explore
+              </button>
+            )}
+            <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase", statusColor)}>
+              {status}
+            </div>
           </div>
+          
           <div className="flex items-center gap-1.5 mb-0.5 mt-2">
             <input type="checkbox" checked={checked} readOnly className="w-3.5 h-3.5 text-green-600 rounded border-slate-300 accent-green-600" />
             <span className="text-[12px] font-medium text-slate-700">{checkboxLabel}</span>
