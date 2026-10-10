@@ -9,8 +9,8 @@ const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1050,
+    height: 700,
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
