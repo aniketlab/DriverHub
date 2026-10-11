@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 220" fill="none">
+  <g transform="translate(30, 35)">
+    <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/>
+      <path d="M10 19v-4"/>
+      <path d="M7 19h5"/>
+      <rect width="6" height="10" x="16" y="12" rx="2"/>
+    </svg>
+  </g>
+  <text x="210" y="145" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="95" font-weight="850" letter-spacing="-1">
+    <tspan fill="#16a34a">DRIVER</tspan>
+    <tspan fill="#0f172a" dx="20">HUB</tspan>
+  </text>
+</svg>
