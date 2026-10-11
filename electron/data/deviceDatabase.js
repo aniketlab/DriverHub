@@ -539,7 +539,9 @@ export function resolveDevice(rawModel, detectedBrand) {
     const lowerClean = clean.toLowerCase();
     const lowerBrand = brand.toLowerCase();
 
-    if (lowerClean.startsWith('moto')) {
+    if (lowerClean.includes('rndis')) {
+      model = `${brand} (USB Tethering)`;
+    } else if (lowerClean.startsWith('moto')) {
       brand = 'Motorola';
       model = clean.replace(/^moto\b/i, 'Moto');
     } else if (lowerClean.startsWith(lowerBrand)) {

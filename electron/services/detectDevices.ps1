@@ -23,8 +23,8 @@ foreach ($d in $rawDevices) {
         }
     }
 
-    # Extract friendly device names
-    if ($name -notmatch '(?i)interface|composite|hub|controller|winusb' -and $mfg -notmatch '(?i)standard|microsoft') {
+    # Extract friendly device names (ignoring generic USB protocol/network adapter names)
+    if ($name -notmatch '(?i)interface|composite|hub|controller|winusb|rndis|cdc|ncm|ethernet|modem' -and $mfg -notmatch '(?i)standard|microsoft') {
         $phoneModel = $name
         $phoneBrand = $mfg
     }
@@ -34,11 +34,20 @@ if (-not $activeDevices -or $activeDevices.Count -eq 0) {
     exit 0
 }
 
-# If phoneModel is still missing, query DEVPKEY_Device_BusReportedDeviceDesc for the active device
+# If phoneModel is still missing, query DEVPKEY_Device_BusReportedDeviceDesc for the active device or parent composite
 if (-not $phoneModel -and $activeDevices.Count -gt 0) {
     $targetId = $activeDevices[0].DeviceID
     $busDesc = (Get-PnpDeviceProperty -InstanceId $targetId -KeyName "DEVPKEY_Device_BusReportedDeviceDesc" -ErrorAction SilentlyContinue).Data
-    if ($busDesc -and $busDesc -notmatch '(?i)interface|composite|android|device') {
+    
+    if (-not $busDesc -or $busDesc -match '(?i)rndis|interface|composite') {
+        $parentId = (Get-PnpDeviceProperty -InstanceId $targetId -KeyName "DEVPKEY_Device_Parent" -ErrorAction SilentlyContinue).Data
+        if ($parentId) {
+            $parentDesc = (Get-PnpDeviceProperty -InstanceId $parentId -KeyName "DEVPKEY_Device_BusReportedDeviceDesc" -ErrorAction SilentlyContinue).Data
+            if ($parentDesc) { $busDesc = $parentDesc }
+        }
+    }
+
+    if ($busDesc -and $busDesc -notmatch '(?i)interface|composite|android|device|rndis|cdc|ncm|ethernet|modem') {
         $phoneModel = $busDesc
     }
 }
