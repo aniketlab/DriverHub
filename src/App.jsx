@@ -257,14 +257,14 @@ function App() {
               <button 
                 onClick={handleScan}
                 disabled={isScanning || isInstalling}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 active:scale-[0.97] transition-all duration-200 text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
                 {isScanning && <Loader2 className="w-3.5 h-3.5 animate-spin text-green-600" />}
                 {isScanning ? 'Scanning System...' : 'Scan PC'}
               </button>
               <button 
                 onClick={handleInstall}
                 disabled={isInstalling || isScanning || selectedCount === 0}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 active:scale-[0.97] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
                 {isInstalling && <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />}
                 {isInstalling 
                   ? `Installing (${installProgress.adb?.percent || 0}%)...` 
@@ -484,8 +484,13 @@ function DriverCard({
   progress = 0,
   progressMessage = ''
 }) {
+  const showProgress = progress > 0 && progress <= 100;
+
   return (
-    <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all shadow-2xs", borderColor)}>
+    <div className={cn(
+      "bg-white border rounded-xl p-4 relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xs",
+      borderColor
+    )}>
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
           {icon}
@@ -505,9 +510,16 @@ function DriverCard({
             </div>
           )}
 
-          {/* Real Live Smooth Animated Progress Bar */}
-          {progress > 0 && progress <= 100 && (
-            <div className="mt-3.5 w-full animate-fadeIn transition-all">
+          {/* Butter-Smooth Apple-Style Accordion Expansion (Zero Layout Snap) */}
+          <div 
+            className={cn(
+              "grid transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden",
+              showProgress 
+                ? "grid-rows-[1fr] opacity-100 mt-3.5" 
+                : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+            )}
+          >
+            <div className="overflow-hidden min-h-0">
               <div className="flex justify-between items-center text-[11px] mb-1.5">
                 <span className="text-slate-600 font-medium truncate max-w-[80%]">
                   {progressMessage || 'Installing...'}
@@ -523,7 +535,7 @@ function DriverCard({
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex flex-col items-end justify-between shrink-0 ml-2">
@@ -532,12 +544,12 @@ function DriverCard({
               <button 
                 onClick={onExplore}
                 title="Open folder in File Explorer"
-                className="text-[10px] font-bold text-slate-600 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors flex items-center gap-1 cursor-pointer">
+                className="text-[10px] font-bold text-slate-600 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors flex items-center gap-1 cursor-pointer active:scale-95">
                 <FolderOpen className="w-3 h-3 text-slate-400" />
                 Explore
               </button>
             )}
-            <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase flex items-center gap-1", statusColor)}>
+            <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase flex items-center gap-1 transition-all duration-300", statusColor)}>
               {isScanning && <Loader2 className="w-2.5 h-2.5 animate-spin" />}
               {status}
             </div>
