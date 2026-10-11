@@ -30,6 +30,7 @@ export function DeviceMonitorPage({
   isRefreshing = false
 }) {
   const isConnected = deviceStatus?.connected;
+  const hasError = Boolean(deviceStatus?.driverError);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none">
@@ -180,34 +181,187 @@ export function DeviceMonitorPage({
                 
                 {/* Top Section: Connected Device Identity */}
                 <div className="flex items-center gap-6">
-                  {/* Glowing Smartphone Mockup with Checkmark */}
+                  {/* Glowing Hardware Smartphone Graphic (Connected) */}
                   <div className="relative w-28 h-36 shrink-0 flex items-center justify-center">
                     {/* Radial Ambient Glow */}
-                    <div className="absolute inset-0 bg-emerald-400/20 rounded-full blur-xl pointer-events-none animate-pulse" />
+                    <div className={cn(
+                      "absolute inset-0 rounded-full blur-xl pointer-events-none animate-pulse",
+                      hasError ? "bg-amber-400/20" : "bg-emerald-400/20"
+                    )} />
                     
                     <svg viewBox="0 0 100 130" className="w-full h-full relative z-10 drop-shadow-xs">
-                      {/* Outer Ring */}
-                      <circle cx="50" cy="55" r="42" fill="#ECFDF5" fillOpacity="0.6" stroke="#A7F3D0" strokeWidth="1.2" />
-
-                      {/* Phone Chassis */}
-                      <rect x="34" y="22" width="32" height="62" rx="7" fill="#FFFFFF" stroke="#10B981" strokeWidth="2" />
-                      {/* Screen */}
-                      <rect x="37" y="26" width="26" height="54" rx="4.5" fill="#F0FDF4" />
-                      {/* Notch */}
-                      <rect x="45" y="24" width="10" height="1.8" rx="0.9" fill="#059669" />
-
-                      {/* Success Checkmark */}
-                      <path 
-                        d="M 44 54 L 48 58 L 56 48" 
+                      {/* Animated Concentric Breathing Guide Ring */}
+                      <circle 
+                        cx="50" 
+                        cy="64" 
+                        r="45" 
                         fill="none" 
-                        stroke="#10B981" 
-                        strokeWidth="2.5" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
+                        stroke={hasError ? "#FCD34D" : "#A7F3D0"} 
+                        strokeWidth="1.2" 
+                        strokeDasharray="3 3" 
+                        opacity="0.6"
+                      >
+                        <animate attributeName="strokeDashoffset" values="0; 12" dur="6s" repeatCount="indefinite" />
+                      </circle>
+
+                      {/* Soft Ambient Inner Circle */}
+                      <circle 
+                        cx="50" 
+                        cy="64" 
+                        r="39" 
+                        fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
+                        fillOpacity="0.75" 
+                        stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
+                        strokeWidth="1.2" 
                       />
 
-                      {/* USB-C Cable */}
-                      <line x1="50" y1="84" x2="50" y2="102" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
+                      {/* Floating Phone + Cable Group (Symmetrically Centered: cy = 64) */}
+                      <g>
+                        <animateTransform
+                          attributeName="transform"
+                          type="translate"
+                          values="0,0; 0,-2; 0,0"
+                          dur="3s"
+                          repeatCount="indefinite"
+                        />
+
+                        {/* Hardware Side Buttons */}
+                        <rect x="32.8" y="36" width="1.2" height="9" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
+                        <rect x="66" y="38" width="1.2" height="6" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
+
+                        {/* Phone Chassis (Clean White + Emerald/Amber Border) */}
+                        <rect 
+                          x="34" 
+                          y="26" 
+                          width="32" 
+                          height="54" 
+                          rx="6" 
+                          fill="#FFFFFF" 
+                          stroke={hasError ? "#F59E0B" : "#10B981"} 
+                          strokeWidth="1.6" 
+                        />
+
+                        {/* Screen (Glass Inset) */}
+                        <rect 
+                          x="36.5" 
+                          y="28.5" 
+                          width="27" 
+                          height="49" 
+                          rx="4.5" 
+                          fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
+                          stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
+                          strokeWidth="0.8" 
+                        />
+
+                        {/* Speaker Notch & Camera Lens */}
+                        <rect x="45" y="27.8" width="10" height="1.3" rx="0.65" fill="#94A3B8" />
+                        <circle cx="42" cy="28.4" r="0.6" fill="#94A3B8" />
+
+                        {/* Screen Center: Verified / Status Badge */}
+                        {/* Soft Aura Ring */}
+                        <circle 
+                          cx="50" 
+                          cy="49" 
+                          r="11" 
+                          fill={hasError ? "#F59E0B" : "#10B981"} 
+                          fillOpacity="0.12"
+                        >
+                          <animate attributeName="r" values="9.5; 13; 9.5" dur="2.4s" repeatCount="indefinite" />
+                          <animate attributeName="fillOpacity" values="0.16; 0.05; 0.16" dur="2.4s" repeatCount="indefinite" />
+                        </circle>
+
+                        {/* Badge Body */}
+                        <circle 
+                          cx="50" 
+                          cy="49" 
+                          r="8" 
+                          fill={hasError ? "#F59E0B" : "#10B981"} 
+                          stroke={hasError ? "#D97706" : "#059669"} 
+                          strokeWidth="0.6" 
+                        />
+
+                        {/* Badge Icon: Verified Checkmark or Alert */}
+                        {hasError ? (
+                          <g>
+                            <line x1="50" y1="46" x2="50" y2="49.5" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" />
+                            <circle cx="50" cy="51.8" r="0.8" fill="#FFFFFF" />
+                          </g>
+                        ) : (
+                          <path 
+                            d="M 46.8 49 L 48.9 51.1 L 53.4 46.6" 
+                            fill="none" 
+                            stroke="#FFFFFF" 
+                            strokeWidth="1.7" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                          />
+                        )}
+
+                        {/* Active Link Data Wave / Pulse Line */}
+                        <line 
+                          x1="43" 
+                          y1="61" 
+                          x2="57" 
+                          y2="61" 
+                          stroke={hasError ? "#FDE68A" : "#A7F3D0"} 
+                          strokeWidth="1" 
+                          strokeLinecap="round" 
+                        />
+                        <circle cx="50" cy="61" r="1.3" fill={hasError ? "#F59E0B" : "#10B981"}>
+                          <animate attributeName="cx" values="44; 56; 44" dur="2s" repeatCount="indefinite" />
+                        </circle>
+
+                        {/* Bottom Gesture Bar */}
+                        <rect x="44.5" y="73.5" width="11" height="0.8" rx="0.4" fill="#CBD5E1" />
+
+                        {/* Phone USB Port Cutout */}
+                        <rect x="46.5" y="79.3" width="7" height="1.2" rx="0.6" fill="#E2E8F0" />
+
+                        {/* Plugged-in USB-C Connector Assembly */}
+                        {/* Connection Contact Bead (Energy Indicator) */}
+                        <circle cx="50" cy="80" r="1.2" fill={hasError ? "#FBBF24" : "#34D399"} />
+
+                        {/* Plug Shell / Collar */}
+                        <rect 
+                          x="47" 
+                          y="80" 
+                          width="6" 
+                          height="6" 
+                          rx="1.3" 
+                          fill="#FFFFFF" 
+                          stroke={hasError ? "#F59E0B" : "#10B981"} 
+                          strokeWidth="1.1" 
+                        />
+                        <line x1="48.5" y1="83" x2="51.5" y2="83" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="0.8" />
+
+                        {/* Strain Relief Boot */}
+                        <rect x="48.2" y="86" width="3.6" height="2" rx="0.6" fill="#E2E8F0" stroke="#CBD5E1" strokeWidth="0.5" />
+
+                        {/* Connected USB Cable */}
+                        <line 
+                          x1="50" 
+                          y1="88" 
+                          x2="50" 
+                          y2="102" 
+                          stroke={hasError ? "#F59E0B" : "#10B981"} 
+                          strokeWidth="1.8" 
+                          strokeLinecap="round" 
+                        />
+
+                        {/* Animated Data Flow Pulses Down Cable */}
+                        <line 
+                          x1="50" 
+                          y1="88" 
+                          x2="50" 
+                          y2="102" 
+                          stroke="#FFFFFF" 
+                          strokeWidth="1.1" 
+                          strokeDasharray="2 3" 
+                          strokeLinecap="round"
+                        >
+                          <animate attributeName="strokeDashoffset" values="0; -10" dur="1s" repeatCount="indefinite" />
+                        </line>
+                      </g>
                     </svg>
                   </div>
 

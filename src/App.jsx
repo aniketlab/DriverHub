@@ -828,31 +828,178 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
 
       {/* 100% Mathematically Symmetrical Vector Display */}
       <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10 drop-shadow-xs">
-        {/* Animated Concentric Radar Halo */}
-        <circle cx="80" cy="75" r="62" fill="none" stroke={hasError ? "#FCD34D" : "#A7F3D0"} strokeWidth="1.5" opacity="0.6">
-          <animate attributeName="r" values="52;66;52" dur="3s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.7;0.15;0.7" dur="3s" repeatCount="indefinite" />
+        {/* Animated Concentric Breathing Guide Ring */}
+        <circle 
+          cx="80" 
+          cy="82" 
+          r="58" 
+          fill="none" 
+          stroke={hasError ? "#FCD34D" : "#A7F3D0"} 
+          strokeWidth="1.2" 
+          strokeDasharray="3 3" 
+          opacity="0.6"
+        >
+          <animate attributeName="strokeDashoffset" values="0; 12" dur="6s" repeatCount="indefinite" />
         </circle>
         
-        {/* Middle Pulse Circle */}
-        <circle cx="80" cy="75" r="48" fill={hasError ? "#FFFBEB" : "#ECFDF5"} fillOpacity="0.5" stroke={hasError ? "#FBBF24" : "#6EE7B7"} strokeWidth="1.5" />
+        {/* Ambient Soft Inner Circle */}
+        <circle 
+          cx="80" 
+          cy="82" 
+          r="50" 
+          fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
+          fillOpacity="0.75" 
+          stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
+          strokeWidth="1.2" 
+        />
 
-        {/* High-Tech Smartphone Mockup (Center: x=80, y=75) */}
-        {/* Chassis */}
-        <rect x="64" y="46" width="32" height="58" rx="6.5" fill="#0F172A" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="1.5" />
-        {/* OLED Glass Screen */}
-        <rect x="66.5" y="49" width="27" height="52" rx="4.5" fill={hasError ? "#451A03" : "#022C22"} />
+        {/* Floating Phone + Cable Group (Symmetrically Centered) */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            values="0,0; 0,-2; 0,0"
+            dur="3s"
+            repeatCount="indefinite"
+          />
 
-        {/* Camera Notch / Speaker */}
-        <rect x="76" y="50.5" width="8" height="1.5" rx="0.75" fill={hasError ? "#78350F" : "#064E3B"} />
+          {/* Hardware Side Buttons */}
+          <rect x="66" y="58" width="1.2" height="8" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
+          <rect x="92.8" y="60" width="1.2" height="5.5" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
 
-        {/* Clean Minimalist Gesture Bar */}
-        <rect x="76" y="94" width="8" height="1.2" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} opacity="0.7" />
+          {/* Phone Chassis (Clean White + Emerald/Amber Border) */}
+          <rect 
+            x="67.5" 
+            y="49" 
+            width="25" 
+            height="46" 
+            rx="5.5" 
+            fill="#FFFFFF" 
+            stroke={hasError ? "#F59E0B" : "#10B981"} 
+            strokeWidth="1.5" 
+          />
 
-        {/* Connected USB-C Port & Cable */}
-        <line x1="80" y1="104" x2="80" y2="114" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="2" strokeLinecap="round" />
-        <rect x="78" y="112" width="4" height="5" rx="1" fill={hasError ? "#D97706" : "#059669"} />
-        <line x1="80" y1="117" x2="80" y2="126" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="1.5" strokeDasharray="2 2" strokeLinecap="round" />
+          {/* Screen (Glass Inset) */}
+          <rect 
+            x="69.5" 
+            y="51.2" 
+            width="21" 
+            height="41.6" 
+            rx="4" 
+            fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
+            stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
+            strokeWidth="0.8" 
+          />
+
+          {/* Speaker Notch & Front Camera */}
+          <rect x="76" y="50.4" width="8" height="1" rx="0.5" fill="#94A3B8" />
+          <circle cx="73.8" cy="50.9" r="0.5" fill="#94A3B8" />
+
+          {/* Screen Center: Verified / Status Badge */}
+          {/* Soft Aura Ring */}
+          <circle 
+            cx="80" 
+            cy="69" 
+            r="9.5" 
+            fill={hasError ? "#F59E0B" : "#10B981"} 
+            fillOpacity="0.12"
+          >
+            <animate attributeName="r" values="8.5; 11.5; 8.5" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="fillOpacity" values="0.16; 0.05; 0.16" dur="2.4s" repeatCount="indefinite" />
+          </circle>
+
+          {/* Badge Body */}
+          <circle 
+            cx="80" 
+            cy="69" 
+            r="7" 
+            fill={hasError ? "#F59E0B" : "#10B981"} 
+            stroke={hasError ? "#D97706" : "#059669"} 
+            strokeWidth="0.5" 
+          />
+
+          {/* Badge Icon */}
+          {hasError ? (
+            <g>
+              <line x1="80" y1="66.5" x2="80" y2="69.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
+              <circle cx="80" cy="71.5" r="0.7" fill="#FFFFFF" />
+            </g>
+          ) : (
+            <path 
+              d="M 77.2 69 L 79 70.8 L 83 66.8" 
+              fill="none" 
+              stroke="#FFFFFF" 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+            />
+          )}
+
+          {/* Active Link Data Wave / Pulse Line */}
+          <line 
+            x1="74" 
+            y1="79.5" 
+            x2="86" 
+            y2="79.5" 
+            stroke={hasError ? "#FDE68A" : "#A7F3D0"} 
+            strokeWidth="0.9" 
+            strokeLinecap="round" 
+          />
+          <circle cx="80" cy="79.5" r="1.1" fill={hasError ? "#F59E0B" : "#10B981"}>
+            <animate attributeName="cx" values="75; 85; 75" dur="2s" repeatCount="indefinite" />
+          </circle>
+
+          {/* Bottom Gesture Bar */}
+          <rect x="75" y="89.5" width="10" height="0.7" rx="0.35" fill="#CBD5E1" />
+
+          {/* Phone USB Port Cutout */}
+          <rect x="77" y="94.4" width="6" height="1" rx="0.5" fill="#E2E8F0" />
+
+          {/* Plugged-in USB-C Connector Assembly */}
+          {/* Connection Contact Bead (Energy Indicator) */}
+          <circle cx="80" cy="95" r="1.1" fill={hasError ? "#FBBF24" : "#34D399"} />
+
+          {/* Plug Shell / Collar */}
+          <rect 
+            x="77.5" 
+            y="95" 
+            width="5" 
+            height="5.5" 
+            rx="1.2" 
+            fill="#FFFFFF" 
+            stroke={hasError ? "#F59E0B" : "#10B981"} 
+            strokeWidth="1.1" 
+          />
+          <line x1="78.8" y1="97.8" x2="81.2" y2="97.8" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="0.7" />
+
+          {/* Strain Relief Boot */}
+          <rect x="78.5" y="100.5" width="3" height="1.8" rx="0.5" fill="#E2E8F0" stroke="#CBD5E1" strokeWidth="0.5" />
+
+          {/* Connected USB Cable */}
+          <line 
+            x1="80" 
+            y1="102.3" 
+            x2="80" 
+            y2="116" 
+            stroke={hasError ? "#F59E0B" : "#10B981"} 
+            strokeWidth="1.8" 
+            strokeLinecap="round" 
+          />
+
+          {/* Animated Data Flow Pulses Down Cable */}
+          <line 
+            x1="80" 
+            y1="102.3" 
+            x2="80" 
+            y2="116" 
+            stroke="#FFFFFF" 
+            strokeWidth="1" 
+            strokeDasharray="1.8 2.5" 
+            strokeLinecap="round"
+          >
+            <animate attributeName="strokeDashoffset" values="0; -8.6" dur="1s" repeatCount="indefinite" />
+          </line>
+        </g>
       </svg>
     </div>
   );
