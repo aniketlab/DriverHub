@@ -100,54 +100,54 @@ export function DeviceMonitorPage({
                       <animate attributeName="strokeOpacity" values="0.35; 0" dur="3.2s" repeatCount="indefinite" />
                     </circle>
 
-                    {/* Symmetrical Floating Phone + Cable Group */}
+                    {/* Symmetrical Floating Phone + Cable Group (Dead Center) */}
                     <g>
                       <animateTransform
                         attributeName="transform"
                         type="translate"
-                        values="0,0; 0,-3; 0,0"
+                        values="0,0; 0,-2.5; 0,0"
                         dur="3s"
                         repeatCount="indefinite"
                       />
 
-                      {/* Phone Chassis (Clean White + Emerald Accent) */}
-                      <rect x="82" y="59" width="36" height="62" rx="7.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.6" />
+                      {/* Phone Chassis (Clean White + Emerald Accent, Perfectly Centered) */}
+                      <rect x="84.5" y="68" width="31" height="52" rx="6.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.6" />
 
                       {/* Screen (Light Slate Interior) */}
-                      <rect x="85.5" y="62.5" width="29" height="55" rx="5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.8" />
+                      <rect x="87.5" y="71" width="25" height="46" rx="4.5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.8" />
 
                       {/* Speaker Notch */}
-                      <rect x="94" y="61" width="12" height="1.6" rx="0.8" fill="#94A3B8" />
+                      <rect x="94.5" y="69.8" width="11" height="1.4" rx="0.7" fill="#94A3B8" />
 
                       {/* Glowing Universal USB Symbol inside screen */}
                       <g opacity="0.9">
                         <animate attributeName="opacity" values="0.45; 1; 0.45" dur="2.4s" repeatCount="indefinite" />
-                        <line x1="100" y1="80" x2="100" y2="99" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" />
-                        <path d="M 97.5 83 L 100 79 L 102.5 83 Z" fill="#10B981" />
-                        <path d="M 100 90 L 95 86 L 95 82" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                        <rect x="93.5" y="80.5" width="3" height="3" fill="#10B981" rx="0.5" />
-                        <path d="M 100 92 L 105 88 L 105 84" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="105" cy="83" r="1.5" fill="#10B981" />
-                        <circle cx="100" cy="100" r="1.8" fill="#10B981" />
+                        <line x1="100" y1="83" x2="100" y2="99" stroke="#10B981" strokeWidth="1.4" strokeLinecap="round" />
+                        <path d="M 97.5 85.5 L 100 82 L 102.5 85.5 Z" fill="#10B981" />
+                        <path d="M 100 91.5 L 95.5 88 L 95.5 85" fill="none" stroke="#10B981" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
+                        <rect x="94.2" y="83.8" width="2.6" height="2.6" rx="0.4" fill="#10B981" />
+                        <path d="M 100 93.5 L 104.5 90 L 104.5 87" fill="none" stroke="#10B981" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="104.5" cy="86" r="1.3" fill="#10B981" />
+                        <circle cx="100" cy="100" r="1.6" fill="#10B981" />
                       </g>
 
                       {/* Gesture Bar */}
-                      <rect x="94" y="113" width="12" height="1" rx="0.5" fill="#E2E8F0" />
+                      <rect x="94.5" y="112.5" width="11" height="0.8" rx="0.4" fill="#E2E8F0" />
 
                       {/* USB Port Cutout */}
-                      <rect x="96" y="119.5" width="8" height="1.5" rx="0.75" fill="#E2E8F0" />
+                      <rect x="96" y="118.8" width="8" height="1.2" rx="0.6" fill="#E2E8F0" />
 
-                      {/* Waiting USB Cable & Plug (Contained inside ring) */}
-                      <line x1="100" y1="121" x2="100" y2="137" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2.5 2.5">
-                        <animate attributeName="strokeDashoffset" values="0; 10" dur="1.2s" repeatCount="indefinite" />
+                      {/* Waiting USB Cable & Plug (Harmoniously contained) */}
+                      <line x1="100" y1="120" x2="100" y2="129" stroke="#10B981" strokeWidth="1.4" strokeDasharray="2 2">
+                        <animate attributeName="strokeDashoffset" values="0; 8" dur="1.2s" repeatCount="indefinite" />
                       </line>
 
                       {/* Plug Collar */}
-                      <rect x="96.5" y="137" width="7" height="8" rx="1.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.2" />
-                      <line x1="98.5" y1="140" x2="101.5" y2="140" stroke="#10B981" strokeWidth="1" />
+                      <rect x="96.8" y="129" width="6.4" height="6.5" rx="1.4" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.1" />
+                      <line x1="98.5" y1="131.5" x2="101.5" y2="131.5" stroke="#10B981" strokeWidth="0.8" />
 
                       {/* Plug Cord Tip */}
-                      <line x1="100" y1="145" x2="100" y2="151" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" />
+                      <line x1="100" y1="135.5" x2="100" y2="140" stroke="#94A3B8" strokeWidth="1.6" strokeLinecap="round" />
                     </g>
                   </svg>
                 </div>
