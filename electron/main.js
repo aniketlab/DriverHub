@@ -1,15 +1,16 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { scanAllDrivers } from './services/scannerService.js';
+import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
+let mainWindow = null;
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1050,
     height: 700,
     minWidth: 900,
@@ -36,11 +37,36 @@ function createWindow() {
 }
 
 function setupIpc() {
-  // Scan PC functionality
-  ipcMain.handle('scan-pc', async () => {
-    console.log('Backend: Scanning PC for drivers...');
-    const results = await scanAllDrivers();
-    return results;
+  // Staggered Progressive Scan PC with live events
+  ipcMain.handle('scan-pc', async (event) => {
+    console.log('Backend: Starting progressive hardware scan...');
+    const sender = event.sender;
+
+    // Helper for natural UX pacing
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+    // Step 1: Scan ADB Platform Tools
+    sender.send('scan-step', { target: 'adb', state: 'scanning' });
+    await delay(700);
+    const adb = await checkAdbStatus();
+    sender.send('scan-step', { target: 'adb', state: 'done', data: adb });
+
+    // Step 2: Query DriverStore for Google and MTK drivers
+    sender.send('scan-step', { target: 'google', state: 'scanning' });
+    await delay(700);
+    const driverStore = await checkDriverStore();
+    sender.send('scan-step', { target: 'google', state: 'done', data: driverStore.google });
+
+    // Step 3: Report MTK driver status
+    sender.send('scan-step', { target: 'mtk', state: 'scanning' });
+    await delay(600);
+    sender.send('scan-step', { target: 'mtk', state: 'done', data: driverStore.mtk });
+
+    return {
+      adb,
+      google: driverStore.google,
+      mtk: driverStore.mtk
+    };
   });
 
   // Open folder in Windows File Explorer

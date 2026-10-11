@@ -7,38 +7,62 @@ import os from 'os';
 const execPromise = util.promisify(exec);
 
 export async function checkAdbStatus() {
+  console.log('--- Scanner: Checking ADB Status ---');
   try {
-    // Check if adb is globally available in PATH
-    await execPromise('adb version');
-    
-    // Find where it's actually installed
-    const { stdout } = await execPromise('where adb');
+    await execPromise('adb version', { timeout: 2000 });
+    const { stdout } = await execPromise('where adb', { timeout: 2000 });
     const adbPath = stdout.split('\r\n')[0].trim();
-    
-    return { 
-      installed: true, 
-      path: path.dirname(adbPath) 
-    };
+    console.log('Scanner: ADB found at ->', adbPath);
+    return { installed: true, path: path.dirname(adbPath) };
   } catch (error) {
-    // If not in PATH, check our default isolated installation folder
     const customPath = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools', 'adb.exe');
-    
     if (fs.existsSync(customPath)) {
-      return { 
-        installed: true, 
-        path: path.dirname(customPath) 
-      };
+      return { installed: true, path: path.dirname(customPath) };
     }
-    
-    return { 
-      installed: false, 
-      path: null 
-    };
+    return { installed: false, path: null };
   }
 }
 
-export async function scanAllDrivers() {
-  const adb = await checkAdbStatus();
-  // We can add Google USB and MTK checks here later
-  return { adb };
+export async function checkDriverStore() {
+  console.log('--- Scanner: Checking Windows DriverStore (PnPUtil) ---');
+  try {
+    const { stdout } = await execPromise('pnputil /enum-drivers', { timeout: 8000 });
+    const blocks = stdout.split(/Published Name:\s*/i).slice(1);
+    
+    let hasGoogleUsb = false;
+    let hasMtk = false;
+    let mtkDriverName = null;
+    let googleDriverName = null;
+
+    for (const block of blocks) {
+      const lower = block.toLowerCase();
+      const isWinUsb = lower.includes('android_winusb.inf');
+      const isGoogle = lower.includes('provider name:     google');
+      const isMtk = lower.includes('provider name:     mediatek') || 
+                    lower.includes('cdc-acm.inf') || 
+                    lower.includes('usb2ser.inf') ||
+                    lower.includes('oppo_preloader.inf');
+
+      if (isWinUsb && isGoogle) {
+        hasGoogleUsb = true;
+        googleDriverName = 'Google Android USB Driver';
+      }
+      if (isMtk) {
+        hasMtk = true;
+        mtkDriverName = 'MediaTek USB VCOM / Preloader Driver';
+      }
+    }
+
+    console.log('Scanner: DriverStore results -> Google:', hasGoogleUsb, 'MTK:', hasMtk);
+    return {
+      google: { installed: hasGoogleUsb, name: googleDriverName },
+      mtk: { installed: hasMtk, name: mtkDriverName }
+    };
+  } catch (err) {
+    console.error('Scanner: Error querying DriverStore:', err);
+    return {
+      google: { installed: false },
+      mtk: { installed: false }
+    };
+  }
 }

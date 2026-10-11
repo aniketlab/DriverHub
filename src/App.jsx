@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Download, 
   MonitorSmartphone, 
@@ -12,7 +12,6 @@ import {
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Helper for tailwind classes
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
@@ -20,35 +19,84 @@ function cn(...inputs) {
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
-  const [scanResults, setScanResults] = useState(null);
-  
-  // Real dynamic logs for the terminal window
+
+  // Individual driver states
+  const [driverStates, setDriverStates] = useState({
+    adb: { scanning: false, scanned: false, installed: false, path: null },
+    google: { scanning: false, scanned: false, installed: false },
+    mtk: { scanning: false, scanned: false, installed: false, name: null }
+  });
+
+  // Dynamic live terminal logs
   const [logs, setLogs] = useState([
-    { type: 'info', text: 'DriverHub initialized. System ready.' }
+    { type: 'info', text: 'DriverHub v1.0 initialized. System ready.' }
   ]);
 
   const addLog = (type, text) => {
     setLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
   };
 
+  useEffect(() => {
+    // Listen for progressive scan events from Electron backend
+    if (window.electronAPI?.onScanStep) {
+      window.electronAPI.onScanStep((event) => {
+        const { target, state, data } = event;
+
+        if (state === 'scanning') {
+          setDriverStates(prev => ({
+            ...prev,
+            [target]: { ...prev[target], scanning: true }
+          }));
+
+          if (target === 'adb') addLog('pending', 'Searching system PATH & LocalAppData for ADB Platform-Tools...');
+          if (target === 'google') addLog('pending', 'Querying Windows DriverStore for Google USB Bootloader Driver...');
+          if (target === 'mtk') addLog('pending', 'Scanning DriverStore for MediaTek VCOM & Preloader Drivers...');
+        } 
+        else if (state === 'done') {
+          setDriverStates(prev => ({
+            ...prev,
+            [target]: { 
+              scanning: false, 
+              scanned: true, 
+              installed: data.installed, 
+              path: data.path || null,
+              name: data.name || null
+            }
+          }));
+
+          if (target === 'adb') {
+            if (data.installed) addLog('success', `ADB Platform-Tools detected at: ${data.path}`);
+            else addLog('warning', 'ADB Platform-Tools not found on this PC.');
+          }
+          if (target === 'google') {
+            if (data.installed) addLog('success', 'Google USB Bootloader Driver is active in DriverStore.');
+            else addLog('warning', 'Google USB Driver missing from Windows DriverStore.');
+          }
+          if (target === 'mtk') {
+            if (data.installed) addLog('success', `MediaTek Drivers detected (${data.name || 'VCOM'}).`);
+            else addLog('warning', 'MediaTek BROM/Preloader drivers not found.');
+          }
+        }
+      });
+    }
+
+    return () => {
+      if (window.electronAPI?.removeScanStepListener) {
+        window.electronAPI.removeScanStepListener();
+      }
+    };
+  }, []);
+
   const handleScan = async () => {
     setIsScanning(true);
-    addLog('pending', 'Scanning PC for installed Android drivers and tools...');
-    
-    try {
-      const results = await window.electronAPI.scanPc();
-      console.log('Frontend: Scan results received ->', results);
-      setScanResults(results);
+    addLog('info', '--- Initiating Comprehensive System Driver Scan ---');
 
-      if (results?.adb?.installed) {
-        addLog('success', `ADB Platform-Tools detected at: ${results.adb.path}`);
-      } else {
-        addLog('warning', 'ADB Platform-Tools not found on this system. Queued for installation.');
-      }
-      addLog('info', 'Scan complete. Pick packages and click "Install selected".');
+    try {
+      await window.electronAPI.scanPc();
+      addLog('success', 'Full system scan completed successfully. Review packages above.');
     } catch (err) {
-      console.error("Scan failed:", err);
-      addLog('error', `Scan failed: ${err.message || 'Unknown error'}`);
+      console.error("Scan error:", err);
+      addLog('error', `Scan process interrupted: ${err.message || 'Unknown error'}`);
     } finally {
       setIsScanning(false);
     }
@@ -56,12 +104,11 @@ function App() {
 
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
-      {/* Electron Title Bar Drag Area (invisible) */}
+      {/* Electron Title Bar Drag Area */}
       <div className="fixed top-0 left-0 right-0 h-[35px] drag-region z-50 pointer-events-none" />
 
       {/* LEFT SIDEBAR */}
       <div className="w-[220px] bg-white border-r border-slate-200 flex flex-col pt-10 pb-4 justify-between h-full relative z-10 shadow-sm no-drag-region shrink-0">
-        
         <div className="px-5 flex flex-col gap-5">
           <div className="flex items-center gap-2 text-green-600">
             <MonitorSmartphone className="w-5 h-5" />
@@ -104,7 +151,7 @@ function App() {
                 disabled={isScanning}
                 className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
                 {isScanning && <Loader2 className="w-3.5 h-3.5 animate-spin text-green-600" />}
-                {isScanning ? 'Scanning PC...' : 'Scan PC'}
+                {isScanning ? 'Scanning System...' : 'Scan PC'}
               </button>
               <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer">
                 Install selected (3)
@@ -115,64 +162,88 @@ function App() {
           {/* Cards List */}
           <div className="flex flex-col gap-3 flex-1">
             
-            {/* ADB Card */}
+            {/* 1. ADB Card */}
             <DriverCard 
               icon={<ChevronRight className="w-4 h-4 text-green-600" />}
               title="ADB Platform-Tools"
               desc="adb + fastboot binaries, added to PATH automatically"
               tags={['adb', 'fastboot', 'PATH setup']}
-              isScanning={isScanning}
+              isScanning={driverStates.adb.scanning}
               status={
-                isScanning 
-                  ? 'Scanning...' 
-                  : scanResults 
-                    ? (scanResults.adb?.installed ? 'Installed' : 'Not installed') 
+                driverStates.adb.scanning
+                  ? 'Scanning...'
+                  : driverStates.adb.scanned
+                    ? (driverStates.adb.installed ? 'Installed' : 'Not installed')
                     : 'Not Scanned'
               }
               statusColor={
-                isScanning 
+                driverStates.adb.scanning
                   ? 'text-blue-600 bg-blue-50 border border-blue-200'
-                  : scanResults?.adb?.installed 
-                    ? 'text-green-700 bg-green-50 border border-green-200' 
-                    : scanResults 
-                      ? 'text-amber-700 bg-amber-50 border border-amber-200' 
-                      : 'text-slate-500 bg-slate-100'
+                  : driverStates.adb.scanned
+                    ? (driverStates.adb.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
+                    : 'text-slate-500 bg-slate-100'
               }
-              checkboxLabel={scanResults?.adb?.installed ? 'Reinstall' : 'Selected'}
+              checkboxLabel={driverStates.adb.installed ? 'Reinstall' : 'Selected'}
               checked={true}
-              borderColor={scanResults?.adb?.installed ? 'border-green-200' : 'border-slate-200'}
-              onExplore={scanResults?.adb?.installed && scanResults.adb.path ? () => window.electronAPI.openFolder(scanResults.adb.path) : null}
+              borderColor={driverStates.adb.installed ? 'border-green-200' : 'border-slate-200'}
+              onExplore={driverStates.adb.installed && driverStates.adb.path ? () => window.electronAPI.openFolder(driverStates.adb.path) : null}
             />
 
-            {/* Google USB Card */}
+            {/* 2. Google USB Card */}
             <DriverCard 
               icon={<Download className="w-4 h-4 text-amber-500" />}
               title="Google USB & Bootloader"
               desc="Detects your phone in ADB and Fastboot mode"
-              tags={[]}
-              status="Not Scanned"
-              statusColor="text-slate-500 bg-slate-100"
-              checkboxLabel="Selected"
+              tags={['android_winusb', 'Fastboot']}
+              isScanning={driverStates.google.scanning}
+              status={
+                driverStates.google.scanning
+                  ? 'Scanning...'
+                  : driverStates.google.scanned
+                    ? (driverStates.google.installed ? 'Installed' : 'Not installed')
+                    : 'Not Scanned'
+              }
+              statusColor={
+                driverStates.google.scanning
+                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  : driverStates.google.scanned
+                    ? (driverStates.google.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
+                    : 'text-slate-500 bg-slate-100'
+              }
+              checkboxLabel={driverStates.google.installed ? 'Reinstall' : 'Selected'}
               checked={true}
-              borderColor="border-slate-200"
+              borderColor={driverStates.google.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
-            {/* MTK Card */}
+            {/* 3. MediaTek MTK Card */}
             <DriverCard 
               icon={<Database className="w-4 h-4 text-blue-500" />}
               title="MediaTek (MTK) Drivers"
               desc="For flashing and unbricking MTK devices"
               tags={['BROM mode', 'Preloader mode', 'VCOM']}
-              status="Not Scanned"
-              statusColor="text-slate-500 bg-slate-100"
-              checkboxLabel="Selected"
+              isScanning={driverStates.mtk.scanning}
+              status={
+                driverStates.mtk.scanning
+                  ? 'Scanning...'
+                  : driverStates.mtk.scanned
+                    ? (driverStates.mtk.installed ? 'Installed' : 'Not installed')
+                    : 'Not Scanned'
+              }
+              statusColor={
+                driverStates.mtk.scanning
+                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  : driverStates.mtk.scanned
+                    ? (driverStates.mtk.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
+                    : 'text-slate-500 bg-slate-100'
+              }
+              checkboxLabel={driverStates.mtk.installed ? 'Reinstall' : 'Selected'}
               checked={true}
-              borderColor="border-slate-200"
+              borderColor={driverStates.mtk.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
           </div>
 
-          {/* Terminal / Install Log (Now completely live and responsive) */}
+          {/* Terminal / Install Log (Live progressive updates) */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-sm shrink-0 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -239,15 +310,9 @@ function NavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, progress, onExplore, isScanning }) {
+function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, onExplore, isScanning }) {
   return (
     <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all", borderColor)}>
-      {progress !== undefined && (
-        <div className="absolute bottom-0 left-0 h-[3px] bg-amber-100 w-full">
-          <div className="h-full bg-amber-400 transition-all duration-300" style={{ width: `${progress}%` }} />
-        </div>
-      )}
-      
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
           {icon}
@@ -289,7 +354,6 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
             <input type="checkbox" checked={checked} readOnly className="w-3.5 h-3.5 text-green-600 rounded border-slate-300 accent-green-600" />
             <span className="text-[12px] font-medium text-slate-700">{checkboxLabel}</span>
           </div>
-          {progress !== undefined && <div className="text-[10px] font-bold text-amber-600">{progress}%</div>}
         </div>
       </div>
     </div>
