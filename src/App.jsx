@@ -831,8 +831,8 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
         {/* Animated Concentric Breathing Guide Ring */}
         <circle 
           cx="80" 
-          cy="82" 
-          r="58" 
+          cy="80" 
+          r="52" 
           fill="none" 
           stroke={hasError ? "#FCD34D" : "#A7F3D0"} 
           strokeWidth="1.2" 
@@ -845,15 +845,15 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
         {/* Ambient Soft Inner Circle */}
         <circle 
           cx="80" 
-          cy="82" 
-          r="50" 
+          cy="80" 
+          r="44" 
           fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
           fillOpacity="0.75" 
           stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
           strokeWidth="1.2" 
         />
 
-        {/* Floating Phone + Cable Group (Symmetrically Centered) */}
+        {/* Floating Phone + Cable Group (100% Symmetrically Centered at cx=80, cy=80) */}
         <g>
           <animateTransform
             attributeName="transform"
@@ -864,16 +864,16 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           />
 
           {/* Hardware Side Buttons */}
-          <rect x="66" y="58" width="1.2" height="8" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
-          <rect x="92.8" y="60" width="1.2" height="5.5" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
+          <rect x="65.3" y="60" width="1.2" height="8" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
+          <rect x="93.5" y="62" width="1.2" height="5.5" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} />
 
-          {/* Phone Chassis (Clean White + Emerald/Amber Border) */}
+          {/* Phone Chassis (Sleek Modern 1:2.0 Ratio, Perfectly Centered at cx=80, cy=80) */}
           <rect 
-            x="67.5" 
-            y="49" 
-            width="25" 
-            height="46" 
-            rx="5.5" 
+            x="66.5" 
+            y="53" 
+            width="27" 
+            height="54" 
+            rx="5" 
             fill="#FFFFFF" 
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.5" 
@@ -881,38 +881,38 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
 
           {/* Screen (Glass Inset) */}
           <rect 
-            x="69.5" 
-            y="51.2" 
-            width="21" 
-            height="41.6" 
-            rx="4" 
+            x="68.8" 
+            y="55.3" 
+            width="22.4" 
+            height="49.4" 
+            rx="3.6" 
             fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
             stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
             strokeWidth="0.8" 
           />
 
           {/* Speaker Notch & Front Camera */}
-          <rect x="76" y="50.4" width="8" height="1" rx="0.5" fill="#94A3B8" />
-          <circle cx="73.8" cy="50.9" r="0.5" fill="#94A3B8" />
+          <rect x="76" y="54.4" width="8" height="0.9" rx="0.45" fill="#94A3B8" />
+          <circle cx="73.8" cy="54.8" r="0.45" fill="#94A3B8" />
 
           {/* Screen Center: Verified / Status Badge */}
           {/* Soft Aura Ring */}
           <circle 
             cx="80" 
-            cy="69" 
-            r="9.5" 
+            cy="72" 
+            r="8.5" 
             fill={hasError ? "#F59E0B" : "#10B981"} 
             fillOpacity="0.12"
           >
-            <animate attributeName="r" values="8.5; 11.5; 8.5" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="r" values="7.5; 10; 7.5" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="fillOpacity" values="0.16; 0.05; 0.16" dur="2.4s" repeatCount="indefinite" />
           </circle>
 
           {/* Badge Body */}
           <circle 
             cx="80" 
-            cy="69" 
-            r="7" 
+            cy="72" 
+            r="6.8" 
             fill={hasError ? "#F59E0B" : "#10B981"} 
             stroke={hasError ? "#D97706" : "#059669"} 
             strokeWidth="0.5" 
@@ -921,12 +921,12 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           {/* Badge Icon */}
           {hasError ? (
             <g>
-              <line x1="80" y1="66.5" x2="80" y2="69.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
-              <circle cx="80" cy="71.5" r="0.7" fill="#FFFFFF" />
+              <line x1="80" y1="69.5" x2="80" y2="72.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
+              <circle cx="80" cy="74.5" r="0.7" fill="#FFFFFF" />
             </g>
           ) : (
             <path 
-              d="M 77.2 69 L 79 70.8 L 83 66.8" 
+              d="M 77 72 L 79 74 L 83.2 69.8" 
               fill="none" 
               stroke="#FFFFFF" 
               strokeWidth="1.5" 
@@ -938,31 +938,31 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           {/* Active Link Data Wave / Pulse Line */}
           <line 
             x1="74" 
-            y1="79.5" 
+            y1="82.5" 
             x2="86" 
-            y2="79.5" 
+            y2="82.5" 
             stroke={hasError ? "#FDE68A" : "#A7F3D0"} 
             strokeWidth="0.9" 
             strokeLinecap="round" 
           />
-          <circle cx="80" cy="79.5" r="1.1" fill={hasError ? "#F59E0B" : "#10B981"}>
+          <circle cx="80" cy="82.5" r="1.1" fill={hasError ? "#F59E0B" : "#10B981"}>
             <animate attributeName="cx" values="75; 85; 75" dur="2s" repeatCount="indefinite" />
           </circle>
 
           {/* Bottom Gesture Bar */}
-          <rect x="75" y="89.5" width="10" height="0.7" rx="0.35" fill="#CBD5E1" />
+          <rect x="75" y="99.5" width="10" height="0.7" rx="0.35" fill="#CBD5E1" />
 
           {/* Phone USB Port Cutout */}
-          <rect x="77" y="94.4" width="6" height="1" rx="0.5" fill="#E2E8F0" />
+          <rect x="77" y="106.2" width="6" height="1" rx="0.5" fill="#E2E8F0" />
 
           {/* Plugged-in USB-C Connector Assembly */}
           {/* Connection Contact Bead (Energy Indicator) */}
-          <circle cx="80" cy="95" r="1.1" fill={hasError ? "#FBBF24" : "#34D399"} />
+          <circle cx="80" cy="107" r="1.1" fill={hasError ? "#FBBF24" : "#34D399"} />
 
           {/* Plug Shell / Collar */}
           <rect 
             x="77.5" 
-            y="95" 
+            y="107" 
             width="5" 
             height="5.5" 
             rx="1.2" 
@@ -970,17 +970,17 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.1" 
           />
-          <line x1="78.8" y1="97.8" x2="81.2" y2="97.8" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="0.7" />
+          <line x1="78.8" y1="109.8" x2="81.2" y2="109.8" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="0.7" />
 
           {/* Strain Relief Boot */}
-          <rect x="78.5" y="100.5" width="3" height="1.8" rx="0.5" fill="#E2E8F0" stroke="#CBD5E1" strokeWidth="0.5" />
+          <rect x="78.5" y="112.5" width="3" height="1.6" rx="0.5" fill="#E2E8F0" stroke="#CBD5E1" strokeWidth="0.5" />
 
-          {/* Connected USB Cable */}
+          {/* Connected USB Cable (Stops safely inside circle) */}
           <line 
             x1="80" 
-            y1="102.3" 
+            y1="114.1" 
             x2="80" 
-            y2="116" 
+            y2="120" 
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.8" 
             strokeLinecap="round" 
@@ -989,9 +989,9 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           {/* Animated Data Flow Pulses Down Cable */}
           <line 
             x1="80" 
-            y1="102.3" 
+            y1="114.1" 
             x2="80" 
-            y2="116" 
+            y2="120" 
             stroke="#FFFFFF" 
             strokeWidth="1" 
             strokeDasharray="1.8 2.5" 
