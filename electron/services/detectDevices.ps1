@@ -12,29 +12,29 @@ $phoneModel = $null
 $phoneBrand = $null
 
 foreach ($d in $rawDevices) {
-    $id = ($d.DeviceID -as [string])
+    $id = ($d.DeviceID -as [string]).ToUpper()
     $name = ($d.Name -as [string])
     $mfg = ($d.Manufacturer -as [string])
 
-    if ($name -like "*ADB*" -or $name -like "*Bootloader*" -or $name -like "*Fastboot*" -or $name -like "*Preloader*" -or $name -like "*MediaTek*" -or $name -like "*VCOM*" -or $id -match 'VID_0E8D|VID_18D1') {
-        $activeDevices += $d
+    # Capture any device with ADB, Bootloader, Fastboot, Preloader, or any Android OEM Vendor ID
+    if ($name -like "*ADB*" -or $name -like "*Bootloader*" -or $name -like "*Fastboot*" -or $name -like "*Preloader*" -or $name -like "*MediaTek*" -or $name -like "*VCOM*" -or $id -match 'VID_0E8D|VID_18D1|VID_2717|VID_22B8|VID_22D9|VID_04E8') {
+        if ($name -notlike "*Host Controller*") {
+            $activeDevices += $d
+        }
     }
 
+    # Extract friendly device names
     if ($name -notmatch '(?i)interface|composite|hub|controller|winusb' -and $mfg -notmatch '(?i)standard|microsoft') {
         $phoneModel = $name
         $phoneBrand = $mfg
     }
 }
 
-if ($activeDevices.Count -eq 0) {
-    $activeDevices = @($rawDevices | Where-Object { $_.DeviceID -match 'VID_22B8|VID_22D9|VID_2717|VID_04E8|VID_18D1|VID_0E8D' -and $_.Name -notlike "*Host Controller*" })
-}
-
 if (-not $activeDevices -or $activeDevices.Count -eq 0) {
     exit 0
 }
 
-# If phoneModel is still missing, query DEVPKEY_Device_BusReportedDeviceDesc for the first active device
+# If phoneModel is still missing, query DEVPKEY_Device_BusReportedDeviceDesc for the active device
 if (-not $phoneModel -and $activeDevices.Count -gt 0) {
     $targetId = $activeDevices[0].DeviceID
     $busDesc = (Get-PnpDeviceProperty -InstanceId $targetId -KeyName "DEVPKEY_Device_BusReportedDeviceDesc" -ErrorAction SilentlyContinue).Data
@@ -45,13 +45,13 @@ if (-not $phoneModel -and $activeDevices.Count -gt 0) {
 
 # Fallback to known USB Vendor ID if brand is missing
 if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
-    $firstId = $activeDevices[0].DeviceID
-    if ($firstId -match 'VID_([0-9A-Fa-f]{4})') {
+    $firstId = ($activeDevices[0].DeviceID -as [string]).ToUpper()
+    if ($firstId -match 'VID_([0-9A-F]{4})') {
         switch ($matches[1]) {
-            "22B8" { $phoneBrand = "Motorola" }
-            "22D9" { $phoneBrand = "OnePlus" }
-            "2A70" { $phoneBrand = "OnePlus" }
             "2717" { $phoneBrand = "Xiaomi" }
+            "22B8" { $phoneBrand = "Motorola" }
+            "22D9" { $phoneBrand = "OnePlus / OPPO" }
+            "2A70" { $phoneBrand = "OnePlus" }
             "04E8" { $phoneBrand = "Samsung" }
             "18D1" { $phoneBrand = "Google" }
             "2B4B" { $phoneBrand = "Vivo" }

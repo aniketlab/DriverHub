@@ -186,6 +186,10 @@ export const DEVICE_CATALOG = {
   '2407FPN8EG': { brand: 'Xiaomi', model: 'Xiaomi 14T Pro' },
 
   // Redmi Note Series
+  'whyred': { brand: 'Redmi', model: 'Redmi Note 5 Pro' },
+  'Redmi_Note_5_Pro': { brand: 'Redmi', model: 'Redmi Note 5 Pro' },
+  'Redmi Note 5 Pro': { brand: 'Redmi', model: 'Redmi Note 5 Pro' },
+  'MEI7S': { brand: 'Redmi', model: 'Redmi Note 5 Pro' },
   'M2002F4LG': { brand: 'Xiaomi', model: 'Mi Note 10 Lite' },
   'M2101K7BNY': { brand: 'Redmi', model: 'Redmi Note 10 5G' },
   'M2101K7AG': { brand: 'Redmi', model: 'Redmi Note 10' },
