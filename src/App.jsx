@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { Download, MonitorSmartphone, Settings, LayoutDashboard, Database, ChevronRight, CheckCircle2, Play, AlertCircle } from 'lucide-react';
+import { 
+  Download, 
+  MonitorSmartphone, 
+  Settings, 
+  LayoutDashboard, 
+  Database, 
+  ChevronRight, 
+  Loader2, 
+  FolderOpen 
+} from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,14 +21,34 @@ function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState(null);
+  
+  // Real dynamic logs for the terminal window
+  const [logs, setLogs] = useState([
+    { type: 'info', text: 'DriverHub initialized. System ready.' }
+  ]);
+
+  const addLog = (type, text) => {
+    setLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
+  };
 
   const handleScan = async () => {
     setIsScanning(true);
+    addLog('pending', 'Scanning PC for installed Android drivers and tools...');
+    
     try {
       const results = await window.electronAPI.scanPc();
+      console.log('Frontend: Scan results received ->', results);
       setScanResults(results);
+
+      if (results?.adb?.installed) {
+        addLog('success', `ADB Platform-Tools detected at: ${results.adb.path}`);
+      } else {
+        addLog('warning', 'ADB Platform-Tools not found on this system. Queued for installation.');
+      }
+      addLog('info', 'Scan complete. Pick packages and click "Install selected".');
     } catch (err) {
       console.error("Scan failed:", err);
+      addLog('error', `Scan failed: ${err.message || 'Unknown error'}`);
     } finally {
       setIsScanning(false);
     }
@@ -30,7 +59,7 @@ function App() {
       {/* Electron Title Bar Drag Area (invisible) */}
       <div className="fixed top-0 left-0 right-0 h-[35px] drag-region z-50 pointer-events-none" />
 
-      {/* LEFT SIDEBAR (Reduced width from 240px to 220px, reduced padding) */}
+      {/* LEFT SIDEBAR */}
       <div className="w-[220px] bg-white border-r border-slate-200 flex flex-col pt-10 pb-4 justify-between h-full relative z-10 shadow-sm no-drag-region shrink-0">
         
         <div className="px-5 flex flex-col gap-5">
@@ -62,7 +91,7 @@ function App() {
       <div className="flex-1 flex flex-col h-full bg-slate-50 relative pt-9 no-drag-region overflow-y-auto min-w-[500px]">
         <div className="max-w-4xl w-full mx-auto px-6 py-4 flex-1 flex flex-col gap-5">
           
-          {/* Header Row (Smaller text, tighter layout) */}
+          {/* Header Row */}
           <div className="flex justify-between items-end mb-1">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-800 leading-tight">Every Android driver.</h2>
@@ -73,10 +102,11 @@ function App() {
               <button 
                 onClick={handleScan}
                 disabled={isScanning}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50">
-                {isScanning ? 'Scanning...' : 'Scan PC'}
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
+                {isScanning && <Loader2 className="w-3.5 h-3.5 animate-spin text-green-600" />}
+                {isScanning ? 'Scanning PC...' : 'Scan PC'}
               </button>
-              <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap">
+              <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer">
                 Install selected (3)
               </button>
             </div>
@@ -91,8 +121,23 @@ function App() {
               title="ADB Platform-Tools"
               desc="adb + fastboot binaries, added to PATH automatically"
               tags={['adb', 'fastboot', 'PATH setup']}
-              status={scanResults ? (scanResults.adb?.installed ? 'Installed' : 'Not installed') : 'Unknown'}
-              statusColor={scanResults?.adb?.installed ? 'text-green-600 bg-green-50' : 'text-slate-500 bg-slate-100'}
+              isScanning={isScanning}
+              status={
+                isScanning 
+                  ? 'Scanning...' 
+                  : scanResults 
+                    ? (scanResults.adb?.installed ? 'Installed' : 'Not installed') 
+                    : 'Not Scanned'
+              }
+              statusColor={
+                isScanning 
+                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  : scanResults?.adb?.installed 
+                    ? 'text-green-700 bg-green-50 border border-green-200' 
+                    : scanResults 
+                      ? 'text-amber-700 bg-amber-50 border border-amber-200' 
+                      : 'text-slate-500 bg-slate-100'
+              }
               checkboxLabel={scanResults?.adb?.installed ? 'Reinstall' : 'Selected'}
               checked={true}
               borderColor={scanResults?.adb?.installed ? 'border-green-200' : 'border-slate-200'}
@@ -105,12 +150,11 @@ function App() {
               title="Google USB & Bootloader"
               desc="Detects your phone in ADB and Fastboot mode"
               tags={[]}
-              status="Installing..."
-              statusColor="text-amber-600 bg-amber-50"
+              status="Not Scanned"
+              statusColor="text-slate-500 bg-slate-100"
               checkboxLabel="Selected"
               checked={true}
-              borderColor="border-amber-300 shadow-sm"
-              progress={64}
+              borderColor="border-slate-200"
             />
 
             {/* MTK Card */}
@@ -119,7 +163,7 @@ function App() {
               title="MediaTek (MTK) Drivers"
               desc="For flashing and unbricking MTK devices"
               tags={['BROM mode', 'Preloader mode', 'VCOM']}
-              status="Not installed"
+              status="Not Scanned"
               statusColor="text-slate-500 bg-slate-100"
               checkboxLabel="Selected"
               checked={true}
@@ -128,20 +172,32 @@ function App() {
 
           </div>
 
-          {/* Terminal / Install Log (Reduced height) */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 h-28 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-sm shrink-0">
-            <h4 className="font-semibold text-slate-800 font-sans text-[10px] uppercase tracking-wider mb-2">Install Log</h4>
-            <div className="flex flex-col gap-1">
-              <p><span className="text-green-500">[ok]</span> ADB Platform-Tools extracted and added to PATH</p>
-              <p><span className="text-amber-500">[..]</span> Installing Google USB driver package</p>
-              <p><span className="text-slate-400">[--]</span> MTK drivers queued</p>
+          {/* Terminal / Install Log (Now completely live and responsive) */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-sm shrink-0 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-slate-800 font-sans text-[10px] uppercase tracking-wider">Install Log</h4>
+                <span className="text-[10px] text-slate-400 font-sans">Live Console</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                {logs.map((log, index) => (
+                  <p key={index} className="leading-relaxed">
+                    {log.type === 'success' && <span className="text-green-600 font-bold mr-1.5">[ok]</span>}
+                    {log.type === 'pending' && <span className="text-blue-500 font-bold mr-1.5">[..]</span>}
+                    {log.type === 'warning' && <span className="text-amber-500 font-bold mr-1.5">[!]</span>}
+                    {log.type === 'error' && <span className="text-rose-500 font-bold mr-1.5">[err]</span>}
+                    {log.type === 'info' && <span className="text-slate-400 font-bold mr-1.5">[--]</span>}
+                    <span>{log.text}</span>
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
 
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR (Reduced width from 300px to 250px) */}
+      {/* RIGHT SIDEBAR: DEVICE MONITOR */}
       <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-10 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
         <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider mb-4">Device Monitor</h4>
         
@@ -171,7 +227,7 @@ function NavItem({ icon: Icon, label, active, onClick }) {
     <button 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap",
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer",
         active 
           ? "bg-green-50 text-green-700" 
           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -183,7 +239,7 @@ function NavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, progress, onExplore }) {
+function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, progress, onExplore, isScanning }) {
   return (
     <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all", borderColor)}>
       {progress !== undefined && (
@@ -217,11 +273,14 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
             {onExplore && (
               <button 
                 onClick={onExplore}
-                className="text-[10px] font-bold text-slate-500 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors">
+                title="Open folder in File Explorer"
+                className="text-[10px] font-bold text-slate-600 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors flex items-center gap-1 cursor-pointer">
+                <FolderOpen className="w-3 h-3 text-slate-400" />
                 Explore
               </button>
             )}
-            <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase", statusColor)}>
+            <div className={cn("px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase flex items-center gap-1", statusColor)}>
+              {isScanning && <Loader2 className="w-2.5 h-2.5 animate-spin" />}
               {status}
             </div>
           </div>
