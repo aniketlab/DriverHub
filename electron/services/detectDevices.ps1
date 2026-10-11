@@ -1,85 +1,73 @@
-$devices = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue | Where-Object { 
-    $_.FriendlyName -like "*ADB*" -or 
-    $_.FriendlyName -like "*Bootloader*" -or 
-    $_.FriendlyName -like "*Fastboot*" -or 
-    $_.FriendlyName -like "*Preloader*" -or 
-    $_.FriendlyName -like "*MediaTek*" -or 
-    $_.FriendlyName -like "*VCOM*" -or
-    $_.Class -eq "AndroidUsbDeviceClass" -or
-    $_.InstanceId -like "*VID_0E8D*" -or
-    $_.InstanceId -like "*VID_18D1*" -or
-    $_.InstanceId -like "*VID_2717*" -or
-    $_.InstanceId -like "*VID_22D9*" -or
-    $_.InstanceId -like "*VID_22B8*" -or
-    $_.InstanceId -like "*VID_04E8*"
-}
+# Fast query via CimInstance (< 800ms)
+$query = "SELECT DeviceID, Name, Manufacturer, Status, Present FROM Win32_PnPEntity WHERE Present = True AND (PNPClass = 'AndroidUsbDeviceClass' OR PNPClass = 'WPD' OR (PNPClass = 'Ports' AND (Name LIKE '%MediaTek%' OR Name LIKE '%Preloader%' OR Name LIKE '%VCOM%')) OR DeviceID LIKE 'USB\\VID_22B8%' OR DeviceID LIKE 'USB\\VID_22D9%' OR DeviceID LIKE 'USB\\VID_2717%' OR DeviceID LIKE 'USB\\VID_04E8%' OR DeviceID LIKE 'USB\\VID_18D1%' OR DeviceID LIKE 'USB\\VID_0E8D%')"
 
-if (-not $devices) {
+$rawDevices = Get-CimInstance -Query $query -ErrorAction SilentlyContinue
+
+if (-not $rawDevices) {
     exit 0
 }
 
-# Collect all connected devices for companion lookup
-$allPresent = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue
+$activeDevices = @()
 $phoneModel = $null
 $phoneBrand = $null
 
-foreach ($dev in $devices) {
-    # 1. LIVE HARDWARE DESCRIPTOR: Directly query what the phone hardware reported to Windows USB bus!
-    $busDesc = (Get-PnpDeviceProperty -InstanceId $dev.InstanceId -KeyName "DEVPKEY_Device_BusReportedDeviceDesc" -ErrorAction SilentlyContinue).Data
-    $mfg = (Get-PnpDeviceProperty -InstanceId $dev.InstanceId -KeyName "DEVPKEY_Device_Manufacturer" -ErrorAction SilentlyContinue).Data
+foreach ($d in $rawDevices) {
+    $id = ($d.DeviceID -as [string])
+    $name = ($d.Name -as [string])
+    $mfg = ($d.Manufacturer -as [string])
 
-    if ($busDesc -and $busDesc -notmatch '(?i)interface|composite|android usb|winusb|host controller') {
-        $phoneModel = $busDesc
+    if ($name -like "*ADB*" -or $name -like "*Bootloader*" -or $name -like "*Fastboot*" -or $name -like "*Preloader*" -or $name -like "*MediaTek*" -or $name -like "*VCOM*" -or $id -match 'VID_0E8D|VID_18D1') {
+        $activeDevices += $d
     }
 
-    if ($mfg -and $mfg -notmatch '(?i)standard|microsoft|generic') {
+    if ($name -notmatch '(?i)interface|composite|hub|controller|winusb' -and $mfg -notmatch '(?i)standard|microsoft') {
+        $phoneModel = $name
         $phoneBrand = $mfg
     }
+}
 
-    # 2. Check WPD (Windows Portable Devices) companion if model not found yet
-    if (-not $phoneModel -and ($dev.InstanceId -match '(VID_[0-9A-Fa-f]{4})')) {
-        $vid = $matches[1]
-        $companion = $allPresent | Where-Object { 
-            ($_.Class -eq "WPD" -or $_.Class -eq "PortableDevice") -and $_.InstanceId -like "*$vid*" 
-        } | Select-Object -First 1
+if ($activeDevices.Count -eq 0) {
+    $activeDevices = @($rawDevices | Where-Object { $_.DeviceID -match 'VID_22B8|VID_22D9|VID_2717|VID_04E8|VID_18D1|VID_0E8D' -and $_.Name -notlike "*Host Controller*" })
+}
 
-        if ($companion) {
-            if (-not $phoneModel -and $companion.FriendlyName -notmatch '(?i)interface|composite') { 
-                $phoneModel = $companion.FriendlyName 
-            }
-            if (-not $phoneBrand -and $companion.Manufacturer -notmatch '(?i)standard|microsoft') { 
-                $phoneBrand = $companion.Manufacturer 
-            }
-        }
+if (-not $activeDevices -or $activeDevices.Count -eq 0) {
+    exit 0
+}
+
+# If phoneModel is still missing, query DEVPKEY_Device_BusReportedDeviceDesc for the first active device
+if (-not $phoneModel -and $activeDevices.Count -gt 0) {
+    $targetId = $activeDevices[0].DeviceID
+    $busDesc = (Get-PnpDeviceProperty -InstanceId $targetId -KeyName "DEVPKEY_Device_BusReportedDeviceDesc" -ErrorAction SilentlyContinue).Data
+    if ($busDesc -and $busDesc -notmatch '(?i)interface|composite|android|device') {
+        $phoneModel = $busDesc
     }
+}
 
-    # 3. Fallback to USB Vendor ID database for brand
-    if (-not $phoneBrand -and ($dev.InstanceId -match '(VID_[0-9A-Fa-f]{4})')) {
-        $vid = $matches[1]
-        switch ($vid) {
-            "VID_22B8" { $phoneBrand = "Motorola" }
-            "VID_22D9" { $phoneBrand = "OnePlus / OPPO" }
-            "VID_2A70" { $phoneBrand = "OnePlus" }
-            "VID_2717" { $phoneBrand = "Xiaomi / POCO" }
-            "VID_04E8" { $phoneBrand = "Samsung" }
-            "VID_18D1" { $phoneBrand = "Google" }
-            "VID_2B4B" { $phoneBrand = "Vivo / iQOO" }
-            "VID_19D2" { $phoneBrand = "RedMagic / ZTE" }
-            "VID_2E04" { $phoneBrand = "Tecno / Infinix" }
-            "VID_12D1" { $phoneBrand = "Huawei / Honor" }
-            "VID_0B05" { $phoneBrand = "ASUS" }
-            "VID_0FCE" { $phoneBrand = "Sony" }
-            "VID_05C6" { $phoneBrand = "Qualcomm Device" }
-            "VID_0E8D" { $phoneBrand = "MediaTek Device" }
-            default    { $phoneBrand = "Android" }
+# Fallback to known USB Vendor ID if brand is missing
+if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
+    $firstId = $activeDevices[0].DeviceID
+    if ($firstId -match 'VID_([0-9A-Fa-f]{4})') {
+        switch ($matches[1]) {
+            "22B8" { $phoneBrand = "Motorola" }
+            "22D9" { $phoneBrand = "OnePlus" }
+            "2A70" { $phoneBrand = "OnePlus" }
+            "2717" { $phoneBrand = "Xiaomi" }
+            "04E8" { $phoneBrand = "Samsung" }
+            "18D1" { $phoneBrand = "Google" }
+            "2B4B" { $phoneBrand = "Vivo" }
+            "19D2" { $phoneBrand = "RedMagic" }
+            "2E04" { $phoneBrand = "Tecno" }
+            "12D1" { $phoneBrand = "Huawei" }
+            "0E8D" { $phoneBrand = "MediaTek" }
+            default { $phoneBrand = "Android" }
         }
     }
 }
 
 $output = [PSCustomObject]@{
-    Devices = @($devices | Select-Object FriendlyName, InstanceId, Status, Class)
+    Devices = @($activeDevices | Select-Object @{Name="FriendlyName"; Expression={$_.Name}}, @{Name="InstanceId"; Expression={$_.DeviceID}}, Status)
     Brand   = $phoneBrand
     Model   = $phoneModel
 }
 
-$output | ConvertTo-Json -Compress -Depth 3
+$output | ConvertTo-Json -Compress -Depth 2

@@ -10,10 +10,17 @@ const execPromise = util.promisify(exec);
 
 const scriptPath = path.join(__dirname, 'detectDevices.ps1');
 
+let isChecking = false;
+
 export async function checkConnectedDevices() {
+  if (isChecking) {
+    return null; // Concurrency guard: avoid overlapping executions
+  }
+  isChecking = true;
+
   try {
     const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`;
-    const { stdout } = await execPromise(cmd, { timeout: 3000 });
+    const { stdout } = await execPromise(cmd, { timeout: 6000 });
     
     const trimmed = stdout.trim();
     if (!trimmed) {
@@ -48,7 +55,7 @@ export async function checkConnectedDevices() {
       if (name.includes('bootloader') || name.includes('fastboot') || id.includes('pid_d00d') || id.includes('pid_4ee0')) {
         hasFastboot = true;
         detectedMode = 'Fastboot';
-      } else if (name.includes('adb') || id.includes('pid_4ee7')) {
+      } else if (name.includes('adb') || id.includes('pid_4ee7') || id.includes('pid_2e81')) {
         hasAdb = true;
         detectedMode = 'ADB';
       } else if (name.includes('preloader') || name.includes('vcom') || id.includes('vid_0e8d') || name.includes('mediatek')) {
@@ -72,6 +79,9 @@ export async function checkConnectedDevices() {
       rawModel: rawModel
     };
   } catch (err) {
+    console.error('Device monitor error:', err.message);
     return { connected: false, adb: false, fastboot: false, mtk: false, brand: null, model: null, mode: null };
+  } finally {
+    isChecking = false;
   }
 }

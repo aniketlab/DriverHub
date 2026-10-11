@@ -45,13 +45,15 @@ function createWindow() {
 function startDeviceMonitoring() {
   if (monitorInterval) clearInterval(monitorInterval);
   
-  // Poll USB PnP devices every 2 seconds
+  // Poll USB PnP devices every 2.5 seconds
   monitorInterval = setInterval(async () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       const devices = await checkConnectedDevices();
-      mainWindow.webContents.send('device-monitor-update', devices);
+      if (devices !== null) {
+        mainWindow.webContents.send('device-monitor-update', devices);
+      }
     }
-  }, 2000);
+  }, 2500);
 }
 
 function setupIpc() {
