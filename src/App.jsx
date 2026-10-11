@@ -268,15 +268,16 @@ function App() {
     <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
       {/* 1. TOP UNIFIED TITLE BAR (Full window width, matching reference design) */}
       <header className="h-[38px] w-full bg-white border-b border-slate-200/90 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40">
-        <div className="flex items-center gap-2.5 no-drag-region">
-          <MonitorSmartphone className="w-5 h-5 text-green-600 shrink-0" />
-          <h1 className="font-bold text-[14px] tracking-tight uppercase">
-            <span className="text-green-600">DRIVER</span> <span className="text-slate-900">HUB</span>
-          </h1>
-          <span className="text-slate-300 font-light mx-1">|</span>
-          <span className="text-[12px] text-slate-500 font-normal">
-            All-in-one Android driver installer
-          </span>
+        <div className="flex items-center gap-2 no-drag-region">
+          <MonitorSmartphone className="w-4 h-4 text-green-600 shrink-0" />
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-[13px] tracking-tight uppercase leading-none text-slate-900">
+              <span className="text-green-600">DRIVER</span> HUB
+            </span>
+            <span className="text-[11.5px] text-slate-400 font-normal leading-none">
+              All-in-one Android driver installer
+            </span>
+          </div>
         </div>
         {/* Windows Titlebar Controls Placement Area */}
         <div className="w-28 h-full" />
