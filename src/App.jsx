@@ -748,91 +748,65 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
   if (!connected) {
     return (
       <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
-        <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10 drop-shadow-xs">
-          <defs>
-            <linearGradient id="sidebarOledGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1E293B" />
-              <stop offset="100%" stopColor="#0B132B" />
-            </linearGradient>
+        <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10">
+          {/* Symmetrical Theme Guide Rings */}
+          <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
+          <circle cx="80" cy="80" r="44" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="3 3" />
 
-            <linearGradient id="sidebarChassisRim" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#475569" />
-              <stop offset="100%" stopColor="#1E293B" />
-            </linearGradient>
-
-            <linearGradient id="sidebarScreenGloss" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.08" />
-              <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.02" />
-              <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {/* Symmetrical Guide Rings */}
-          <circle cx="80" cy="70" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.2" />
-          <circle cx="80" cy="70" r="46" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
-
-          {/* Gentle Expanding Signal Wave */}
-          <circle cx="80" cy="70" r="34" fill="none" stroke="#10B981" strokeWidth="1">
-            <animate attributeName="r" values="34; 60" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeOpacity" values="0.35; 0" dur="3s" repeatCount="indefinite" />
+          {/* Gentle Expanding Signal Ring */}
+          <circle cx="80" cy="80" r="32" fill="none" stroke="#10B981" strokeWidth="1">
+            <animate attributeName="r" values="30; 60" dur="3.2s" repeatCount="indefinite" />
+            <animate attributeName="strokeOpacity" values="0.35; 0" dur="3.2s" repeatCount="indefinite" />
           </circle>
 
-          {/* 1. SMARTPHONE HARDWARE MOCKUP */}
-          {/* Titanium Outer Chassis */}
-          <rect x="63" y="34" width="34" height="64" rx="8" fill="#0F172A" stroke="url(#sidebarChassisRim)" strokeWidth="1.2" />
-          
-          {/* OLED Glass Display */}
-          <rect x="65" y="36.5" width="30" height="59" rx="5.5" fill="url(#sidebarOledGlass)" />
-          <rect x="65" y="36.5" width="30" height="59" rx="5.5" fill="url(#sidebarScreenGloss)" />
-
-          {/* Dynamic Island / Speaker */}
-          <rect x="75" y="38.5" width="10" height="1.8" rx="0.9" fill="#000000" />
-          <circle cx="80" cy="39.4" r="0.6" fill="#334155" />
-
-          {/* Glowing Universal USB Symbol inside screen */}
-          <g opacity="0.9">
-            <animate attributeName="opacity" values="0.5; 0.95; 0.5" dur="2.4s" repeatCount="indefinite" />
-            <line x1="80" y1="56" x2="80" y2="73" stroke="#10B981" strokeWidth="1.3" strokeLinecap="round" />
-            <path d="M 78 58.5 L 80 55 L 82 58.5 Z" fill="#10B981" />
-            <path d="M 80 66 L 76 62.5 L 76 59" fill="none" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-            <rect x="74.8" y="58" width="2.4" height="2.4" fill="#10B981" rx="0.4" />
-            <path d="M 80 68 L 84 64.5 L 84 61" fill="none" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="84" cy="60" r="1.2" fill="#10B981" />
-            <circle cx="80" cy="74" r="1.4" fill="#10B981" />
-          </g>
-
-          {/* Bottom Gesture Bar */}
-          <rect x="75" y="91" width="10" height="1" rx="0.5" fill="#334155" opacity="0.6" />
-
-          {/* USB-C Port Cutout on bottom bezel */}
-          <rect x="77" y="97.5" width="6" height="1.5" rx="0.75" fill="#020617" stroke="#334155" strokeWidth="0.5" />
-
-          {/* 2. FLOATING MAGNETIC USB-C CABLE */}
+          {/* Symmetrical Floating Phone + Cable Group (Contained completely inside circle) */}
           <g>
             <animateTransform
               attributeName="transform"
               type="translate"
-              values="0,0; 0,-4; 0,0"
-              dur="2.4s"
+              values="0,0; 0,-2.5; 0,0"
+              dur="3s"
               repeatCount="indefinite"
             />
 
-            {/* Connection Energy Beam */}
-            <line x1="80" y1="99" x2="80" y2="106" stroke="#10B981" strokeWidth="1.2" strokeDasharray="1.5 1.5" opacity="0.85">
-              <animate attributeName="strokeDashoffset" values="0; 6" dur="0.8s" repeatCount="indefinite" />
+            {/* Phone Chassis (White Body + Emerald Outline) */}
+            <rect x="66" y="48" width="28" height="48" rx="6" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.5" />
+
+            {/* Screen (Light Slate Interior) */}
+            <rect x="69" y="51" width="22" height="42" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.8" />
+
+            {/* Speaker Notch */}
+            <rect x="76" y="49.5" width="8" height="1.2" rx="0.6" fill="#94A3B8" />
+
+            {/* Glowing Universal USB Symbol inside screen */}
+            <g opacity="0.9">
+              <animate attributeName="opacity" values="0.45; 1; 0.45" dur="2.4s" repeatCount="indefinite" />
+              <line x1="80" y1="64" x2="80" y2="79" stroke="#10B981" strokeWidth="1.3" strokeLinecap="round" />
+              <path d="M 78 66.5 L 80 63 L 82 66.5 Z" fill="#10B981" />
+              <path d="M 80 72 L 76 69 L 76 66" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <rect x="75" y="65" width="2" height="2" fill="#10B981" rx="0.4" />
+              <path d="M 80 74 L 84 71 L 84 68" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <circle cx="84" cy="67" r="1.2" fill="#10B981" />
+              <circle cx="80" cy="80" r="1.4" fill="#10B981" />
+            </g>
+
+            {/* Gesture Bar */}
+            <rect x="75" y="90" width="10" height="0.8" rx="0.4" fill="#E2E8F0" />
+
+            {/* USB Port Cutout */}
+            <rect x="77" y="94.5" width="6" height="1.2" rx="0.6" fill="#E2E8F0" />
+
+            {/* Waiting USB Cable & Plug (100% Contained inside inner ring) */}
+            <line x1="80" y1="96" x2="80" y2="108" stroke="#10B981" strokeWidth="1.3" strokeDasharray="2 2">
+              <animate attributeName="strokeDashoffset" values="0; 8" dur="1.2s" repeatCount="indefinite" />
             </line>
 
-            {/* Metal Plug Pin */}
-            <rect x="77.5" y="106" width="5" height="4" rx="1" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="0.6" />
-            <line x1="78.8" y1="108" x2="81.2" y2="108" stroke="#64748B" strokeWidth="0.6" />
+            {/* Plug Collar */}
+            <rect x="77.5" y="108" width="5" height="6" rx="1.2" fill="#FFFFFF" stroke="#10B981" strokeWidth="1" />
+            <line x1="79" y1="110.5" x2="81" y2="110.5" stroke="#10B981" strokeWidth="0.8" />
 
-            {/* Matte Shell */}
-            <rect x="75.5" y="110" width="9" height="6.5" rx="1.5" fill="#1E293B" stroke="#334155" strokeWidth="0.6" />
-            <rect x="77.5" y="112.5" width="5" height="1" rx="0.5" fill="#10B981" opacity="0.9" />
-
-            {/* Boot & Cable */}
-            <rect x="78" y="116.5" width="4" height="3" rx="0.8" fill="#0F172A" />
-            <line x1="80" y1="119.5" x2="80" y2="138" stroke="#475569" strokeWidth="2.2" strokeLinecap="round" />
+            {/* Cable Cord Tip */}
+            <line x1="80" y1="114" x2="80" y2="119" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
           </g>
         </svg>
       </div>

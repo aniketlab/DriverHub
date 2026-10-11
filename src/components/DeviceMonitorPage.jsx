@@ -84,117 +84,70 @@ export function DeviceMonitorPage({
               /* --- DISCONNECTED HERO STATE --- */
               <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
                 
-                {/* Modern Hardware Device & Floating USB-C Connection Centerpiece */}
-                <div className="relative w-52 h-52 flex items-center justify-center mb-6">
-                  {/* Diffuse Ambient Backdrop Glow */}
-                  <div className="absolute w-36 h-36 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+                {/* Clean Theme-Integrated Device Showcase Centerpiece */}
+                <div className="relative w-48 h-48 flex items-center justify-center mb-6">
+                  {/* Ambient Soothing Emerald Aura */}
+                  <div className="absolute w-32 h-32 rounded-full bg-emerald-400/10 blur-xl pointer-events-none" />
 
-                  <svg viewBox="0 0 200 200" className="w-full h-full relative z-10 drop-shadow-xs">
-                    <defs>
-                      {/* Deep OLED Glass Gradient */}
-                      <linearGradient id="oledGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#1E293B" />
-                        <stop offset="100%" stopColor="#0B132B" />
-                      </linearGradient>
+                  <svg viewBox="0 0 200 200" className="w-full h-full relative z-10">
+                    {/* Symmetrical Guide Rings */}
+                    <circle cx="100" cy="100" r="76" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
+                    <circle cx="100" cy="100" r="56" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="4 4" />
 
-                      {/* Titanium Chassis Rim Gradient */}
-                      <linearGradient id="chassisRim" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#475569" />
-                        <stop offset="100%" stopColor="#1E293B" />
-                      </linearGradient>
-
-                      {/* Screen Gloss Reflection */}
-                      <linearGradient id="screenGloss" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.08" />
-                        <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.02" />
-                        <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Faint Architectural Guide Orbit Rings */}
-                    <circle cx="100" cy="88" r="76" fill="none" stroke="#F1F5F9" strokeWidth="1.2" />
-                    <circle cx="100" cy="88" r="58" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="4 4" opacity="0.7" />
-
-                    {/* Gentle Expanding Signal Wave (Clean & Faint) */}
-                    <circle cx="100" cy="88" r="44" fill="none" stroke="#10B981" strokeWidth="1">
-                      <animate attributeName="r" values="44; 76" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeOpacity" values="0.35; 0" dur="3s" repeatCount="indefinite" />
+                    {/* Gentle Expanding Signal Ring */}
+                    <circle cx="100" cy="100" r="42" fill="none" stroke="#10B981" strokeWidth="1">
+                      <animate attributeName="r" values="40; 76" dur="3.2s" repeatCount="indefinite" />
+                      <animate attributeName="strokeOpacity" values="0.35; 0" dur="3.2s" repeatCount="indefinite" />
                     </circle>
 
-                    {/* ========================================= */}
-                    {/* 1. PREMIUM SMARTPHONE HARDWARE MOCKUP     */}
-                    {/* ========================================= */}
-                    {/* Titanium Outer Chassis */}
-                    <rect x="78" y="44" width="44" height="80" rx="10" fill="#0F172A" stroke="url(#chassisRim)" strokeWidth="1.5" />
-                    
-                    {/* Bezel Ring */}
-                    <rect x="80" y="46" width="40" height="76" rx="8" fill="#020617" />
-
-                    {/* OLED Glass Display */}
-                    <rect x="81" y="47" width="38" height="74" rx="7" fill="url(#oledGlass)" />
-                    
-                    {/* Gloss Reflection Overlay */}
-                    <rect x="81" y="47" width="38" height="74" rx="7" fill="url(#screenGloss)" />
-
-                    {/* Dynamic Island / Speaker */}
-                    <rect x="94" y="50" width="12" height="2.2" rx="1.1" fill="#000000" />
-                    <circle cx="100" cy="51.1" r="0.75" fill="#334155" />
-
-                    {/* Glowing Universal USB Symbol inside screen */}
-                    <g opacity="0.9">
-                      <animate attributeName="opacity" values="0.5; 0.95; 0.5" dur="2.4s" repeatCount="indefinite" />
-                      {/* Main Stem */}
-                      <line x1="100" y1="72" x2="100" y2="92" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" />
-                      {/* Top Arrowhead */}
-                      <path d="M 97.5 75 L 100 71 L 102.5 75 Z" fill="#10B981" />
-                      {/* Left Branch */}
-                      <path d="M 100 84 L 95 80 L 95 76" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      <rect x="93.5" y="74.5" width="3" height="3" fill="#10B981" rx="0.5" />
-                      {/* Right Branch */}
-                      <path d="M 100 86 L 105 82 L 105 78" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="105" cy="77" r="1.5" fill="#10B981" />
-                      {/* Bottom Anchor Circle */}
-                      <circle cx="100" cy="93" r="1.8" fill="#10B981" />
-                    </g>
-
-                    {/* Bottom Gesture Bar */}
-                    <rect x="94" y="115" width="12" height="1.2" rx="0.6" fill="#334155" opacity="0.6" />
-
-                    {/* USB-C Port Cutout on bottom bezel */}
-                    <rect x="96" y="123" width="8" height="1.8" rx="0.9" fill="#020617" stroke="#334155" strokeWidth="0.5" />
-
-                    {/* ========================================= */}
-                    {/* 2. FLOATING MAGNETIC USB-C CABLE ASSEMBLY */}
-                    {/* ========================================= */}
+                    {/* Symmetrical Floating Phone + Cable Group */}
                     <g>
-                      {/* Smooth Vertical Magnetic Hovering Animation */}
                       <animateTransform
                         attributeName="transform"
                         type="translate"
-                        values="0,0; 0,-5; 0,0"
-                        dur="2.4s"
+                        values="0,0; 0,-3; 0,0"
+                        dur="3s"
                         repeatCount="indefinite"
                       />
 
-                      {/* Magnetic Energy Connection Beam between Port and Plug */}
-                      <line x1="100" y1="125" x2="100" y2="133" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2 2" opacity="0.85">
-                        <animate attributeName="strokeDashoffset" values="0; 8" dur="0.8s" repeatCount="indefinite" />
+                      {/* Phone Chassis (Clean White + Emerald Accent) */}
+                      <rect x="82" y="59" width="36" height="62" rx="7.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.6" />
+
+                      {/* Screen (Light Slate Interior) */}
+                      <rect x="85.5" y="62.5" width="29" height="55" rx="5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.8" />
+
+                      {/* Speaker Notch */}
+                      <rect x="94" y="61" width="12" height="1.6" rx="0.8" fill="#94A3B8" />
+
+                      {/* Glowing Universal USB Symbol inside screen */}
+                      <g opacity="0.9">
+                        <animate attributeName="opacity" values="0.45; 1; 0.45" dur="2.4s" repeatCount="indefinite" />
+                        <line x1="100" y1="80" x2="100" y2="99" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M 97.5 83 L 100 79 L 102.5 83 Z" fill="#10B981" />
+                        <path d="M 100 90 L 95 86 L 95 82" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        <rect x="93.5" y="80.5" width="3" height="3" fill="#10B981" rx="0.5" />
+                        <path d="M 100 92 L 105 88 L 105 84" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="105" cy="83" r="1.5" fill="#10B981" />
+                        <circle cx="100" cy="100" r="1.8" fill="#10B981" />
+                      </g>
+
+                      {/* Gesture Bar */}
+                      <rect x="94" y="113" width="12" height="1" rx="0.5" fill="#E2E8F0" />
+
+                      {/* USB Port Cutout */}
+                      <rect x="96" y="119.5" width="8" height="1.5" rx="0.75" fill="#E2E8F0" />
+
+                      {/* Waiting USB Cable & Plug (Contained inside ring) */}
+                      <line x1="100" y1="121" x2="100" y2="137" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2.5 2.5">
+                        <animate attributeName="strokeDashoffset" values="0; 10" dur="1.2s" repeatCount="indefinite" />
                       </line>
 
-                      {/* USB-C Plug Head: Anodized Metal Connector Pin */}
-                      <rect x="97" y="133" width="6" height="5" rx="1.2" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="0.8" />
-                      <line x1="98.5" y1="135.5" x2="101.5" y2="135.5" stroke="#64748B" strokeWidth="0.8" />
+                      {/* Plug Collar */}
+                      <rect x="96.5" y="137" width="7" height="8" rx="1.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.2" />
+                      <line x1="98.5" y1="140" x2="101.5" y2="140" stroke="#10B981" strokeWidth="1" />
 
-                      {/* Matte Dark Collar Shell */}
-                      <rect x="94.5" y="138" width="11" height="8" rx="2" fill="#1E293B" stroke="#334155" strokeWidth="0.8" />
-                      {/* Green Accent Ring on Shell */}
-                      <rect x="97" y="141" width="6" height="1.2" rx="0.6" fill="#10B981" opacity="0.9" />
-
-                      {/* Strain Relief Boot */}
-                      <rect x="97" y="146" width="6" height="4" rx="1" fill="#0F172A" />
-
-                      {/* Cable Body Cord */}
-                      <line x1="100" y1="150" x2="100" y2="172" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+                      {/* Plug Cord Tip */}
+                      <line x1="100" y1="145" x2="100" y2="151" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" />
                     </g>
                   </svg>
                 </div>
