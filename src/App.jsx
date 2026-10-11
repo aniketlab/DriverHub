@@ -196,6 +196,8 @@ function App() {
         addLog('success', `ADB Platform-Tools ready at: ${results.adb.path}`);
         addLog('success', 'Windows User PATH updated. ADB & Fastboot commands are globally available.');
       }
+      // Hold 100% completion state for a smooth visual transition
+      await new Promise(r => setTimeout(r, 600));
     } catch (err) {
       console.error('Installation error:', err);
       addLog('error', `Installation interrupted: ${err.message || 'Unknown error'}`);
@@ -503,18 +505,23 @@ function DriverCard({
             </div>
           )}
 
-          {/* Real Live 0-100% Progress Bar */}
+          {/* Real Live Smooth Animated Progress Bar */}
           {progress > 0 && progress <= 100 && (
-            <div className="mt-3 w-full animate-fadeIn">
-              <div className="flex justify-between items-center text-[11px] mb-1">
-                <span className="text-slate-600 font-medium truncate max-w-[80%]">{progressMessage || 'Installing...'}</span>
-                <span className="text-emerald-600 font-bold">{progress}%</span>
+            <div className="mt-3.5 w-full animate-fadeIn transition-all">
+              <div className="flex justify-between items-center text-[11px] mb-1.5">
+                <span className="text-slate-600 font-medium truncate max-w-[80%] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block shrink-0" />
+                  <span className="truncate">{progressMessage || 'Installing...'}</span>
+                </span>
+                <span className="text-emerald-700 font-bold tabular-nums text-[12px] shrink-0">{progress}%</span>
               </div>
-              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-slate-100 border border-slate-200/70 rounded-full overflow-hidden p-0.5 shadow-inner">
                 <div 
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 rounded-full transition-all duration-500 ease-out shadow-xs relative"
                   style={{ width: `${progress}%` }}
-                />
+                >
+                  <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse" />
+                </div>
               </div>
             </div>
           )}

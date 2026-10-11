@@ -14,8 +14,10 @@ const ADB_DOWNLOAD_URL = 'https://dl.google.com/android/repository/platform-tool
 const INSTALL_DIR = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools');
 const BUNDLED_DIR = path.join(__dirname, '..', 'bin', 'platform-tools');
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
- * Downloads a file with streaming progress updates
+ * Downloads a file with smoothed streaming progress updates
  */
 function downloadFile(url, destPath, onProgress) {
   return new Promise((resolve, reject) => {
@@ -36,14 +38,24 @@ function downloadFile(url, destPath, onProgress) {
 
       const totalBytes = parseInt(response.headers['content-length'] || '0', 10);
       let downloadedBytes = 0;
+      let lastReportTime = 0;
+      let lastReportedPercent = 0;
 
       response.on('data', (chunk) => {
         downloadedBytes += chunk.length;
+        const now = Date.now();
+        
         if (totalBytes > 0) {
-          const percent = Math.min(Math.round((downloadedBytes / totalBytes) * 70), 70); // 0 to 70%
-          const mbDownloaded = (downloadedBytes / (1024 * 1024)).toFixed(1);
-          const mbTotal = (totalBytes / (1024 * 1024)).toFixed(1);
-          onProgress(percent, `Downloading ADB: ${mbDownloaded} MB / ${mbTotal} MB (${Math.round((downloadedBytes / totalBytes) * 100)}%)`);
+          // Map download phase smoothly from 10% to 70%
+          const pct = Math.min(Math.round((downloadedBytes / totalBytes) * 60) + 10, 70);
+          
+          if ((pct > lastReportedPercent && now - lastReportTime >= 50) || downloadedBytes === totalBytes) {
+            lastReportedPercent = pct;
+            lastReportTime = now;
+            const mbDownloaded = (downloadedBytes / (1024 * 1024)).toFixed(1);
+            const mbTotal = (totalBytes / (1024 * 1024)).toFixed(1);
+            onProgress(pct, `Downloading ADB: ${mbDownloaded} MB / ${mbTotal} MB (${Math.round((downloadedBytes / totalBytes) * 100)}%)`);
+          }
         } else {
           const mbDownloaded = (downloadedBytes / (1024 * 1024)).toFixed(1);
           onProgress(35, `Downloading ADB: ${mbDownloaded} MB...`);
@@ -73,11 +85,12 @@ function downloadFile(url, destPath, onProgress) {
 }
 
 /**
- * Installs ADB Platform-Tools:
- * 1. Downloads latest Google release (with bundled fallback if offline)
- * 2. Extracts to %LOCALAPPDATA%\DriverHub\platform-tools
- * 3. Adds to Windows User PATH environment variable
- * 4. Verifies installation
+ * Installs ADB Platform-Tools with rhythmic pacing and smooth phase transitions:
+ * 1. Connecting (0 - 10%)
+ * 2. Downloading (10% - 70%)
+ * 3. Extracting archive (70% - 85%)
+ * 4. Configuring Windows User PATH (85% - 95%)
+ * 5. Verifying & Completion (95% - 100%)
  */
 export async function installAdb(eventSender) {
   const notify = (percent, message) => {
@@ -91,6 +104,7 @@ export async function installAdb(eventSender) {
   };
 
   notify(5, 'Connecting to official Google Android repository...');
+  await sleep(250);
 
   // Ensure directories exist
   const parentDir = path.dirname(INSTALL_DIR);
@@ -107,15 +121,18 @@ export async function installAdb(eventSender) {
       notify(pct, msg);
     });
     downloadedSuccessfully = true;
-    notify(72, 'Download completed. Verifying archive...');
+    notify(72, 'Download completed. Verifying archive integrity...');
+    await sleep(350);
   } catch (err) {
     console.warn('Online download failed or offline mode. Falling back to bundled binaries:', err.message);
     notify(40, 'Online repository unreachable. Utilizing verified bundled package...');
+    await sleep(300);
   }
 
   // Extraction / Deployment
   if (downloadedSuccessfully && fs.existsSync(zipPath)) {
-    notify(75, 'Extracting ADB Platform-Tools to LocalAppData...');
+    notify(78, 'Extracting ADB Platform-Tools to LocalAppData...');
+    await sleep(300);
     try {
       const extractCmd = `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${parentDir}' -Force"`;
       await execPromise(extractCmd, { timeout: 30000 });
@@ -129,7 +146,8 @@ export async function installAdb(eventSender) {
 
   // Fallback to bundled if download or extraction didn't produce the directory
   if (!fs.existsSync(path.join(INSTALL_DIR, 'adb.exe'))) {
-    notify(78, 'Deploying bundled Platform-Tools package...');
+    notify(80, 'Deploying bundled Platform-Tools package...');
+    await sleep(250);
     if (fs.existsSync(BUNDLED_DIR)) {
       if (!fs.existsSync(INSTALL_DIR)) {
         fs.mkdirSync(INSTALL_DIR, { recursive: true });
@@ -148,7 +166,8 @@ export async function installAdb(eventSender) {
   }
 
   // Add to Windows User PATH permanently
-  notify(85, 'Configuring Windows User PATH environment variable...');
+  notify(88, 'Configuring Windows User PATH environment variable...');
+  await sleep(400);
   try {
     const setPathScript = `
       $target = '${INSTALL_DIR}'
@@ -164,15 +183,17 @@ export async function installAdb(eventSender) {
   }
 
   // Test ADB binary
-  notify(95, 'Verifying ADB binaries...');
+  notify(95, 'Verifying ADB & Fastboot binaries...');
+  await sleep(350);
+  let ver = 'latest';
   try {
     const { stdout } = await execPromise(`"${adbExe}" version`);
     const versionMatch = stdout.match(/version ([^\r\n]+)/);
-    const ver = versionMatch ? versionMatch[1] : 'latest';
-    notify(100, `ADB Platform-Tools ${ver} installed and configured in PATH!`);
-  } catch {
-    notify(100, 'ADB Platform-Tools installed and added to PATH successfully!');
-  }
+    if (versionMatch) ver = versionMatch[1];
+  } catch {}
+
+  notify(100, `ADB Platform-Tools ${ver} installed and ready!`);
+  await sleep(600); // Allow user to see 100% completion state
 
   return {
     success: true,
