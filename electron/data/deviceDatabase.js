@@ -424,9 +424,18 @@ export const DEVICE_CATALOG = {
   'X6850': { brand: 'Infinix', model: 'Infinix Note 40 Pro' },
   'X6820': { brand: 'Infinix', model: 'Infinix Zero Ultra' },
 
-  // ==========================================
-  // MOTOROLA
-  // ==========================================
+  // Moto G Series
+  'XT2363-1': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2363-2': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2363-3': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'moto g34 5G': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'moto_g34_5G': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'fogos': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2343-1': { brand: 'Motorola', model: 'Moto G54 5G' },
+  'XT2433-1': { brand: 'Motorola', model: 'Moto G64 5G' },
+  'XT2347-1': { brand: 'Motorola', model: 'Moto G84 5G' },
+  'XT2237-1': { brand: 'Motorola', model: 'Moto G73 5G' },
+  'XT2225-1': { brand: 'Motorola', model: 'Moto G82 5G' },
   'XT2087-1': { brand: 'Motorola', model: 'Moto G9 Plus' },
   'XT2141-1': { brand: 'Motorola', model: 'Motorola Edge 20' },
   'XT2153-1': { brand: 'Motorola', model: 'Motorola Edge 20 Pro' },
@@ -519,8 +528,24 @@ export function resolveDevice(rawModel, detectedBrand) {
   if (upper.includes('PIXEL 6')) return { brand: 'Google', model: 'Pixel 6' };
 
   // 5. Intelligent Fallback with Brand
-  const brand = detectedBrand || 'Android';
-  const model = clean ? `${brand} ${clean}` : `${brand} Device`;
+  let brand = detectedBrand || 'Android';
+  let model = clean;
+
+  if (clean) {
+    const lowerClean = clean.toLowerCase();
+    const lowerBrand = brand.toLowerCase();
+
+    if (lowerClean.startsWith('moto')) {
+      brand = 'Motorola';
+      model = clean.replace(/^moto\b/i, 'Moto');
+    } else if (lowerClean.startsWith(lowerBrand)) {
+      model = clean;
+    } else {
+      model = `${brand} ${clean}`;
+    }
+  } else {
+    model = `${brand} Device`;
+  }
 
   return { brand, model };
 }
