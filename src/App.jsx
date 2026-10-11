@@ -8,8 +8,7 @@ import {
   ChevronRight, 
   Loader2, 
   FolderOpen,
-  Smartphone,
-  CheckCircle2
+  Smartphone
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -308,7 +307,7 @@ function App() {
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR (Refined Typography & Smart Model Detection) */}
+      {/* RIGHT SIDEBAR: DEVICE MONITOR (Restored Halo Rings, USB Cable, and Perfect Alignment) */}
       <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-10 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
@@ -318,56 +317,71 @@ function App() {
           </span>
         </div>
         
-        {/* Animated Phone Centerpiece */}
+        {/* Animated Phone Centerpiece (Perfect Horizontally & Vertically Centered Concentric Circles) */}
         <div className={cn(
-          "border rounded-2xl aspect-square flex flex-col items-center justify-center relative mb-3.5 transition-all duration-500 shadow-xs",
+          "border rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden",
           isAnyDeviceConnected 
-            ? "border-emerald-200/80 bg-emerald-50/30 shadow-emerald-100/50" 
+            ? "border-emerald-200 bg-emerald-50/20 shadow-xs" 
             : "border-slate-200/80 bg-white"
         )}>
           {isAnyDeviceConnected ? (
-            <>
-              <div className="absolute inset-0 m-auto w-24 h-24 border border-emerald-300/40 rounded-full animate-ping opacity-25" />
-              <div className="absolute inset-0 m-auto w-16 h-16 border border-emerald-400/50 rounded-full animate-pulse" />
-              <Smartphone className="w-9 h-9 text-emerald-600 relative z-10 transition-transform scale-105" />
-              {deviceStatus.brand && (
-                <span className="mt-2 px-2 py-0.5 bg-white/95 border border-emerald-200 text-emerald-700 font-medium text-[10px] rounded-full shadow-2xs relative z-10">
-                  {deviceStatus.brand}
-                </span>
-              )}
-            </>
+            <div className="relative flex items-center justify-center w-full h-full">
+              {/* Concentric Halo Radar Rings */}
+              <div className="absolute w-32 h-32 border-2 border-emerald-300/40 rounded-full animate-ping opacity-35" />
+              <div className="absolute w-28 h-28 border border-emerald-400/60 rounded-full animate-pulse" />
+              <div className="absolute w-20 h-20 border-2 border-emerald-400 rounded-full bg-emerald-100/30" />
+              
+              {/* Centered Device & Connected USB Cable */}
+              <div className="relative z-10 flex flex-col items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white shadow-xs border border-emerald-300 flex items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-emerald-600 transition-transform scale-105" />
+                </div>
+                {/* Active USB Cable indicator */}
+                <div className="w-0.5 h-3 bg-emerald-500 mt-1 rounded-full animate-pulse shadow-xs" />
+              </div>
+            </div>
           ) : (
-            <>
-              <div className="absolute inset-0 m-auto w-20 h-20 border border-slate-100 rounded-full" />
-              <Smartphone className="w-8 h-8 text-slate-300 relative z-10" />
-            </>
+            <div className="relative flex items-center justify-center w-full h-full">
+              {/* Inactive Neutral Rings */}
+              <div className="absolute w-28 h-28 border border-slate-100 rounded-full" />
+              <div className="absolute w-20 h-20 border border-slate-100 rounded-full" />
+              
+              {/* Disconnected Center */}
+              <div className="relative z-10 flex flex-col items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-slate-300" />
+                </div>
+                {/* Disconnected Dashed Cable */}
+                <div className="w-0.5 h-3 border-l-2 border-dashed border-slate-300 mt-1" />
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Live Device Status Tagline */}
-        <div className="text-center mb-4 min-h-[46px] flex flex-col justify-center">
+        {/* Live Device Status Tagline & Name Display */}
+        <div className="text-center mb-4 min-h-[50px] flex flex-col items-center justify-center">
           {isAnyDeviceConnected ? (
-            <div className="animate-fadeIn">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 mb-1">
+            <div className="flex flex-col items-center animate-fadeIn w-full px-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70 mb-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Connected</span>
               </div>
-              <h5 className="text-[13px] font-semibold text-slate-800 leading-tight truncate px-1">
+              <h5 className="text-[13px] font-semibold text-slate-800 leading-tight truncate max-w-full">
                 {deviceStatus.model || 'Android Phone'}
               </h5>
-              <p className="text-[11px] text-slate-400 font-normal mt-0.5 truncate px-1">
+              <p className="text-[11px] text-slate-400 font-normal mt-0.5 truncate max-w-full">
                 {deviceStatus.rawModel && deviceStatus.model !== deviceStatus.rawModel ? `${deviceStatus.rawModel} • ` : ''}
                 {deviceStatus.mode || 'USB Mode'}
               </p>
             </div>
           ) : (
             <p className="text-[11px] text-slate-400 leading-relaxed font-normal">
-              Connect your phone via USB.<br/>Mode is detected live.
+              Connect your phone via USB.<br />The mode is detected live.
             </p>
           )}
         </div>
 
-        {/* Individual Status Badges with Refined Typography */}
+        {/* Individual Status Badges */}
         <div className="flex flex-col gap-2">
           <MonitorStatus 
             label="ADB" 
