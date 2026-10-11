@@ -317,46 +317,13 @@ function App() {
           </span>
         </div>
         
-        {/* Animated Phone Centerpiece (Perfect Horizontally & Vertically Centered Concentric Circles) */}
-        <div className={cn(
-          "border rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden",
-          isAnyDeviceConnected 
-            ? "border-emerald-200 bg-emerald-50/20 shadow-xs" 
-            : "border-slate-200/80 bg-white"
-        )}>
-          {isAnyDeviceConnected ? (
-            <div className="relative flex items-center justify-center w-full h-full">
-              {/* Concentric Halo Radar Rings */}
-              <div className="absolute w-32 h-32 border-2 border-emerald-300/40 rounded-full animate-ping opacity-35" />
-              <div className="absolute w-28 h-28 border border-emerald-400/60 rounded-full animate-pulse" />
-              <div className="absolute w-20 h-20 border-2 border-emerald-400 rounded-full bg-emerald-100/30" />
-              
-              {/* Centered Device & Connected USB Cable */}
-              <div className="relative z-10 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-white shadow-xs border border-emerald-300 flex items-center justify-center">
-                  <Smartphone className="w-6 h-6 text-emerald-600 transition-transform scale-105" />
-                </div>
-                {/* Active USB Cable indicator */}
-                <div className="w-0.5 h-3 bg-emerald-500 mt-1 rounded-full animate-pulse shadow-xs" />
-              </div>
-            </div>
-          ) : (
-            <div className="relative flex items-center justify-center w-full h-full">
-              {/* Inactive Neutral Rings */}
-              <div className="absolute w-28 h-28 border border-slate-100 rounded-full" />
-              <div className="absolute w-20 h-20 border border-slate-100 rounded-full" />
-              
-              {/* Disconnected Center */}
-              <div className="relative z-10 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
-                  <Smartphone className="w-6 h-6 text-slate-300" />
-                </div>
-                {/* Disconnected Dashed Cable */}
-                <div className="w-0.5 h-3 border-l-2 border-dashed border-slate-300 mt-1" />
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Next-Level Vector-Aligned Device Centerpiece */}
+        <DeviceMonitorVisual 
+          connected={isAnyDeviceConnected}
+          mode={deviceStatus.mode}
+          brand={deviceStatus.brand}
+          model={deviceStatus.model}
+        />
 
         {/* Live Device Status Tagline & Name Display */}
         <div className="text-center mb-4 min-h-[50px] flex flex-col items-center justify-center">
@@ -492,6 +459,73 @@ function MonitorStatus({ label, connected }) {
       )}>
         {connected ? 'CONNECTED' : 'WAITING'}
       </span>
+    </div>
+  );
+}
+
+function DeviceMonitorVisual({ connected, mode, brand, model }) {
+  if (!connected) {
+    return (
+      <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
+        <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px]">
+          {/* Symmetrical Inactive Guide Rings */}
+          <circle cx="80" cy="75" r="56" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
+          <circle cx="80" cy="75" r="42" fill="none" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+
+          {/* Symmetrical Disconnected Phone Wireframe */}
+          <rect x="66" y="49" width="28" height="52" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1.5" />
+          <rect x="69" y="53" width="22" height="44" rx="3.5" fill="#F1F5F9" stroke="#E2E8F0" strokeWidth="1" />
+          
+          {/* Speaker Slit */}
+          <rect x="76" y="51" width="8" height="1.2" rx="0.6" fill="#94A3B8" />
+
+          {/* Waiting USB Cable */}
+          <line x1="80" y1="101" x2="80" y2="114" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="2 2" />
+          <circle cx="80" cy="116" r="2" fill="#CBD5E1" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-emerald-200/90 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30 shadow-xs">
+      {/* Ambient Radial Green Halo */}
+      <div className="absolute w-28 h-28 bg-emerald-400/20 rounded-full blur-xl pointer-events-none animate-pulse" />
+
+      {/* 100% Mathematically Symmetrical Vector Display */}
+      <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10 drop-shadow-xs">
+        {/* Animated Concentric Radar Halo */}
+        <circle cx="80" cy="75" r="62" fill="none" stroke="#A7F3D0" strokeWidth="1.5" opacity="0.6">
+          <animate attributeName="r" values="52;66;52" dur="3s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.7;0.15;0.7" dur="3s" repeatCount="indefinite" />
+        </circle>
+        
+        {/* Middle Pulse Circle */}
+        <circle cx="80" cy="75" r="48" fill="#ECFDF5" fillOpacity="0.5" stroke="#6EE7B7" strokeWidth="1.5" />
+
+        {/* High-Tech Smartphone Mockup (Center: x=80, y=75) */}
+        {/* Chassis */}
+        <rect x="64" y="46" width="32" height="58" rx="6.5" fill="#0F172A" stroke="#10B981" strokeWidth="1.5" />
+        {/* OLED Glass Screen */}
+        <rect x="66.5" y="49" width="27" height="52" rx="4.5" fill="#022C22" />
+
+        {/* Camera Notch / Speaker */}
+        <rect x="76" y="50.5" width="8" height="1.5" rx="0.75" fill="#064E3B" />
+
+        {/* Live Screen Radar Signal Dot */}
+        <circle cx="80" cy="70" r="7" fill="#059669" fillOpacity="0.3" />
+        <circle cx="80" cy="70" r="3.5" fill="#34D399" />
+
+        {/* Live Screen Mode Text */}
+        <text x="80" y="84" textAnchor="middle" fill="#6EE7B7" fontSize="5.5" fontFamily="monospace" fontWeight="600" letterSpacing="0.5">
+          {mode === 'Fastboot' ? 'FASTBOOT' : mode === 'ADB' ? 'ONLINE' : 'ACTIVE'}
+        </text>
+
+        {/* Connected USB-C Port & Cable */}
+        <line x1="80" y1="104" x2="80" y2="114" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
+        <rect x="78" y="112" width="4" height="5" rx="1" fill="#059669" />
+        <line x1="80" y1="117" x2="80" y2="126" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2 2" strokeLinecap="round" />
+      </svg>
     </div>
   );
 }
