@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
 import { installAdb, installGoogleDriver, installMtkDriver } from './services/installerService.js';
+import { syncDeviceDatabase } from './services/deviceSyncService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -168,6 +169,11 @@ app.whenReady().then(() => {
   setupIpc();
   createWindow();
   startDeviceMonitoring();
+
+  // Background non-blocking sync for newly released smartphones (5s delay)
+  setTimeout(() => {
+    syncDeviceDatabase();
+  }, 5000);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -1,5 +1,26 @@
 // Comprehensive Android Device Database
 // Maps OEM model numbers and hardware identifiers to official marketing names and brands.
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+let cachedDb = null;
+
+export function getDatabase() {
+  if (cachedDb) return cachedDb;
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const dbPath = path.resolve(__dirname, 'devices_db.json');
+    if (fs.existsSync(dbPath)) {
+      const raw = fs.readFileSync(dbPath, 'utf8');
+      cachedDb = JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('Failed to load devices_db.json:', err);
+  }
+  return cachedDb;
+}
 
 export const DEVICE_CATALOG = {
   // ==========================================
@@ -480,7 +501,7 @@ export const DEVICE_CATALOG = {
 
 /**
  * Smart lookup function to resolve brand and friendly model name.
- * Supports exact matching, regex prefix matching, and fuzzy fallback.
+ * Supports exact matching, 50,000+ device database matching, regex prefix matching, and fuzzy fallback.
  */
 export function resolveDevice(rawModel, detectedBrand) {
   if (!rawModel && !detectedBrand) {
@@ -488,24 +509,29 @@ export function resolveDevice(rawModel, detectedBrand) {
   }
 
   const clean = (rawModel || '').trim();
+  if (!clean) {
+    return { brand: detectedBrand || 'Android', model: `${detectedBrand || 'Android'} Device` };
+  }
 
-  // 1. Direct dictionary match
+  // 1. Direct hand-curated catalog match
   if (DEVICE_CATALOG[clean]) {
     return DEVICE_CATALOG[clean];
   }
 
-  // Fastboot string normalization (e.g., "Fastboot fogos S" -> "fogos")
+  // Fastboot & Bootloader string normalization (e.g., "Fastboot fogos S" -> "fogos")
   const strippedFastboot = clean
     .replace(/^fastboot\s+/i, '')
     .replace(/\s+fastboot$/i, '')
     .replace(/\s+S$/i, '')
+    .replace(/^android\s+/i, '')
+    .replace(/\s+device$/i, '')
     .trim();
 
   if (strippedFastboot && DEVICE_CATALOG[strippedFastboot]) {
     return DEVICE_CATALOG[strippedFastboot];
   }
 
-  // 2. Case-insensitive dictionary match
+  // 2. Case-insensitive hand-curated catalog match
   const upper = clean.toUpperCase();
   for (const [key, data] of Object.entries(DEVICE_CATALOG)) {
     if (key.toUpperCase() === upper) {
@@ -513,7 +539,34 @@ export function resolveDevice(rawModel, detectedBrand) {
     }
   }
 
-  // 3. Samsung Prefix Rule Matching (e.g. SM-S928U1, SM-S9280, SM-A546E)
+  // 3. Massive 50,000+ Unified Database Lookup (O(1) Instant Hash Map)
+  const db = getDatabase();
+  if (db) {
+    const lowerClean = clean.toLowerCase();
+    const lowerFastboot = strippedFastboot ? strippedFastboot.toLowerCase() : '';
+    const cleanAlpha = lowerClean.replace(/[\s\-_]/g, '');
+    const strippedAlpha = lowerFastboot ? lowerFastboot.replace(/[\s\-_]/g, '') : '';
+
+    // A. Check Codename match (Fastboot primary)
+    const codenameMatch = (lowerFastboot && db.codenames[lowerFastboot]) || 
+                          db.codenames[lowerClean] || 
+                          (strippedAlpha && db.codenames[strippedAlpha]) ||
+                          (cleanAlpha && db.codenames[cleanAlpha]);
+    if (codenameMatch) {
+      return { brand: codenameMatch.b, model: codenameMatch.m };
+    }
+
+    // B. Check Model match (MTP & ADB primary)
+    const modelMatch = db.models[lowerClean] || 
+                       (lowerFastboot && db.models[lowerFastboot]) || 
+                       (cleanAlpha && db.models[cleanAlpha]) ||
+                       (strippedAlpha && db.models[strippedAlpha]);
+    if (modelMatch) {
+      return { brand: modelMatch.b, model: modelMatch.m };
+    }
+  }
+
+  // 4. Samsung Prefix Rule Matching (e.g. SM-S928U1, SM-S9280, SM-A546E)
   if (upper.startsWith('SM-S928')) return { brand: 'Samsung', model: 'Galaxy S24 Ultra' };
   if (upper.startsWith('SM-S926')) return { brand: 'Samsung', model: 'Galaxy S24+' };
   if (upper.startsWith('SM-S921')) return { brand: 'Samsung', model: 'Galaxy S24' };
@@ -534,7 +587,7 @@ export function resolveDevice(rawModel, detectedBrand) {
   if (upper.startsWith('SM-A156')) return { brand: 'Samsung', model: 'Galaxy A15 5G' };
   if (upper.startsWith('SM-A146')) return { brand: 'Samsung', model: 'Galaxy A14 5G' };
 
-  // 4. Pixel Substring Matching
+  // 5. Pixel Substring Matching
   if (upper.includes('PIXEL 9 PRO XL')) return { brand: 'Google', model: 'Pixel 9 Pro XL' };
   if (upper.includes('PIXEL 9 PRO')) return { brand: 'Google', model: 'Pixel 9 Pro' };
   if (upper.includes('PIXEL 9')) return { brand: 'Google', model: 'Pixel 9' };
@@ -548,26 +601,22 @@ export function resolveDevice(rawModel, detectedBrand) {
   if (upper.includes('PIXEL 6 PRO')) return { brand: 'Google', model: 'Pixel 6 Pro' };
   if (upper.includes('PIXEL 6')) return { brand: 'Google', model: 'Pixel 6' };
 
-  // 5. Intelligent Fallback with Brand
+  // 6. Intelligent Fallback with Brand
   let brand = detectedBrand || 'Android';
   let model = clean;
 
-  if (clean) {
-    const lowerClean = clean.toLowerCase();
-    const lowerBrand = brand.toLowerCase();
+  const lowerClean = clean.toLowerCase();
+  const lowerBrand = brand.toLowerCase();
 
-    if (lowerClean.includes('rndis')) {
-      model = `${brand} (USB Tethering)`;
-    } else if (lowerClean.startsWith('moto')) {
-      brand = 'Motorola';
-      model = clean.replace(/^moto\b/i, 'Moto');
-    } else if (lowerClean.startsWith(lowerBrand)) {
-      model = clean;
-    } else {
-      model = `${brand} ${clean}`;
-    }
+  if (lowerClean.includes('rndis')) {
+    model = `${brand} (USB Tethering)`;
+  } else if (lowerClean.startsWith('moto')) {
+    brand = 'Motorola';
+    model = clean.replace(/^moto\b/i, 'Moto');
+  } else if (lowerClean.startsWith(lowerBrand)) {
+    model = clean;
   } else {
-    model = `${brand} Device`;
+    model = `${brand} ${clean}`;
   }
 
   return { brand, model };

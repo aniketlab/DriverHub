@@ -220,7 +220,19 @@ export async function checkConnectedDevices() {
       detectedMode = 'USB Connected';
     }
 
-    const rawModel = parsed.Model || null;
+    let rawModel = parsed.Model || null;
+
+    // Fall back to specific device names if parsed.Model is generic or empty
+    if (!rawModel || /interface|composite|controller|winusb/i.test(rawModel)) {
+      for (const item of deviceList) {
+        const fn = (item.FriendlyName || '').trim();
+        if (fn && !/interface|composite|controller|winusb|hub/i.test(fn)) {
+          rawModel = fn;
+          break;
+        }
+      }
+    }
+
     const resolved = resolveDevice(rawModel, parsed.Brand);
 
     return {
