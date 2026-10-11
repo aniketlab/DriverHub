@@ -55,7 +55,7 @@ export function DeviceMonitorPage({
                 <span>Connected</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/70 backdrop-blur-md text-slate-600 border border-slate-200/80 shadow-2xs">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium glass-subcard text-slate-600 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-ping opacity-75" />
                 <span>Scanning USB ports</span>
               </div>
@@ -65,7 +65,7 @@ export function DeviceMonitorPage({
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="px-3.5 py-1.5 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 text-xs font-medium rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="px-3.5 py-1.5 glass-subcard hover:bg-white active:scale-[0.98] text-slate-700 text-xs font-medium rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
               <span>Refresh</span>
@@ -468,14 +468,14 @@ export function DeviceMonitorPage({
 
                   <button
                     onClick={onRebootRecovery}
-                    className="px-4 py-2 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+                    className="px-4 py-2 glass-subcard hover:bg-white active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Reboot to recovery
                   </button>
 
                   <button
                     onClick={onOpenShell}
-                    className="px-4 py-2 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
+                    className="px-4 py-2 glass-subcard hover:bg-white active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Open ADB shell
                   </button>
