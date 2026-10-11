@@ -8,7 +8,8 @@ import {
   ChevronRight, 
   Loader2, 
   FolderOpen,
-  Smartphone
+  Smartphone,
+  RefreshCw
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -331,28 +332,53 @@ function App() {
               <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
           
           {/* Header Row */}
-          <div className="flex justify-between items-end mb-1">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-800 leading-tight">Every Android driver.</h2>
-              <h2 className="text-2xl font-bold tracking-tight text-green-600 mb-1 leading-tight">One installer.</h2>
-              <p className="text-slate-500 text-[13px]">Pick what you need, then install in a single click.</p>
+          <div className="flex items-center justify-between gap-4 pb-0.5">
+            <div className="min-w-0">
+              <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
+                <h2 className="text-[22px] font-bold tracking-tight text-slate-900 leading-tight">
+                  Every Android driver.
+                </h2>
+                <span className="text-[22px] font-bold tracking-tight text-green-600 leading-tight">
+                  One installer.
+                </span>
+              </div>
+              <p className="text-slate-500 text-[13px] mt-1 font-normal">
+                Pick what you need, then install in a single click.
+              </p>
             </div>
-            <div className="flex gap-2 shrink-0">
+
+            <div className="flex items-center gap-2.5 shrink-0">
               <button 
                 onClick={handleScan}
                 disabled={isScanning || isInstalling}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 active:scale-[0.97] transition-all duration-200 text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
-                {isScanning && <Loader2 className="w-3.5 h-3.5 animate-spin text-green-600" />}
-                {isScanning ? 'Scanning System...' : 'Scan PC'}
+                className="h-10 px-4 bg-white hover:bg-slate-50/90 active:scale-[0.98] border border-slate-200/90 text-slate-700 font-semibold rounded-xl shadow-xs transition-all duration-150 text-[13px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                title="Scan PC for installed drivers"
+              >
+                {isScanning ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                )}
+                <span>{isScanning ? 'Scanning PC...' : 'Scan PC'}</span>
               </button>
+
               <button 
                 onClick={handleInstall}
                 disabled={isInstalling || isScanning || selectedCount === 0}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 active:scale-[0.97] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
-                {isInstalling && <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />}
-                {isInstalling 
-                  ? 'Installing...' 
-                  : `Install selected (${selectedCount})`}
+                className="h-10 px-5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-semibold rounded-xl shadow-sm shadow-green-700/20 transition-all duration-150 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2"
+                title={selectedCount === 0 ? "Select at least one driver to install" : "Install selected drivers"}
+              >
+                {isInstalling ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                ) : (
+                  <Download className="w-4 h-4 text-white" />
+                )}
+                <span>{isInstalling ? 'Installing...' : 'Install selected'}</span>
+                {selectedCount > 0 && !isInstalling && (
+                  <span className="ml-0.5 px-2 py-0.5 bg-white/20 rounded-full text-[11px] font-bold text-white leading-none">
+                    {selectedCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
