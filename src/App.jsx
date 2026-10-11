@@ -34,6 +34,7 @@ function App() {
     adb: false,
     fastboot: false,
     mtk: false,
+    mtp: false,
     brand: null,
     model: null,
     rawModel: null,
@@ -53,7 +54,7 @@ function App() {
     mtk: { percent: 0, message: '' }
   });
 
-  const prevDeviceRef = useRef({ adb: false, fastboot: false, mtk: false });
+  const prevDeviceRef = useRef({ connected: false, adb: false, fastboot: false, mtk: false, mtp: false });
 
   // Dynamic live terminal logs
   const [logs, setLogs] = useState([
@@ -113,14 +114,20 @@ function App() {
       window.electronAPI.onDeviceMonitorUpdate((status) => {
         setDeviceStatus(status);
 
-        const wasConnected = prevDeviceRef.current.adb || prevDeviceRef.current.fastboot || prevDeviceRef.current.mtk;
+        const wasConnected = prevDeviceRef.current.connected;
         const isNowConnected = status.connected;
 
         if (!wasConnected && isNowConnected) {
           const deviceLabel = status.model ? `${status.brand || ''} ${status.model}` : (status.brand || 'Android Device');
-          addLog('success', `USB Plugged: ${deviceLabel} connected in ${status.mode || 'USB'} mode!`);
+          addLog('success', `USB Plugged: ${deviceLabel} connected (${status.mode || 'USB'}).`);
         } else if (wasConnected && !isNowConnected) {
           addLog('info', 'USB Unplugged: Device disconnected.');
+        } else if (wasConnected && isNowConnected) {
+          if (!prevDeviceRef.current.adb && status.adb) {
+            addLog('success', 'ADB Debugging mode activated.');
+          } else if (!prevDeviceRef.current.mtp && status.mtp) {
+            addLog('info', 'File Transfer (MTP) mode active.');
+          }
         }
 
         prevDeviceRef.current = status;
@@ -466,6 +473,10 @@ function App() {
 
         {/* Individual Status Badges */}
         <div className="flex flex-col gap-2">
+          <MonitorStatus 
+            label="File Transfer (MTP)" 
+            connected={deviceStatus.mtp} 
+          />
           <MonitorStatus 
             label="ADB" 
             connected={deviceStatus.adb} 

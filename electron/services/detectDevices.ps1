@@ -1,5 +1,5 @@
 # Fast query via CimInstance (< 800ms)
-$query = "SELECT DeviceID, Name, Manufacturer, Status, Present FROM Win32_PnPEntity WHERE Present = True AND (PNPClass = 'AndroidUsbDeviceClass' OR PNPClass = 'WPD' OR (PNPClass = 'Ports' AND (Name LIKE '%MediaTek%' OR Name LIKE '%Preloader%' OR Name LIKE '%VCOM%')) OR DeviceID LIKE 'USB\\VID_22B8%' OR DeviceID LIKE 'USB\\VID_22D9%' OR DeviceID LIKE 'USB\\VID_2717%' OR DeviceID LIKE 'USB\\VID_04E8%' OR DeviceID LIKE 'USB\\VID_18D1%' OR DeviceID LIKE 'USB\\VID_0E8D%')"
+$query = "SELECT DeviceID, Name, Manufacturer, Status, Present, PNPClass FROM Win32_PnPEntity WHERE Present = True AND (PNPClass = 'AndroidUsbDeviceClass' OR PNPClass = 'WPD' OR (PNPClass = 'Ports' AND (Name LIKE '%MediaTek%' OR Name LIKE '%Preloader%' OR Name LIKE '%VCOM%')) OR DeviceID LIKE 'USB\\VID_22B8%' OR DeviceID LIKE 'USB\\VID_22D9%' OR DeviceID LIKE 'USB\\VID_2717%' OR DeviceID LIKE 'USB\\VID_04E8%' OR DeviceID LIKE 'USB\\VID_18D1%' OR DeviceID LIKE 'USB\\VID_0E8D%' OR DeviceID LIKE 'USB\\VID_2A70%' OR DeviceID LIKE 'USB\\VID_2B4B%')"
 
 $rawDevices = Get-CimInstance -Query $query -ErrorAction SilentlyContinue
 
@@ -74,7 +74,7 @@ if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
 }
 
 $output = [PSCustomObject]@{
-    Devices = @($activeDevices | Select-Object @{Name="FriendlyName"; Expression={$_.Name}}, @{Name="InstanceId"; Expression={$_.DeviceID}}, Status)
+    Devices = @($activeDevices | Select-Object @{Name="FriendlyName"; Expression={$_.Name}}, @{Name="InstanceId"; Expression={$_.DeviceID}}, @{Name="PNPClass"; Expression={$_.PNPClass}}, Status)
     Brand   = $phoneBrand
     Model   = $phoneModel
 }

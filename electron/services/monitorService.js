@@ -14,8 +14,6 @@ const SCRIPT_DIR = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'scr
 const stagedScriptPath = path.join(SCRIPT_DIR, 'detectDevices.ps1');
 
 function getScriptPath() {
-  if (fs.existsSync(stagedScriptPath)) return stagedScriptPath;
-  
   const bundled = path.join(__dirname, 'detectDevices.ps1');
   try {
     if (!fs.existsSync(SCRIPT_DIR)) fs.mkdirSync(SCRIPT_DIR, { recursive: true });
@@ -25,9 +23,14 @@ function getScriptPath() {
     }
   } catch {}
 
+  if (fs.existsSync(stagedScriptPath)) return stagedScriptPath;
+
   if (process.resourcesPath) {
     const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'services', 'detectDevices.ps1');
-    if (fs.existsSync(unpacked)) return unpacked;
+    if (fs.existsSync(unpacked)) {
+      try { fs.copyFileSync(unpacked, stagedScriptPath); return stagedScriptPath; } catch {}
+      return unpacked;
+    }
   }
   return bundled;
 }
@@ -102,7 +105,8 @@ async function checkAdbDirect() {
             adb: true,
             fastboot: false,
             mtk: false,
-            mode: 'ADB',
+            mtp: false,
+            mode: 'ADB Debugging',
             brand: resolved.brand || brand || 'Android',
             model: resolved.model || rawModel || 'Android Device',
             rawModel: rawModel || serial
@@ -129,7 +133,7 @@ export async function checkConnectedDevices() {
       return directAdbResult;
     }
 
-    // Tier 2: Query Windows USB PnP (For Fastboot, MTK BROM, Preloader, VCOM)
+    // Tier 2: Query Windows USB PnP (For Fastboot, MTK BROM, Preloader, VCOM, MTP, Charging)
     const effectiveScript = getScriptPath();
     const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${effectiveScript}"`;
     const { stdout } = await execPromise(cmd, { timeout: 5000 });
@@ -137,13 +141,14 @@ export async function checkConnectedDevices() {
     const trimmed = stdout.trim();
     if (!trimmed) {
       return { 
-        connected: false,
+        connected: false, 
         adb: false, 
         fastboot: false, 
         mtk: false, 
+        mtp: false,
         brand: null, 
-        model: null,
-        mode: null
+        model: null, 
+        mode: null 
       };
     }
 
@@ -151,41 +156,62 @@ export async function checkConnectedDevices() {
     try {
       parsed = JSON.parse(trimmed);
     } catch {
-      return { connected: false, adb: false, fastboot: false, mtk: false, brand: null, model: null, mode: null };
+      return { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
     }
 
     const deviceList = parsed.Devices || [];
     let hasAdb = false;
     let hasFastboot = false;
     let hasMtk = false;
-    let detectedMode = null;
+    let hasMtp = false;
+    let hasUsbPhysical = false;
 
     for (const item of deviceList) {
       const name = (item.FriendlyName || '').toLowerCase();
       const id = (item.InstanceId || '').toLowerCase();
+      const pnpClass = (item.PNPClass || '').toLowerCase();
 
+      // 1. Check Fastboot / Bootloader
       if (name.includes('bootloader') || name.includes('fastboot') || id.includes('pid_d00d') || id.includes('pid_4ee0')) {
         hasFastboot = true;
-        detectedMode = 'Fastboot';
-      } else if (name.includes('preloader') || name.includes('vcom') || id.includes('vid_0e8d') || name.includes('mediatek')) {
+        hasUsbPhysical = true;
+      } 
+      // 2. Check MTK BROM / Preloader / VCOM
+      else if (name.includes('preloader') || name.includes('vcom') || id.includes('vid_0e8d') || name.includes('mediatek')) {
         hasMtk = true;
-        detectedMode = 'MediaTek BROM/Preloader';
-      } else if (
-        name.includes('adb') || 
-        id.includes('pid_4ee7') || 
-        id.includes('pid_2e81') || 
-        id.includes('pid_ff08') || 
-        id.includes('vid_2717') || 
-        id.includes('vid_22d9') || 
-        id.includes('vid_22b8') || 
-        id.includes('vid_04e8')
-      ) {
+        hasUsbPhysical = true;
+      } 
+      // 3. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
+      else if (name.includes('adb') || (pnpClass === 'androidusbdeviceclass' && !name.includes('bootloader') && !name.includes('fastboot'))) {
         hasAdb = true;
-        detectedMode = 'ADB';
+        hasUsbPhysical = true;
+      }
+      // 4. Check File Transfer / MTP (WPD class or MTP description)
+      else if (pnpClass === 'wpd' || name.includes('mtp') || id.includes('ms_comp_mtp')) {
+        hasMtp = true;
+        hasUsbPhysical = true;
+      }
+      // 5. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, etc.)
+      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d)/i)) {
+        hasUsbPhysical = true;
       }
     }
 
-    const isConnected = hasAdb || hasFastboot || hasMtk;
+    const isConnected = hasUsbPhysical || hasAdb || hasFastboot || hasMtk || hasMtp || !!parsed.Model;
+
+    let detectedMode = 'USB Connected';
+    if (hasFastboot) {
+      detectedMode = 'Fastboot Mode';
+    } else if (hasMtk) {
+      detectedMode = 'MediaTek BROM / Preloader';
+    } else if (hasAdb) {
+      detectedMode = 'ADB Debugging';
+    } else if (hasMtp) {
+      detectedMode = 'File Transfer (MTP)';
+    } else if (isConnected) {
+      detectedMode = 'USB Connected';
+    }
+
     const rawModel = parsed.Model || null;
     const resolved = resolveDevice(rawModel, parsed.Brand);
 
@@ -194,9 +220,10 @@ export async function checkConnectedDevices() {
       adb: hasAdb,
       fastboot: hasFastboot,
       mtk: hasMtk,
-      mode: detectedMode,
-      brand: resolved.brand || (isConnected ? 'Android' : null),
-      model: resolved.model,
+      mtp: hasMtp,
+      mode: isConnected ? detectedMode : null,
+      brand: resolved.brand || (isConnected ? (parsed.Brand || 'Android') : null),
+      model: resolved.model || parsed.Model,
       rawModel: rawModel
     };
   } catch (err) {
