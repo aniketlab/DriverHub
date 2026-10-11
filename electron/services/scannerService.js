@@ -36,24 +36,33 @@ export async function checkDriverStore() {
 
     for (const block of blocks) {
       const lower = block.toLowerCase();
-      const isWinUsb = lower.includes('android_winusb.inf');
-      const isGoogle = lower.includes('provider name:     google');
+
+      // Check for any valid Android Bootloader / Fastboot / WinUSB driver (Google, Xiaomi, OPLUS, etc.)
+      const isWinUsb = lower.includes('android_winusb.inf') || 
+                       lower.includes('class name:         androidusbdeviceclass') ||
+                       lower.includes('android bootloader interface');
+
       const isMtk = lower.includes('provider name:     mediatek') || 
                     lower.includes('cdc-acm.inf') || 
                     lower.includes('usb2ser.inf') ||
                     lower.includes('oppo_preloader.inf');
 
-      if (isWinUsb && isGoogle) {
+      if (isWinUsb) {
         hasGoogleUsb = true;
-        googleDriverName = 'Google Android USB Driver';
+        // Identify the OEM vendor (e.g., Xiaomi, Google, OPLUS)
+        if (lower.includes('xiaomi')) googleDriverName = 'Xiaomi / Android Bootloader Driver';
+        else if (lower.includes('google')) googleDriverName = 'Google USB Bootloader Driver';
+        else if (lower.includes('oplus')) googleDriverName = 'OPLUS / Android Bootloader Driver';
+        else googleDriverName = 'Universal Android Bootloader Driver';
       }
+
       if (isMtk) {
         hasMtk = true;
         mtkDriverName = 'MediaTek USB VCOM / Preloader Driver';
       }
     }
 
-    console.log('Scanner: DriverStore results -> Google:', hasGoogleUsb, 'MTK:', hasMtk);
+    console.log('Scanner: DriverStore results -> Bootloader:', hasGoogleUsb, '(', googleDriverName, ') | MTK:', hasMtk);
     return {
       google: { installed: hasGoogleUsb, name: googleDriverName },
       mtk: { installed: hasMtk, name: mtkDriverName }

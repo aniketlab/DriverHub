@@ -69,8 +69,8 @@ function App() {
             else addLog('warning', 'ADB Platform-Tools not found on this PC.');
           }
           if (target === 'google') {
-            if (data.installed) addLog('success', 'Google USB Bootloader Driver is active in DriverStore.');
-            else addLog('warning', 'Google USB Driver missing from Windows DriverStore.');
+            if (data.installed) addLog('success', `Bootloader Driver detected (${data.name || 'Android WinUSB'}).`);
+            else addLog('warning', 'Android Bootloader Driver missing from DriverStore.');
           }
           if (target === 'mtk') {
             if (data.installed) addLog('success', `MediaTek Drivers detected (${data.name || 'VCOM'}).`);
