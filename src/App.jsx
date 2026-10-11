@@ -265,63 +265,71 @@ function App() {
   const isAnyDeviceConnected = deviceStatus.connected;
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
-      {/* Electron Title Bar Drag Area */}
-      <div className="fixed top-0 left-0 right-0 h-[35px] drag-region z-50 pointer-events-none" />
-
-      {/* LEFT SIDEBAR */}
-      <div className="w-[220px] bg-white border-r border-slate-200 flex flex-col pt-10 pb-4 justify-between h-full relative z-10 shadow-sm no-drag-region shrink-0">
-        <div className="px-5 flex flex-col gap-5">
-          <div className="flex items-center gap-2 text-green-600">
-            <MonitorSmartphone className="w-5 h-5" />
-            <h1 className="font-bold text-[14px] tracking-tight uppercase text-slate-900">
-              <span className="text-green-600">Driver</span> Hub
-            </h1>
+    <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
+      {/* 1. TOP UNIFIED TITLE BAR (Full window width, matching reference design) */}
+      <header className="h-[38px] w-full bg-white border-b border-slate-200/90 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40">
+        <div className="flex items-center gap-2.5 no-drag-region">
+          <div className="w-5 h-5 rounded-md border border-emerald-500/80 flex items-center justify-center text-emerald-600 bg-emerald-50/50">
+            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
           </div>
+          <span className="font-bold text-[13px] tracking-wide text-slate-900 uppercase">
+            Driver <span className="text-emerald-600">Hub</span>
+          </span>
+          <span className="text-slate-300 font-light">|</span>
+          <span className="text-[12px] text-slate-500 font-normal">
+            All-in-one Android driver installer
+          </span>
+        </div>
+        {/* Windows Titlebar Controls Placement Area */}
+        <div className="w-28 h-full" />
+      </header>
 
-          <nav className="flex flex-col gap-1 mt-1">
+      {/* 2. BODY CONTAINER BELOW TITLE BAR */}
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-38px)] w-full">
+        {/* LEFT SIDEBAR */}
+        <div className="w-[220px] bg-white border-r border-slate-200 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-sm no-drag-region shrink-0">
+          <nav className="flex flex-col gap-1">
             <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
             <NavItem icon={Download} label="Drivers" active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
             <NavItem icon={ChevronRight} label="Platform Tools" active={activeTab === 'Platform Tools'} onClick={() => setActiveTab('Platform Tools')} />
             <NavItem icon={MonitorSmartphone} label="Device Monitor" active={activeTab === 'Device Monitor'} onClick={() => setActiveTab('Device Monitor')} />
             <NavItem icon={Settings} label="Settings" active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
           </nav>
-        </div>
 
-        <div className="px-5">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed">
-            <div className="font-semibold text-slate-700 mb-0.5">Windows 10 / 11</div>
-            Run as Administrator to install drivers.
+          <div>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed">
+              <div className="font-semibold text-slate-700 mb-0.5">Windows 10 / 11</div>
+              Run as Administrator to install drivers.
+            </div>
           </div>
         </div>
-      </div>
 
-      {activeTab === 'Device Monitor' ? (
-        <DeviceMonitorPage
-          deviceStatus={deviceStatus}
-          onRefresh={handleScan}
-          onNavigateToDrivers={() => setActiveTab('Dashboard')}
-          onRebootBootloader={() => {
-            addLog('info', 'Command triggered: adb reboot bootloader');
-          }}
-          onRebootRecovery={() => {
-            addLog('info', 'Command triggered: adb reboot recovery');
-          }}
-          onOpenShell={() => {
-            addLog('info', 'Command triggered: adb shell');
-          }}
-          activityLogs={logs.map(l => ({
-            time: l.time,
-            text: l.text,
-            highlight: l.type === 'success'
-          }))}
-          isRefreshing={isScanning}
-        />
-      ) : (
-        <>
-          {/* MAIN CONTENT AREA */}
-          <div className="flex-1 flex flex-col h-full bg-slate-50 relative pt-9 no-drag-region overflow-y-auto min-w-[500px]">
-        <div className="max-w-4xl w-full mx-auto px-6 py-4 flex-1 flex flex-col gap-5">
+        {activeTab === 'Device Monitor' ? (
+          <DeviceMonitorPage
+            deviceStatus={deviceStatus}
+            onRefresh={handleScan}
+            onNavigateToDrivers={() => setActiveTab('Dashboard')}
+            onRebootBootloader={() => {
+              addLog('info', 'Command triggered: adb reboot bootloader');
+            }}
+            onRebootRecovery={() => {
+              addLog('info', 'Command triggered: adb reboot recovery');
+            }}
+            onOpenShell={() => {
+              addLog('info', 'Command triggered: adb shell');
+            }}
+            activityLogs={logs.map(l => ({
+              time: l.time,
+              text: l.text,
+              highlight: l.type === 'success'
+            }))}
+            isRefreshing={isScanning}
+          />
+        ) : (
+          <>
+            {/* MAIN CONTENT AREA */}
+            <div className="flex-1 flex flex-col h-full bg-slate-50 relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
+              <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
           
           {/* Header Row */}
           <div className="flex justify-between items-end mb-1">
@@ -475,7 +483,7 @@ function App() {
       </div>
 
       {/* RIGHT SIDEBAR: DEVICE MONITOR (Restored Halo Rings, USB Cable, and Perfect Alignment) */}
-      <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-10 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
+      <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-5 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
           <span className="flex h-2 w-2 relative">
@@ -550,6 +558,7 @@ function App() {
         </>
       )}
 
+      </div>
     </div>
   );
 }

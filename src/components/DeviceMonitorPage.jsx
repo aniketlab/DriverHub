@@ -32,7 +32,7 @@ export function DeviceMonitorPage({
   const isConnected = deviceStatus?.connected;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-7 select-none">
+    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none">
       <div className="max-w-6xl w-full mx-auto flex flex-col gap-6">
         
         {/* TOP HEADER */}
