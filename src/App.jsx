@@ -509,9 +509,8 @@ function DriverCard({
           {progress > 0 && progress <= 100 && (
             <div className="mt-3.5 w-full animate-fadeIn transition-all">
               <div className="flex justify-between items-center text-[11px] mb-1.5">
-                <span className="text-slate-600 font-medium truncate max-w-[80%] flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block shrink-0" />
-                  <span className="truncate">{progressMessage || 'Installing...'}</span>
+                <span className="text-slate-600 font-medium truncate max-w-[80%]">
+                  {progressMessage || 'Installing...'}
                 </span>
                 <span className="text-emerald-700 font-bold tabular-nums text-[12px] shrink-0">{progress}%</span>
               </div>
