@@ -84,107 +84,118 @@ export function DeviceMonitorPage({
               /* --- DISCONNECTED HERO STATE --- */
               <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
                 
-                {/* Visual Centerpiece (Heartbeat / Sonic Wave Pulse + Phone) */}
+                {/* Modern Hardware Device & Floating USB-C Connection Centerpiece */}
                 <div className="relative w-52 h-52 flex items-center justify-center mb-6">
-                  <svg viewBox="0 0 200 200" className="w-full h-full">
+                  {/* Diffuse Ambient Backdrop Glow */}
+                  <div className="absolute w-36 h-36 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+
+                  <svg viewBox="0 0 200 200" className="w-full h-full relative z-10 drop-shadow-xs">
                     <defs>
-                      {/* Organic Heartbeat Radial Mesh Glow */}
-                      <radialGradient id="dharkanGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
-                        <stop offset="45%" stopColor="#10B981" stopOpacity="0.12" />
-                        <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-                      </radialGradient>
+                      {/* Deep OLED Glass Gradient */}
+                      <linearGradient id="oledGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#1E293B" />
+                        <stop offset="100%" stopColor="#0B132B" />
+                      </linearGradient>
+
+                      {/* Titanium Chassis Rim Gradient */}
+                      <linearGradient id="chassisRim" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#475569" />
+                        <stop offset="100%" stopColor="#1E293B" />
+                      </linearGradient>
+
+                      {/* Screen Gloss Reflection */}
+                      <linearGradient id="screenGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.08" />
+                        <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.02" />
+                        <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                      </linearGradient>
                     </defs>
 
-                    {/* Outer Boundary Ring */}
-                    <circle cx="100" cy="95" r="82" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
+                    {/* Faint Architectural Guide Orbit Rings */}
+                    <circle cx="100" cy="88" r="76" fill="none" stroke="#F1F5F9" strokeWidth="1.2" />
+                    <circle cx="100" cy="88" r="58" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="4 4" opacity="0.7" />
+
+                    {/* Gentle Expanding Signal Wave (Clean & Faint) */}
+                    <circle cx="100" cy="88" r="44" fill="none" stroke="#10B981" strokeWidth="1">
+                      <animate attributeName="r" values="44; 76" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeOpacity" values="0.35; 0" dur="3s" repeatCount="indefinite" />
+                    </circle>
+
+                    {/* ========================================= */}
+                    {/* 1. PREMIUM SMARTPHONE HARDWARE MOCKUP     */}
+                    {/* ========================================= */}
+                    {/* Titanium Outer Chassis */}
+                    <rect x="78" y="44" width="44" height="80" rx="10" fill="#0F172A" stroke="url(#chassisRim)" strokeWidth="1.5" />
                     
-                    {/* Middle Subtle Dashed Ring */}
-                    <circle cx="100" cy="95" r="62" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="4 4" />
+                    {/* Bezel Ring */}
+                    <rect x="80" y="46" width="40" height="76" rx="8" fill="#020617" />
 
-                    {/* 1. Organic Heartbeat Core Halo (Lub-Dub Rhythmic Breathing) */}
-                    <circle cx="100" cy="95" r="44" fill="url(#dharkanGlow)">
-                      <animate 
-                        attributeName="r" 
-                        values="36; 52; 40; 56; 36" 
-                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
-                        dur="2.4s" 
-                        repeatCount="indefinite" 
-                      />
-                      <animate 
-                        attributeName="opacity" 
-                        values="0.35; 0.9; 0.45; 1; 0.35" 
-                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
-                        dur="2.4s" 
-                        repeatCount="indefinite" 
-                      />
-                    </circle>
-
-                    {/* 2. Expanding Heartbeat Ripple Waves ("Dheere dheere bada hota hai") */}
-                    {/* Ripple Wave 1 */}
-                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
-                      <animate attributeName="r" values="30; 82" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeOpacity" values="0.7; 0" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
-                    </circle>
-
-                    {/* Ripple Wave 2 (Staggered 1s) */}
-                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
-                      <animate attributeName="r" values="30; 82" begin="1s" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeOpacity" values="0.7; 0" begin="1s" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
-                    </circle>
-
-                    {/* Ripple Wave 3 (Staggered 2s) */}
-                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
-                      <animate attributeName="r" values="30; 82" begin="2s" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeOpacity" values="0.7; 0" begin="2s" dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
-                    </circle>
-
-                    {/* 3. Phone Chassis (Elevated, centered at 100, 95) */}
-                    <rect x="83" y="60" width="34" height="66" rx="8" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.8" />
+                    {/* OLED Glass Display */}
+                    <rect x="81" y="47" width="38" height="74" rx="7" fill="url(#oledGlass)" />
                     
-                    {/* OLED Screen with gentle green ambient tint */}
-                    <rect x="86.5" y="64" width="27" height="58" rx="5" fill="#F0FDF4" />
+                    {/* Gloss Reflection Overlay */}
+                    <rect x="81" y="47" width="38" height="74" rx="7" fill="url(#screenGloss)" />
 
-                    {/* Speaker Notch */}
-                    <rect x="94" y="62" width="12" height="1.8" rx="0.9" fill="#059669" />
+                    {/* Dynamic Island / Speaker */}
+                    <rect x="94" y="50" width="12" height="2.2" rx="1.1" fill="#000000" />
+                    <circle cx="100" cy="51.1" r="0.75" fill="#334155" />
 
-                    {/* Heartbeat EKG Pulse Wave inside screen ("Dharkan" ECG line) */}
-                    <path
-                      d="M 90 94 L 94 94 L 96 87 L 98 100 L 101 90 L 103 95 L 110 94"
-                      fill="none"
-                      stroke="#10B981"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <animate 
-                        attributeName="strokeOpacity" 
-                        values="0.3; 1; 0.45; 1; 0.3" 
-                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
-                        dur="2.4s" 
-                        repeatCount="indefinite" 
+                    {/* Glowing Universal USB Symbol inside screen */}
+                    <g opacity="0.9">
+                      <animate attributeName="opacity" values="0.5; 0.95; 0.5" dur="2.4s" repeatCount="indefinite" />
+                      {/* Main Stem */}
+                      <line x1="100" y1="72" x2="100" y2="92" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" />
+                      {/* Top Arrowhead */}
+                      <path d="M 97.5 75 L 100 71 L 102.5 75 Z" fill="#10B981" />
+                      {/* Left Branch */}
+                      <path d="M 100 84 L 95 80 L 95 76" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                      <rect x="93.5" y="74.5" width="3" height="3" fill="#10B981" rx="0.5" />
+                      {/* Right Branch */}
+                      <path d="M 100 86 L 105 82 L 105 78" fill="none" stroke="#10B981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="105" cy="77" r="1.5" fill="#10B981" />
+                      {/* Bottom Anchor Circle */}
+                      <circle cx="100" cy="93" r="1.8" fill="#10B981" />
+                    </g>
+
+                    {/* Bottom Gesture Bar */}
+                    <rect x="94" y="115" width="12" height="1.2" rx="0.6" fill="#334155" opacity="0.6" />
+
+                    {/* USB-C Port Cutout on bottom bezel */}
+                    <rect x="96" y="123" width="8" height="1.8" rx="0.9" fill="#020617" stroke="#334155" strokeWidth="0.5" />
+
+                    {/* ========================================= */}
+                    {/* 2. FLOATING MAGNETIC USB-C CABLE ASSEMBLY */}
+                    {/* ========================================= */}
+                    <g>
+                      {/* Smooth Vertical Magnetic Hovering Animation */}
+                      <animateTransform
+                        attributeName="transform"
+                        type="translate"
+                        values="0,0; 0,-5; 0,0"
+                        dur="2.4s"
+                        repeatCount="indefinite"
                       />
-                    </path>
 
-                    {/* Tiny Breathing Heartbeat Indicator Dot inside screen */}
-                    <circle cx="100" cy="74" r="2" fill="#10B981">
-                      <animate 
-                        attributeName="opacity" 
-                        values="0.4; 1; 0.5; 1; 0.4" 
-                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
-                        dur="2.4s" 
-                        repeatCount="indefinite" 
-                      />
-                    </circle>
+                      {/* Magnetic Energy Connection Beam between Port and Plug */}
+                      <line x1="100" y1="125" x2="100" y2="133" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2 2" opacity="0.85">
+                        <animate attributeName="strokeDashoffset" values="0; 8" dur="0.8s" repeatCount="indefinite" />
+                      </line>
 
-                    {/* 4. Waiting USB Cable (Flowing dashed pulse into connector) */}
-                    <line x1="100" y1="126" x2="100" y2="142" stroke="#10B981" strokeWidth="1.8" strokeDasharray="3 3">
-                      <animate attributeName="strokeDashoffset" values="0; 12" dur="1.2s" repeatCount="indefinite" />
-                    </line>
-                    <rect x="97" y="142" width="6" height="7" rx="1.5" fill="#059669" />
+                      {/* USB-C Plug Head: Anodized Metal Connector Pin */}
+                      <rect x="97" y="133" width="6" height="5" rx="1.2" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="0.8" />
+                      <line x1="98.5" y1="135.5" x2="101.5" y2="135.5" stroke="#64748B" strokeWidth="0.8" />
+
+                      {/* Matte Dark Collar Shell */}
+                      <rect x="94.5" y="138" width="11" height="8" rx="2" fill="#1E293B" stroke="#334155" strokeWidth="0.8" />
+                      {/* Green Accent Ring on Shell */}
+                      <rect x="97" y="141" width="6" height="1.2" rx="0.6" fill="#10B981" opacity="0.9" />
+
+                      {/* Strain Relief Boot */}
+                      <rect x="97" y="146" width="6" height="4" rx="1" fill="#0F172A" />
+
+                      {/* Cable Body Cord */}
+                      <line x1="100" y1="150" x2="100" y2="172" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+                    </g>
                   </svg>
                 </div>
 

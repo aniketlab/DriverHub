@@ -748,90 +748,92 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
   if (!connected) {
     return (
       <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
-        <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px]">
+        <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10 drop-shadow-xs">
           <defs>
-            {/* Organic Heartbeat Radial Glow */}
-            <radialGradient id="sidebarDharkanGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
-              <stop offset="45%" stopColor="#10B981" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-            </radialGradient>
+            <linearGradient id="sidebarOledGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1E293B" />
+              <stop offset="100%" stopColor="#0B132B" />
+            </linearGradient>
+
+            <linearGradient id="sidebarChassisRim" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#475569" />
+              <stop offset="100%" stopColor="#1E293B" />
+            </linearGradient>
+
+            <linearGradient id="sidebarScreenGloss" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.08" />
+              <stop offset="40%" stopColor="#FFFFFF" stopOpacity="0.02" />
+              <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+            </linearGradient>
           </defs>
 
           {/* Symmetrical Guide Rings */}
-          <circle cx="80" cy="75" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
-          <circle cx="80" cy="75" r="46" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="3 3" />
+          <circle cx="80" cy="70" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.2" />
+          <circle cx="80" cy="70" r="46" fill="none" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3 3" opacity="0.7" />
 
-          {/* 1. Organic Heartbeat Core Halo (Lub-Dub Rhythmic Breathing) */}
-          <circle cx="80" cy="75" r="32" fill="url(#sidebarDharkanGlow)">
-            <animate 
-              attributeName="r" 
-              values="26; 38; 29; 42; 26" 
-              keyTimes="0; 0.22; 0.38; 0.58; 1" 
-              dur="2.4s" 
-              repeatCount="indefinite" 
-            />
-            <animate 
-              attributeName="opacity" 
-              values="0.35; 0.9; 0.45; 1; 0.35" 
-              keyTimes="0; 0.22; 0.38; 0.58; 1" 
-              dur="2.4s" 
-              repeatCount="indefinite" 
-            />
+          {/* Gentle Expanding Signal Wave */}
+          <circle cx="80" cy="70" r="34" fill="none" stroke="#10B981" strokeWidth="1">
+            <animate attributeName="r" values="34; 60" dur="3s" repeatCount="indefinite" />
+            <animate attributeName="strokeOpacity" values="0.35; 0" dur="3s" repeatCount="indefinite" />
           </circle>
 
-          {/* 2. Expanding Heartbeat Ripple Waves ("Dheere dheere bada hota hai") */}
-          {/* Ripple Wave 1 */}
-          <circle cx="80" cy="75" r="22" fill="none" stroke="#10B981">
-            <animate attributeName="r" values="22; 60" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeOpacity" values="0.7; 0" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeWidth" values="1.6; 0.6" dur="3s" repeatCount="indefinite" />
-          </circle>
-
-          {/* Ripple Wave 2 (Staggered 1s) */}
-          <circle cx="80" cy="75" r="22" fill="none" stroke="#10B981">
-            <animate attributeName="r" values="22; 60" begin="1s" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeOpacity" values="0.7; 0" begin="1s" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeWidth" values="1.6; 0.6" dur="3s" repeatCount="indefinite" />
-          </circle>
-
-          {/* Ripple Wave 3 (Staggered 2s) */}
-          <circle cx="80" cy="75" r="22" fill="none" stroke="#10B981">
-            <animate attributeName="r" values="22; 60" begin="2s" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeOpacity" values="0.7; 0" begin="2s" dur="3s" repeatCount="indefinite" />
-            <animate attributeName="strokeWidth" values="1.6; 0.6" dur="3s" repeatCount="indefinite" />
-          </circle>
-
-          {/* 3. Phone Chassis (Centered at 80, 75) */}
-          <rect x="66" y="49" width="28" height="52" rx="6" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.6" />
-          <rect x="69" y="53" width="22" height="44" rx="3.5" fill="#F0FDF4" />
+          {/* 1. SMARTPHONE HARDWARE MOCKUP */}
+          {/* Titanium Outer Chassis */}
+          <rect x="63" y="34" width="34" height="64" rx="8" fill="#0F172A" stroke="url(#sidebarChassisRim)" strokeWidth="1.2" />
           
-          {/* Speaker Slit */}
-          <rect x="76" y="51" width="8" height="1.2" rx="0.6" fill="#059669" />
+          {/* OLED Glass Display */}
+          <rect x="65" y="36.5" width="30" height="59" rx="5.5" fill="url(#sidebarOledGlass)" />
+          <rect x="65" y="36.5" width="30" height="59" rx="5.5" fill="url(#sidebarScreenGloss)" />
 
-          {/* Heartbeat EKG Pulse Line inside screen */}
-          <path
-            d="M 72 75 L 75 75 L 77 69 L 79 81 L 81 72 L 83 76 L 88 75"
-            fill="none"
-            stroke="#10B981"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <animate 
-              attributeName="strokeOpacity" 
-              values="0.3; 1; 0.45; 1; 0.3" 
-              keyTimes="0; 0.22; 0.38; 0.58; 1" 
-              dur="2.4s" 
-              repeatCount="indefinite" 
+          {/* Dynamic Island / Speaker */}
+          <rect x="75" y="38.5" width="10" height="1.8" rx="0.9" fill="#000000" />
+          <circle cx="80" cy="39.4" r="0.6" fill="#334155" />
+
+          {/* Glowing Universal USB Symbol inside screen */}
+          <g opacity="0.9">
+            <animate attributeName="opacity" values="0.5; 0.95; 0.5" dur="2.4s" repeatCount="indefinite" />
+            <line x1="80" y1="56" x2="80" y2="73" stroke="#10B981" strokeWidth="1.3" strokeLinecap="round" />
+            <path d="M 78 58.5 L 80 55 L 82 58.5 Z" fill="#10B981" />
+            <path d="M 80 66 L 76 62.5 L 76 59" fill="none" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+            <rect x="74.8" y="58" width="2.4" height="2.4" fill="#10B981" rx="0.4" />
+            <path d="M 80 68 L 84 64.5 L 84 61" fill="none" stroke="#10B981" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="84" cy="60" r="1.2" fill="#10B981" />
+            <circle cx="80" cy="74" r="1.4" fill="#10B981" />
+          </g>
+
+          {/* Bottom Gesture Bar */}
+          <rect x="75" y="91" width="10" height="1" rx="0.5" fill="#334155" opacity="0.6" />
+
+          {/* USB-C Port Cutout on bottom bezel */}
+          <rect x="77" y="97.5" width="6" height="1.5" rx="0.75" fill="#020617" stroke="#334155" strokeWidth="0.5" />
+
+          {/* 2. FLOATING MAGNETIC USB-C CABLE */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              values="0,0; 0,-4; 0,0"
+              dur="2.4s"
+              repeatCount="indefinite"
             />
-          </path>
 
-          {/* 4. Waiting USB Cable (Flowing pulse into connector) */}
-          <line x1="80" y1="101" x2="80" y2="114" stroke="#10B981" strokeWidth="1.6" strokeDasharray="2.5 2.5">
-            <animate attributeName="strokeDashoffset" values="0; 10" dur="1.2s" repeatCount="indefinite" />
-          </line>
-          <rect x="78" y="114" width="4" height="5" rx="1" fill="#059669" />
+            {/* Connection Energy Beam */}
+            <line x1="80" y1="99" x2="80" y2="106" stroke="#10B981" strokeWidth="1.2" strokeDasharray="1.5 1.5" opacity="0.85">
+              <animate attributeName="strokeDashoffset" values="0; 6" dur="0.8s" repeatCount="indefinite" />
+            </line>
+
+            {/* Metal Plug Pin */}
+            <rect x="77.5" y="106" width="5" height="4" rx="1" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="0.6" />
+            <line x1="78.8" y1="108" x2="81.2" y2="108" stroke="#64748B" strokeWidth="0.6" />
+
+            {/* Matte Shell */}
+            <rect x="75.5" y="110" width="9" height="6.5" rx="1.5" fill="#1E293B" stroke="#334155" strokeWidth="0.6" />
+            <rect x="77.5" y="112.5" width="5" height="1" rx="0.5" fill="#10B981" opacity="0.9" />
+
+            {/* Boot & Cable */}
+            <rect x="78" y="116.5" width="4" height="3" rx="0.8" fill="#0F172A" />
+            <line x1="80" y1="119.5" x2="80" y2="138" stroke="#475569" strokeWidth="2.2" strokeLinecap="round" />
+          </g>
         </svg>
       </div>
     );
