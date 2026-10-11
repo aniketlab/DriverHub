@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
-import { installAdb } from './services/installerService.js';
+import { installAdb, installGoogleDriver, installMtkDriver } from './services/installerService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -125,6 +125,38 @@ function setupIpc() {
           message: `ADB installation failed: ${err.message}`
         });
         results.adb = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('google')) {
+      try {
+        const googleResult = await installGoogleDriver(sender);
+        results.google = googleResult;
+      } catch (err) {
+        console.error('Google driver install error:', err);
+        sender.send('install-step', {
+          target: 'google',
+          percent: 0,
+          error: true,
+          message: `Google driver installation failed: ${err.message}`
+        });
+        results.google = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('mtk')) {
+      try {
+        const mtkResult = await installMtkDriver(sender);
+        results.mtk = mtkResult;
+      } catch (err) {
+        console.error('MTK driver install error:', err);
+        sender.send('install-step', {
+          target: 'mtk',
+          percent: 0,
+          error: true,
+          message: `MTK driver installation failed: ${err.message}`
+        });
+        results.mtk = { success: false, error: err.message };
       }
     }
 

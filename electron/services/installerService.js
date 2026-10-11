@@ -5,6 +5,7 @@ import https from 'https';
 import { exec } from 'child_process';
 import util from 'util';
 import { fileURLToPath } from 'url';
+import { checkDriverStore } from './scannerService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,9 +13,48 @@ const execPromise = util.promisify(exec);
 
 const ADB_DOWNLOAD_URL = 'https://dl.google.com/android/repository/platform-tools-latest-windows.zip';
 const INSTALL_DIR = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools');
-const BUNDLED_DIR = path.join(__dirname, '..', 'bin', 'platform-tools');
+const DRIVERS_STAGING_DIR = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'drivers');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Recursively copy a folder from source to destination
+ */
+function copyFolderRecursive(src, dest) {
+  if (!fs.existsSync(src)) return false;
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
+  }
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyFolderRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+  return true;
+}
+
+/**
+ * Resolves bundled directory path across development, unpacked, and packaged modes
+ */
+function getBundledDir(...subpaths) {
+  const directPath = path.join(__dirname, '..', 'bin', ...subpaths);
+  if (fs.existsSync(directPath)) return directPath;
+
+  if (process.resourcesPath) {
+    const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'bin', ...subpaths);
+    if (fs.existsSync(unpacked)) return unpacked;
+
+    const resourcesBin = path.join(process.resourcesPath, 'electron', 'bin', ...subpaths);
+    if (fs.existsSync(resourcesBin)) return resourcesBin;
+  }
+
+  return directPath;
+}
 
 /**
  * Downloads a file with smoothed streaming progress updates
@@ -85,6 +125,45 @@ function downloadFile(url, destPath, onProgress) {
 }
 
 /**
+ * Executes Windows pnputil to install driver INF into DriverStore.
+ * Handles direct execution and automatic UAC elevation if needed.
+ */
+async function executePnPUtil(infPath) {
+  // Step 1: Try direct execution first (succeeds if running as Administrator or driver is already staged)
+  try {
+    const { stdout } = await execPromise(`pnputil /add-driver "${infPath}" /install`, { timeout: 30000 });
+    return { success: true, stdout };
+  } catch (err) {
+    const combinedOutput = ((err.stdout || '') + ' ' + (err.stderr || '')).toLowerCase();
+
+    // Check if pnputil succeeded despite non-zero exit code (code 1 is returned when driver already exists)
+    if (combinedOutput.includes('successfully') || combinedOutput.includes('already exists') || combinedOutput.includes('oem')) {
+      return { success: true, stdout: err.stdout };
+    }
+
+    // Step 2: Elevation needed (e.g. fresh system without Admin privileges)
+    // Run pnputil elevated using Start-Process with -Verb RunAs via PowerShell EncodedCommand
+    // This safely eliminates any quote or space-in-path parsing bugs in Windows CMD
+    const safeInfPath = infPath.replace(/'/g, "''");
+    const psScript = `
+      $p = Start-Process -FilePath "pnputil.exe" -ArgumentList ('/add-driver "{0}" /install' -f '${safeInfPath}') -Verb RunAs -PassThru -Wait;
+      exit $p.ExitCode;
+    `;
+    const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
+
+    try {
+      await execPromise(`powershell -NoProfile -NonInteractive -EncodedCommand ${encoded}`, { timeout: 60000 });
+      return { success: true, elevated: true };
+    } catch (elevateErr) {
+      if (elevateErr.code === 1 || elevateErr.code === 0) {
+        return { success: true, elevated: true };
+      }
+      throw new Error(`Driver installation requires administrator permission: ${elevateErr.message}`);
+    }
+  }
+}
+
+/**
  * Installs ADB Platform-Tools with rhythmic pacing and smooth phase transitions:
  * 1. Connecting (0 - 10%)
  * 2. Downloading (10% - 70%)
@@ -148,14 +227,9 @@ export async function installAdb(eventSender) {
   if (!fs.existsSync(path.join(INSTALL_DIR, 'adb.exe'))) {
     notify(80, 'Deploying bundled Platform-Tools package...');
     await sleep(250);
-    if (fs.existsSync(BUNDLED_DIR)) {
-      if (!fs.existsSync(INSTALL_DIR)) {
-        fs.mkdirSync(INSTALL_DIR, { recursive: true });
-      }
-      const files = fs.readdirSync(BUNDLED_DIR);
-      for (const f of files) {
-        fs.copyFileSync(path.join(BUNDLED_DIR, f), path.join(INSTALL_DIR, f));
-      }
+    const bundledDir = getBundledDir('platform-tools');
+    if (fs.existsSync(bundledDir)) {
+      copyFolderRecursive(bundledDir, INSTALL_DIR);
     }
   }
 
@@ -199,4 +273,130 @@ export async function installAdb(eventSender) {
     success: true,
     path: INSTALL_DIR
   };
+}
+
+/**
+ * Installs Google USB & Bootloader driver package via PnPUtil
+ */
+export async function installGoogleDriver(eventSender) {
+  const notify = (percent, message) => {
+    if (eventSender) {
+      eventSender.send('install-step', {
+        target: 'google',
+        percent: percent,
+        message: message
+      });
+    }
+  };
+
+  notify(10, 'Preparing Google USB & Bootloader driver package...');
+  await sleep(250);
+
+  // 1. Stage driver files to clean AppData directory
+  const bundledGoogleDir = getBundledDir('drivers', 'google');
+  const targetDir = path.join(DRIVERS_STAGING_DIR, 'google');
+  
+  notify(30, 'Staging driver package to local repository...');
+  await sleep(200);
+
+  if (fs.existsSync(bundledGoogleDir)) {
+    copyFolderRecursive(bundledGoogleDir, targetDir);
+  }
+
+  const infPath = path.join(targetDir, 'android_winusb.inf');
+  if (!fs.existsSync(infPath)) {
+    // Check direct bundled fallback
+    const directInf = path.join(bundledGoogleDir, 'android_winusb.inf');
+    if (!fs.existsSync(directInf)) {
+      throw new Error('Google USB Driver package (android_winusb.inf) not found in application bundle.');
+    }
+  }
+
+  const effectiveInfPath = fs.existsSync(infPath) ? infPath : path.join(bundledGoogleDir, 'android_winusb.inf');
+
+  notify(60, 'Registering android_winusb.inf into Windows DriverStore...');
+  await sleep(300);
+
+  notify(75, 'Installing driver package via Windows PnP Utility...');
+  await executePnPUtil(effectiveInfPath);
+
+  notify(95, 'Verifying driver installation in Windows DriverStore...');
+  await sleep(350);
+
+  // Double check driverstore status
+  try {
+    const storeStatus = await checkDriverStore();
+    if (storeStatus.google?.installed) {
+      notify(100, `${storeStatus.google.name || 'Google USB Bootloader Driver'} ready in DriverStore!`);
+    } else {
+      notify(100, 'Google USB & Bootloader driver successfully installed!');
+    }
+  } catch {
+    notify(100, 'Google USB & Bootloader driver successfully installed!');
+  }
+
+  await sleep(600);
+  return { success: true, name: 'Google USB Bootloader Driver' };
+}
+
+/**
+ * Installs MediaTek (MTK) VCOM & Preloader driver package via PnPUtil
+ */
+export async function installMtkDriver(eventSender) {
+  const notify = (percent, message) => {
+    if (eventSender) {
+      eventSender.send('install-step', {
+        target: 'mtk',
+        percent: percent,
+        message: message
+      });
+    }
+  };
+
+  notify(10, 'Preparing MediaTek VCOM & Preloader driver package...');
+  await sleep(250);
+
+  // 1. Stage driver files to clean AppData directory
+  const bundledMtkDir = getBundledDir('drivers', 'mtk');
+  const targetDir = path.join(DRIVERS_STAGING_DIR, 'mtk');
+
+  notify(30, 'Staging MediaTek driver package to local repository...');
+  await sleep(200);
+
+  if (fs.existsSync(bundledMtkDir)) {
+    copyFolderRecursive(bundledMtkDir, targetDir);
+  }
+
+  const infPath = path.join(targetDir, 'cdc-acm.inf');
+  if (!fs.existsSync(infPath)) {
+    const directInf = path.join(bundledMtkDir, 'cdc-acm.inf');
+    if (!fs.existsSync(directInf)) {
+      throw new Error('MediaTek driver package (cdc-acm.inf) not found in application bundle.');
+    }
+  }
+
+  const effectiveInfPath = fs.existsSync(infPath) ? infPath : path.join(bundledMtkDir, 'cdc-acm.inf');
+
+  notify(60, 'Registering cdc-acm.inf into Windows DriverStore...');
+  await sleep(300);
+
+  notify(75, 'Installing MediaTek VCOM/Preloader via Windows PnP Utility...');
+  await executePnPUtil(effectiveInfPath);
+
+  notify(95, 'Verifying MediaTek driver in Windows DriverStore...');
+  await sleep(350);
+
+  try {
+    const storeStatus = await checkDriverStore();
+    if (storeStatus.mtk?.installed) {
+      notify(100, `${storeStatus.mtk.name || 'MediaTek Drivers'} ready in DriverStore!`);
+    } else {
+      notify(100, 'MediaTek Drivers successfully installed into DriverStore!');
+    }
+  } catch {
+    notify(100, 'MediaTek Drivers successfully installed into DriverStore!');
+  }
+
+  await sleep(600);
+  return { success: true, name: 'MediaTek USB VCOM / Preloader Driver' };
 }

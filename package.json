@@ -22,6 +22,10 @@
       "dist/**/*",
       "electron/**/*"
     ],
+    "asarUnpack": [
+      "electron/bin/**/*",
+      "electron/services/detectDevices.ps1"
+    ],
     "win": {
       "target": "nsis"
     }

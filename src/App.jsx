@@ -48,7 +48,9 @@ function App() {
 
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState({
-    adb: { percent: 0, message: '' }
+    adb: { percent: 0, message: '' },
+    google: { percent: 0, message: '' },
+    mtk: { percent: 0, message: '' }
   });
 
   const prevDeviceRef = useRef({ adb: false, fastboot: false, mtk: false });
@@ -140,7 +142,7 @@ function App() {
           addLog('error', step.message);
         } else if (step.percent === 100) {
           addLog('success', step.message);
-        } else if (step.percent === 5 || step.percent === 10 || step.percent === 72 || step.percent === 75 || step.percent === 85) {
+        } else if (step.percent === 5 || step.percent === 10 || step.percent === 30 || step.percent === 60 || step.percent === 72 || step.percent === 75 || step.percent === 88 || step.percent === 95) {
           addLog('info', step.message);
         }
       });
@@ -195,6 +197,30 @@ function App() {
         }));
         addLog('success', `ADB Platform-Tools ready at: ${results.adb.path}`);
         addLog('success', 'Windows User PATH updated. ADB & Fastboot commands are globally available.');
+      }
+      if (results.google && results.google.success) {
+        setDriverStates(prev => ({
+          ...prev,
+          google: {
+            ...prev.google,
+            scanned: true,
+            installed: true,
+            name: results.google.name || 'Google USB Bootloader Driver'
+          }
+        }));
+        addLog('success', `${results.google.name || 'Google USB Bootloader Driver'} installed into Windows DriverStore.`);
+      }
+      if (results.mtk && results.mtk.success) {
+        setDriverStates(prev => ({
+          ...prev,
+          mtk: {
+            ...prev.mtk,
+            scanned: true,
+            installed: true,
+            name: results.mtk.name || 'MediaTek USB VCOM / Preloader Driver'
+          }
+        }));
+        addLog('success', `${results.mtk.name || 'MediaTek Drivers'} installed into Windows DriverStore.`);
       }
       // Hold 100% completion state for a smooth visual transition
       await new Promise(r => setTimeout(r, 600));
@@ -267,7 +293,7 @@ function App() {
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 active:scale-[0.97] text-white font-medium rounded-lg shadow-sm transition-all duration-200 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
                 {isInstalling && <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />}
                 {isInstalling 
-                  ? `Installing (${installProgress.adb?.percent || 0}%)...` 
+                  ? 'Installing...' 
                   : `Install selected (${selectedCount})`}
               </button>
             </div>
@@ -315,15 +341,19 @@ function App() {
               desc="Detects your phone in ADB and Fastboot mode"
               tags={['android_winusb', 'Fastboot']}
               isScanning={driverStates.google.scanning}
+              progress={isInstalling && selectedDrivers.google ? installProgress.google?.percent : 0}
+              progressMessage={installProgress.google?.message}
               status={
                 driverStates.google.scanning
                   ? 'Scanning...'
-                  : driverStates.google.scanned
-                    ? (driverStates.google.installed ? 'Installed' : 'Not installed')
-                    : 'Not Scanned'
+                  : isInstalling && selectedDrivers.google && installProgress.google?.percent > 0 && installProgress.google?.percent < 100
+                    ? `Installing ${installProgress.google.percent}%`
+                    : driverStates.google.scanned
+                      ? (driverStates.google.installed ? 'Installed' : 'Not installed')
+                      : 'Not Scanned'
               }
               statusColor={
-                driverStates.google.scanning
+                driverStates.google.scanning || (isInstalling && selectedDrivers.google)
                   ? 'text-blue-600 bg-blue-50 border border-blue-200'
                   : driverStates.google.scanned
                     ? (driverStates.google.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
@@ -342,15 +372,19 @@ function App() {
               desc="For flashing and unbricking MTK devices"
               tags={['BROM mode', 'Preloader mode', 'VCOM']}
               isScanning={driverStates.mtk.scanning}
+              progress={isInstalling && selectedDrivers.mtk ? installProgress.mtk?.percent : 0}
+              progressMessage={installProgress.mtk?.message}
               status={
                 driverStates.mtk.scanning
                   ? 'Scanning...'
-                  : driverStates.mtk.scanned
-                    ? (driverStates.mtk.installed ? 'Installed' : 'Not installed')
-                    : 'Not Scanned'
+                  : isInstalling && selectedDrivers.mtk && installProgress.mtk?.percent > 0 && installProgress.mtk?.percent < 100
+                    ? `Installing ${installProgress.mtk.percent}%`
+                    : driverStates.mtk.scanned
+                      ? (driverStates.mtk.installed ? 'Installed' : 'Not installed')
+                      : 'Not Scanned'
               }
               statusColor={
-                driverStates.mtk.scanning
+                driverStates.mtk.scanning || (isInstalling && selectedDrivers.mtk)
                   ? 'text-blue-600 bg-blue-50 border border-blue-200'
                   : driverStates.mtk.scanned
                     ? (driverStates.mtk.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
