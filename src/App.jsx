@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { DeviceMonitorPage } from './components/DeviceMonitorPage';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -295,8 +296,31 @@ function App() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col h-full bg-slate-50 relative pt-9 no-drag-region overflow-y-auto min-w-[500px]">
+      {activeTab === 'Device Monitor' ? (
+        <DeviceMonitorPage
+          deviceStatus={deviceStatus}
+          onRefresh={handleScan}
+          onNavigateToDrivers={() => setActiveTab('Dashboard')}
+          onRebootBootloader={() => {
+            addLog('info', 'Command triggered: adb reboot bootloader');
+          }}
+          onRebootRecovery={() => {
+            addLog('info', 'Command triggered: adb reboot recovery');
+          }}
+          onOpenShell={() => {
+            addLog('info', 'Command triggered: adb shell');
+          }}
+          activityLogs={logs.map(l => ({
+            time: l.time,
+            text: l.text,
+            highlight: l.type === 'success'
+          }))}
+          isRefreshing={isScanning}
+        />
+      ) : (
+        <>
+          {/* MAIN CONTENT AREA */}
+          <div className="flex-1 flex flex-col h-full bg-slate-50 relative pt-9 no-drag-region overflow-y-auto min-w-[500px]">
         <div className="max-w-4xl w-full mx-auto px-6 py-4 flex-1 flex flex-col gap-5">
           
           {/* Header Row */}
@@ -523,6 +547,8 @@ function App() {
           />
         </div>
       </div>
+        </>
+      )}
 
     </div>
   );
