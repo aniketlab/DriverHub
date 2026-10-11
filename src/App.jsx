@@ -512,14 +512,8 @@ function DeviceMonitorVisual({ connected, mode, brand, model }) {
         {/* Camera Notch / Speaker */}
         <rect x="76" y="50.5" width="8" height="1.5" rx="0.75" fill="#064E3B" />
 
-        {/* Live Screen Radar Signal Dot */}
-        <circle cx="80" cy="70" r="7" fill="#059669" fillOpacity="0.3" />
-        <circle cx="80" cy="70" r="3.5" fill="#34D399" />
-
-        {/* Live Screen Mode Text */}
-        <text x="80" y="84" textAnchor="middle" fill="#6EE7B7" fontSize="5.5" fontFamily="monospace" fontWeight="600" letterSpacing="0.5">
-          {mode === 'Fastboot' ? 'FASTBOOT' : mode === 'ADB' ? 'ONLINE' : 'ACTIVE'}
-        </text>
+        {/* Clean Minimalist Gesture Bar */}
+        <rect x="76" y="94" width="8" height="1.2" rx="0.6" fill="#10B981" opacity="0.7" />
 
         {/* Connected USB-C Port & Cable */}
         <line x1="80" y1="104" x2="80" y2="114" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
