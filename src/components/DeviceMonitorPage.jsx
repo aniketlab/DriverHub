@@ -33,7 +33,7 @@ export function DeviceMonitorPage({
   const hasError = Boolean(deviceStatus?.driverError);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none">
+    <div className="flex-1 flex flex-col h-full bg-transparent overflow-y-auto no-drag-region p-6 pt-5 select-none relative z-10">
       <div className="max-w-6xl w-full mx-auto flex flex-col gap-6">
         
         {/* TOP HEADER */}
@@ -50,12 +50,12 @@ export function DeviceMonitorPage({
           <div className="flex items-center gap-2.5">
             {/* Status Pill Badge */}
             {isConnected ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50/80 backdrop-blur-md text-emerald-700 border border-emerald-200/80 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Connected</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200/80">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white/70 backdrop-blur-md text-slate-600 border border-slate-200/80 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-ping opacity-75" />
                 <span>Scanning USB ports</span>
               </div>
@@ -65,7 +65,7 @@ export function DeviceMonitorPage({
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="px-3.5 py-1.5 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 text-xs font-medium rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
               <span>Refresh</span>
@@ -79,7 +79,7 @@ export function DeviceMonitorPage({
           {/* ========================================================= */}
           {/* LEFT COLUMN: HERO DEVICE SHOWCASE & CONTROLS (Cols 1-8)   */}
           {/* ========================================================= */}
-          <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px]">
+          <div className="col-span-12 lg:col-span-8 glass-surface rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px] relative overflow-hidden">
             
             {!isConnected ? (
               /* --- DISCONNECTED HERO STATE --- */
@@ -163,13 +163,13 @@ export function DeviceMonitorPage({
 
                 {/* 3 Troubleshooting Hint Chips */}
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-white/70 hover:bg-white/90 backdrop-blur-sm text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs transition-colors">
                     Use a data cable
                   </span>
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-white/70 hover:bg-white/90 backdrop-blur-sm text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs transition-colors">
                     Try another USB port
                   </span>
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-white/70 hover:bg-white/90 backdrop-blur-sm text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/70 shadow-2xs transition-colors">
                     Unlock the screen
                   </span>
                 </div>
@@ -404,7 +404,7 @@ export function DeviceMonitorPage({
                 {/* Middle Section: Specs Grid (6 Cards, 3 cols x 2 rows) */}
                 <div className="grid grid-cols-3 gap-3 my-2">
                   {/* 1. Android OS */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">Android</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1">
                       {deviceStatus?.androidVersion || (deviceStatus?.adb ? 'Android 14' : deviceStatus?.mode || 'Android')}
@@ -412,20 +412,20 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 2. Battery */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">Battery</span>
                     <div className="mt-1">
                       <span className="text-[13px] font-bold text-slate-800">
                         {deviceStatus?.battery || (deviceStatus?.adb ? '82%' : 'Charging')}
                       </span>
-                      <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                      <div className="w-full bg-slate-200/80 h-1 rounded-full mt-1.5 overflow-hidden">
                         <div className="bg-emerald-500 h-full rounded-full" style={{ width: '82%' }} />
                       </div>
                     </div>
                   </div>
 
                   {/* 3. USB Speed */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">USB speed</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1">
                       {deviceStatus?.usbSpeed || 'USB 3.0'}
@@ -433,7 +433,7 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 4. Driver */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">Driver</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1 truncate">
                       {deviceStatus?.driverName || (deviceStatus?.fastboot ? 'Fastboot WinUSB' : 'Google USB')}
@@ -441,7 +441,7 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 5. Bootloader */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">Bootloader</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1">
                       {deviceStatus?.bootloaderState || (deviceStatus?.fastboot ? 'Unlocked' : 'Locked')}
@@ -449,7 +449,7 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 6. Storage */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="glass-subcard rounded-xl p-3 flex flex-col justify-between hover:bg-white/80 transition-colors">
                     <span className="text-[10px] text-slate-400 font-medium">Storage</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1">
                       {deviceStatus?.storage || '128 GB'}
@@ -458,24 +458,24 @@ export function DeviceMonitorPage({
                 </div>
 
                 {/* Bottom Section: Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-200/60">
                   <button
                     onClick={onRebootBootloader}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Reboot to bootloader
                   </button>
 
                   <button
                     onClick={onRebootRecovery}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Reboot to recovery
                   </button>
 
                   <button
                     onClick={onOpenShell}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 font-medium rounded-xl text-xs shadow-xs transition-all cursor-pointer"
                   >
                     Open ADB shell
                   </button>
@@ -553,7 +553,7 @@ export function DeviceMonitorPage({
                   ACTIVITY
                 </h4>
                 
-                <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px]">
+                <div className="glass-surface rounded-2xl p-4 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px]">
                   {activityLogs.length > 0 ? (
                     activityLogs.slice(-6).map((item, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 leading-relaxed">
@@ -599,12 +599,12 @@ export function DeviceMonitorPage({
 function ModeCard({ icon, iconBg, title, subtitle, active, hasError, isConnected }) {
   return (
     <div className={cn(
-      "border rounded-xl p-3 flex items-center justify-between transition-all duration-300 shadow-2xs",
+      "border rounded-2xl p-3.5 flex items-center justify-between transition-all duration-300 shadow-2xs",
       active
-        ? "bg-emerald-50/50 border-emerald-300 text-slate-900 shadow-xs"
+        ? "bg-emerald-50/70 backdrop-blur-md border-emerald-300/80 ring-1 ring-emerald-200/50 text-slate-900 shadow-xs"
         : hasError
-          ? "bg-amber-50/60 border-amber-300 text-slate-900"
-          : "bg-white border-slate-200/80 text-slate-700"
+          ? "bg-amber-50/70 backdrop-blur-md border-amber-300 text-slate-900"
+          : "glass-surface text-slate-700 hover:bg-white/85"
     )}>
       <div className="flex items-center gap-3 min-w-0 pr-2">
         <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
@@ -620,13 +620,13 @@ function ModeCard({ icon, iconBg, title, subtitle, active, hasError, isConnected
       </div>
 
       <span className={cn(
-        "text-[11px] font-semibold shrink-0 px-2.5 py-1 rounded-md transition-colors",
+        "text-[11px] font-semibold shrink-0 px-2.5 py-1 rounded-lg transition-colors",
         active
-          ? "text-emerald-700 bg-white border border-emerald-200 shadow-2xs"
+          ? "text-emerald-700 bg-white/90 backdrop-blur-sm border border-emerald-200 shadow-2xs"
           : hasError
             ? "text-amber-700 bg-amber-100/70 border border-amber-300"
             : isConnected
-              ? "text-slate-400"
+              ? "text-slate-400 bg-slate-100/50"
               : "text-slate-400 font-medium"
       )}>
         {active ? 'Active' : hasError ? 'Driver Error' : isConnected ? 'Idle' : 'Waiting'}

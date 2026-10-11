@@ -266,9 +266,16 @@ function App() {
   const isAnyDeviceConnected = deviceStatus.connected;
 
   return (
-    <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
-      {/* 1. TOP UNIFIED TITLE BAR (Full window width, matching reference design) */}
-      <header className="h-[38px] w-full bg-white border-b border-slate-200/90 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40">
+    <div className="flex flex-col h-screen w-full bg-slate-50/70 text-slate-800 overflow-hidden font-sans relative">
+      {/* Subtle Ambient Aurora Glow (Provides refractive light for the frosted glass sheen) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-[15%] -left-[10%] w-[55vw] h-[55vw] rounded-full bg-emerald-400/8 blur-[130px]" />
+        <div className="absolute top-[20%] -right-[10%] w-[45vw] h-[45vw] rounded-full bg-teal-300/7 blur-[110px]" />
+        <div className="absolute -bottom-[15%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-sky-300/6 blur-[120px]" />
+      </div>
+
+      {/* 1. TOP UNIFIED TITLE BAR (Full window width, frosted glass) */}
+      <header className="h-[38px] w-full bg-white/70 backdrop-blur-md border-b border-slate-200/60 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40 shadow-xs shadow-slate-900/[0.01]">
         <div className="flex items-center gap-2 no-drag-region">
           <MonitorSmartphone className="w-4 h-4 text-green-600 shrink-0" />
           <div className="flex items-baseline gap-2">
@@ -285,9 +292,9 @@ function App() {
       </header>
 
       {/* 2. BODY CONTAINER BELOW TITLE BAR */}
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-38px)] w-full">
-        {/* LEFT SIDEBAR */}
-        <div className="w-[220px] bg-white border-r border-slate-200 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-sm no-drag-region shrink-0">
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-38px)] w-full relative z-10">
+        {/* LEFT SIDEBAR (Frosted Acrylic) */}
+        <div className="w-[220px] bg-white/65 backdrop-blur-xl border-r border-slate-200/60 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0">
           <nav className="flex flex-col gap-1">
             <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
             <NavItem icon={Download} label="Drivers" active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
@@ -297,7 +304,7 @@ function App() {
           </nav>
 
           <div>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed">
+            <div className="bg-white/50 backdrop-blur-md border border-slate-200/70 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed shadow-2xs">
               <div className="font-semibold text-slate-700 mb-0.5">Windows 10 / 11</div>
               Run as Administrator to install drivers.
             </div>
@@ -327,8 +334,8 @@ function App() {
           />
         ) : (
           <>
-            {/* MAIN CONTENT AREA */}
-            <div className="flex-1 flex flex-col h-full bg-slate-50 relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
+            {/* MAIN CONTENT AREA (Translucent Glass Canvas) */}
+            <div className="flex-1 flex flex-col h-full bg-transparent relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
               <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
           
           {/* Header Row */}
@@ -351,7 +358,7 @@ function App() {
               <button 
                 onClick={handleScan}
                 disabled={isScanning || isInstalling}
-                className="h-10 px-4 bg-white hover:bg-slate-50/90 active:scale-[0.98] border border-slate-200/90 text-slate-700 font-semibold rounded-xl shadow-xs transition-all duration-150 text-[13px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                className="h-10 px-4 bg-white/80 hover:bg-white active:scale-[0.98] backdrop-blur-md border border-slate-200/80 text-slate-700 font-semibold rounded-xl shadow-xs transition-all duration-150 text-[13px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                 title="Scan PC for installed drivers"
               >
                 {isScanning ? (
@@ -482,8 +489,8 @@ function App() {
 
           </div>
 
-          {/* Terminal / Install Log */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-sm shrink-0 flex flex-col justify-between">
+          {/* Terminal / Install Log (Frosted Glass Panel) */}
+          <div className="glass-surface rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-xs shrink-0 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-slate-800 font-sans text-[10px] uppercase tracking-wider">Install Log</h4>
@@ -507,8 +514,8 @@ function App() {
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR (Restored Halo Rings, USB Cable, and Perfect Alignment) */}
-      <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-5 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
+      {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Acrylic) */}
+      <div className="w-[250px] bg-white/65 backdrop-blur-xl border-l border-slate-200/60 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
           <span className="flex h-2 w-2 relative">
@@ -593,13 +600,13 @@ function NavItem({ icon: Icon, label, active, onClick }) {
     <button 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
+        "flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
         active 
-          ? "bg-green-50 text-green-800 font-semibold border-green-200/90 shadow-sm" 
-          : "border-transparent text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900"
+          ? "bg-emerald-50/80 backdrop-blur-md text-emerald-800 font-semibold border-emerald-300/80 shadow-2xs shadow-emerald-500/10" 
+          : "border-transparent text-slate-600 font-medium hover:bg-white/60 hover:text-slate-900"
       )}
     >
-      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600" : "text-slate-400")} />
+      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-emerald-600" : "text-slate-400")} />
       {label}
     </button>
   );
@@ -625,11 +632,11 @@ function DriverCard({
 
   return (
     <div className={cn(
-      "bg-white border rounded-xl p-4 relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xs",
+      "glass-surface rounded-2xl p-4.5 relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xs hover:bg-white/85 hover:shadow-sm",
       borderColor
     )}>
       <div className="flex gap-3">
-        <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/60 flex items-center justify-center shrink-0 shadow-2xs">
           {icon}
         </div>
         
@@ -640,7 +647,7 @@ function DriverCard({
           {tags && tags.length > 0 && (
             <div className="flex gap-1.5 mt-2.5 flex-wrap">
               {tags.map(tag => (
-                <span key={tag} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap">
+                <span key={tag} className="px-2 py-0.5 bg-slate-100/70 backdrop-blur-xs text-slate-600 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap border border-slate-200/40">
                   {tag}
                 </span>
               ))}
@@ -712,12 +719,12 @@ function MonitorStatus({ label, connected, hasError }) {
 
   return (
     <div className={cn(
-      "flex items-center justify-between px-3 py-2 rounded-lg border transition-all duration-300 shadow-2xs",
+      "flex items-center justify-between px-3 py-2 rounded-xl border transition-all duration-300 shadow-2xs",
       connected 
-        ? "bg-emerald-50/50 border-emerald-200/80 text-emerald-950" 
+        ? "bg-emerald-50/60 backdrop-blur-md border-emerald-200/80 text-emerald-950" 
         : isMissingDriver
-          ? "bg-amber-50/60 border-amber-300/80 text-amber-950"
-          : "bg-white border-slate-200/70 text-slate-600"
+          ? "bg-amber-50/70 backdrop-blur-md border-amber-300/80 text-amber-950"
+          : "bg-white/60 backdrop-blur-md border-slate-200/70 text-slate-600"
     )}>
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <span className={cn(
@@ -747,7 +754,7 @@ function MonitorStatus({ label, connected, hasError }) {
 function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
   if (!connected) {
     return (
-      <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
+      <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white/70 backdrop-blur-md shadow-2xs">
         <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10">
           {/* Symmetrical Theme Guide Rings */}
           <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
@@ -817,8 +824,8 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
     <div className={cn(
       "rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden shadow-xs",
       hasError 
-        ? "border border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/30"
-        : "border border-emerald-200/90 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30"
+        ? "border border-amber-300/80 bg-gradient-to-b from-amber-50/70 via-white/80 to-amber-50/40 backdrop-blur-md"
+        : "border border-emerald-200/90 bg-gradient-to-b from-emerald-50/60 via-white/80 to-emerald-50/40 backdrop-blur-md"
     )}>
       {/* Ambient Radial Halo */}
       <div className={cn(
