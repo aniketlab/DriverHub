@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Download, 
   MonitorSmartphone, 
@@ -7,7 +7,9 @@ import {
   Database, 
   ChevronRight, 
   Loader2, 
-  FolderOpen 
+  FolderOpen,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -20,16 +22,26 @@ function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
 
-  // Individual driver states
+  // Individual driver scan states
   const [driverStates, setDriverStates] = useState({
     adb: { scanning: false, scanned: false, installed: false, path: null },
     google: { scanning: false, scanned: false, installed: false },
     mtk: { scanning: false, scanned: false, installed: false, name: null }
   });
 
+  // Real-time live connected device state
+  const [deviceStatus, setDeviceStatus] = useState({
+    adb: false,
+    fastboot: false,
+    mtk: false,
+    name: null
+  });
+
+  const prevDeviceRef = useRef({ adb: false, fastboot: false, mtk: false });
+
   // Dynamic live terminal logs
   const [logs, setLogs] = useState([
-    { type: 'info', text: 'DriverHub v1.0 initialized. System ready.' }
+    { type: 'info', text: 'DriverHub v1.0 initialized. Live Device Monitor active.' }
   ]);
 
   const addLog = (type, text) => {
@@ -37,7 +49,7 @@ function App() {
   };
 
   useEffect(() => {
-    // Listen for progressive scan events from Electron backend
+    // 1. Listen for progressive scan events from Electron backend
     if (window.electronAPI?.onScanStep) {
       window.electronAPI.onScanStep((event) => {
         const { target, state, data } = event;
@@ -80,9 +92,31 @@ function App() {
       });
     }
 
+    // 2. Listen for real-time Device Monitor events
+    if (window.electronAPI?.onDeviceMonitorUpdate) {
+      window.electronAPI.onDeviceMonitorUpdate((status) => {
+        setDeviceStatus(status);
+
+        const wasConnected = prevDeviceRef.current.adb || prevDeviceRef.current.fastboot || prevDeviceRef.current.mtk;
+        const isNowConnected = status.adb || status.fastboot || status.mtk;
+
+        if (!wasConnected && isNowConnected) {
+          const mode = status.fastboot ? 'Fastboot (Bootloader)' : status.adb ? 'ADB' : 'MTK BROM/Preloader';
+          addLog('success', `USB Plugged: Phone detected in ${mode} mode!`);
+        } else if (wasConnected && !isNowConnected) {
+          addLog('info', 'USB Unplugged: Device disconnected.');
+        }
+
+        prevDeviceRef.current = status;
+      });
+    }
+
     return () => {
       if (window.electronAPI?.removeScanStepListener) {
         window.electronAPI.removeScanStepListener();
+      }
+      if (window.electronAPI?.removeDeviceMonitorListener) {
+        window.electronAPI.removeDeviceMonitorListener();
       }
     };
   }, []);
@@ -101,6 +135,8 @@ function App() {
       setIsScanning(false);
     }
   };
+
+  const isAnyDeviceConnected = deviceStatus.adb || deviceStatus.fastboot || deviceStatus.mtk;
 
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
@@ -154,7 +190,7 @@ function App() {
                 {isScanning ? 'Scanning System...' : 'Scan PC'}
               </button>
               <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer">
-                Install selected (3)
+                Install selected (1)
               </button>
             </div>
           </div>
@@ -211,7 +247,7 @@ function App() {
                     : 'text-slate-500 bg-slate-100'
               }
               checkboxLabel={driverStates.google.installed ? 'Reinstall' : 'Selected'}
-              checked={true}
+              checked={!driverStates.google.installed}
               borderColor={driverStates.google.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
@@ -237,13 +273,13 @@ function App() {
                     : 'text-slate-500 bg-slate-100'
               }
               checkboxLabel={driverStates.mtk.installed ? 'Reinstall' : 'Selected'}
-              checked={true}
+              checked={!driverStates.mtk.installed}
               borderColor={driverStates.mtk.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
           </div>
 
-          {/* Terminal / Install Log (Live progressive updates) */}
+          {/* Terminal / Install Log */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-sm shrink-0 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -268,24 +304,69 @@ function App() {
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR */}
+      {/* RIGHT SIDEBAR: DEVICE MONITOR (Now fully interactive with real USB detection) */}
       <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-10 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
-        <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider mb-4">Device Monitor</h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
+          <span className="flex h-2 w-2 relative">
+            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-green-400" : "bg-slate-300")} />
+            <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-green-500" : "bg-slate-400")} />
+          </span>
+        </div>
         
-        <div className="border border-slate-200 rounded-2xl aspect-square flex items-center justify-center relative mb-5 shadow-sm">
-          <div className="absolute inset-0 m-auto w-24 h-24 border-2 border-green-100 rounded-full animate-ping opacity-20" />
-          <div className="absolute inset-0 m-auto w-16 h-16 border-2 border-green-200 rounded-full" />
-          <MonitorSmartphone className="w-8 h-8 text-green-500 relative z-10" />
+        {/* Animated Phone Centerpiece */}
+        <div className={cn(
+          "border rounded-2xl aspect-square flex items-center justify-center relative mb-4 transition-all duration-500 shadow-sm",
+          isAnyDeviceConnected 
+            ? "border-green-300 bg-green-50/50 shadow-green-100 shadow-md" 
+            : "border-slate-200 bg-white"
+        )}>
+          {isAnyDeviceConnected ? (
+            <>
+              <div className="absolute inset-0 m-auto w-24 h-24 border-2 border-green-200 rounded-full animate-ping opacity-30" />
+              <div className="absolute inset-0 m-auto w-16 h-16 border-2 border-green-400 rounded-full animate-pulse" />
+              <MonitorSmartphone className="w-9 h-9 text-green-600 relative z-10 drop-shadow-sm transition-transform scale-110" />
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 m-auto w-20 h-20 border border-slate-100 rounded-full" />
+              <MonitorSmartphone className="w-8 h-8 text-slate-300 relative z-10" />
+            </>
+          )}
         </div>
 
-        <p className="text-[11px] text-slate-500 mb-5 leading-relaxed text-center">
-          Connect your phone with a USB cable.<br/>The mode is detected live.
-        </p>
+        {/* Live Device Status Tagline */}
+        <div className="text-center mb-5">
+          {isAnyDeviceConnected ? (
+            <div className="animate-fadeIn">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-700">
+                <Zap className="w-3 h-3 fill-green-600" /> Connected
+              </span>
+              <p className="text-[11px] text-slate-600 mt-1.5 font-medium truncate px-1">
+                {deviceStatus.name || 'Android Device'}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Connect your phone via USB.<br/>Mode is detected live.
+            </p>
+          )}
+        </div>
 
+        {/* Individual Status Badges */}
         <div className="flex flex-col gap-2.5">
-          <MonitorStatus label="ADB" status="Waiting" />
-          <MonitorStatus label="Fastboot" status="Waiting" />
-          <MonitorStatus label="MTK BROM / Preloader" status="Waiting" />
+          <MonitorStatus 
+            label="ADB" 
+            connected={deviceStatus.adb} 
+          />
+          <MonitorStatus 
+            label="Fastboot" 
+            connected={deviceStatus.fastboot} 
+          />
+          <MonitorStatus 
+            label="MTK BROM / Preloader" 
+            connected={deviceStatus.mtk} 
+          />
         </div>
       </div>
 
@@ -360,14 +441,27 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
   );
 }
 
-function MonitorStatus({ label, status }) {
+function MonitorStatus({ label, connected }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm">
+    <div className={cn(
+      "flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all duration-300 shadow-sm",
+      connected 
+        ? "bg-green-50/70 border-green-300 text-green-900" 
+        : "bg-white border-slate-200 text-slate-700"
+    )}>
       <div className="flex items-center gap-2 min-w-0 pr-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
-        <span className="text-[12px] font-medium text-slate-700 truncate">{label}</span>
+        <span className={cn(
+          "w-2 h-2 rounded-full shrink-0 transition-colors",
+          connected ? "bg-green-500 shadow-sm shadow-green-400 animate-pulse" : "bg-slate-300"
+        )} />
+        <span className="text-[12px] font-medium truncate">{label}</span>
       </div>
-      <span className="text-[10px] font-medium text-slate-400 uppercase shrink-0">{status}</span>
+      <span className={cn(
+        "text-[10px] font-bold uppercase tracking-wider shrink-0 px-1.5 py-0.5 rounded",
+        connected ? "text-green-700 bg-green-100" : "text-slate-400"
+      )}>
+        {connected ? 'CONNECTED' : 'WAITING'}
+      </span>
     </div>
   );
 }

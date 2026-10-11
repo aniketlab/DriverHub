@@ -2,12 +2,14 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
+import { checkConnectedDevices } from './services/monitorService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 let mainWindow = null;
+let monitorInterval = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -34,30 +36,44 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+function startDeviceMonitoring() {
+  if (monitorInterval) clearInterval(monitorInterval);
+  
+  // Poll USB PnP devices every 2 seconds
+  monitorInterval = setInterval(async () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const devices = await checkConnectedDevices();
+      mainWindow.webContents.send('device-monitor-update', devices);
+    }
+  }, 2000);
 }
 
 function setupIpc() {
-  // Staggered Progressive Scan PC with live events
+  // Staggered Progressive Scan PC
   ipcMain.handle('scan-pc', async (event) => {
     console.log('Backend: Starting progressive hardware scan...');
     const sender = event.sender;
-
-    // Helper for natural UX pacing
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
-    // Step 1: Scan ADB Platform Tools
+    // Step 1: ADB Platform Tools
     sender.send('scan-step', { target: 'adb', state: 'scanning' });
     await delay(700);
     const adb = await checkAdbStatus();
     sender.send('scan-step', { target: 'adb', state: 'done', data: adb });
 
-    // Step 2: Query DriverStore for Google and MTK drivers
+    // Step 2: DriverStore for Google and MTK drivers
     sender.send('scan-step', { target: 'google', state: 'scanning' });
     await delay(700);
     const driverStore = await checkDriverStore();
     sender.send('scan-step', { target: 'google', state: 'done', data: driverStore.google });
 
-    // Step 3: Report MTK driver status
+    // Step 3: MTK drivers
     sender.send('scan-step', { target: 'mtk', state: 'scanning' });
     await delay(600);
     sender.send('scan-step', { target: 'mtk', state: 'done', data: driverStore.mtk });
@@ -67,6 +83,11 @@ function setupIpc() {
       google: driverStore.google,
       mtk: driverStore.mtk
     };
+  });
+
+  // Get current device status immediately
+  ipcMain.handle('get-connected-devices', async () => {
+    return await checkConnectedDevices();
   });
 
   // Open folder in Windows File Explorer
@@ -86,6 +107,7 @@ function setupIpc() {
 app.whenReady().then(() => {
   setupIpc();
   createWindow();
+  startDeviceMonitoring();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -95,6 +117,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  if (monitorInterval) clearInterval(monitorInterval);
   if (process.platform !== 'darwin') {
     app.quit();
   }
