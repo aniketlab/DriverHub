@@ -269,13 +269,11 @@ function App() {
       {/* 1. TOP UNIFIED TITLE BAR (Full window width, matching reference design) */}
       <header className="h-[38px] w-full bg-white border-b border-slate-200/90 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40">
         <div className="flex items-center gap-2.5 no-drag-region">
-          <div className="w-5 h-5 rounded-md border border-emerald-500/80 flex items-center justify-center text-emerald-600 bg-emerald-50/50">
-            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-          </div>
-          <span className="font-bold text-[13px] tracking-wide text-slate-900 uppercase">
-            Driver <span className="text-emerald-600">Hub</span>
-          </span>
-          <span className="text-slate-300 font-light">|</span>
+          <MonitorSmartphone className="w-5 h-5 text-green-600 shrink-0" />
+          <h1 className="font-bold text-[14px] tracking-tight uppercase">
+            <span className="text-green-600">DRIVER</span> <span className="text-slate-900">HUB</span>
+          </h1>
+          <span className="text-slate-300 font-light mx-1">|</span>
           <span className="text-[12px] text-slate-500 font-normal">
             All-in-one Android driver installer
           </span>
