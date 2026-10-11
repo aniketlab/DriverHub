@@ -17,9 +17,10 @@ let isChecking = false;
 // Dynamically discover candidate ADB executable paths
 function getAdbExecutable() {
   const candidates = [
+    path.join(__dirname, '..', 'bin', 'platform-tools', 'adb.exe'),
+    path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools', 'adb.exe'),
     'C:\\platform-tools-latest-windows\\adb.exe',
     path.join(os.homedir(), 'Downloads', 'platform-tools', 'adb.exe'),
-    path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools', 'adb.exe'),
     path.join(os.homedir(), 'Downloads', 'Programs', 'POCO M7 Plus', 'platform-tools', 'adb.exe'),
   ];
 

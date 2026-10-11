@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
+import { installAdb } from './services/installerService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +104,31 @@ function setupIpc() {
   ipcMain.handle('run-command', async (event, command) => {
     console.log('Running command:', command);
     return `Executed: ${command}`;
+  });
+
+  // 1-Click Driver & Tools Installer
+  ipcMain.handle('install-drivers', async (event, targets = ['adb']) => {
+    console.log('Backend: Starting installation of targets:', targets);
+    const sender = event.sender;
+    const results = {};
+
+    if (targets.includes('adb')) {
+      try {
+        const adbResult = await installAdb(sender);
+        results.adb = adbResult;
+      } catch (err) {
+        console.error('ADB install error:', err);
+        sender.send('install-step', {
+          target: 'adb',
+          percent: 0,
+          error: true,
+          message: `ADB installation failed: ${err.message}`
+        });
+        results.adb = { success: false, error: err.message };
+      }
+    }
+
+    return results;
   });
 }
 

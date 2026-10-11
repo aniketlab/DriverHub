@@ -40,6 +40,17 @@ function App() {
     mode: null
   });
 
+  const [selectedDrivers, setSelectedDrivers] = useState({
+    adb: true,
+    google: false,
+    mtk: false
+  });
+
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [installProgress, setInstallProgress] = useState({
+    adb: { percent: 0, message: '' }
+  });
+
   const prevDeviceRef = useRef({ adb: false, fastboot: false, mtk: false });
 
   // Dynamic live terminal logs
@@ -114,12 +125,36 @@ function App() {
       });
     }
 
+    // 3. Listen for 1-Click driver installer progress
+    if (window.electronAPI?.onInstallStep) {
+      window.electronAPI.onInstallStep((step) => {
+        setInstallProgress(prev => ({
+          ...prev,
+          [step.target]: {
+            percent: step.percent,
+            message: step.message
+          }
+        }));
+
+        if (step.error) {
+          addLog('error', step.message);
+        } else if (step.percent === 100) {
+          addLog('success', step.message);
+        } else if (step.percent === 5 || step.percent === 10 || step.percent === 72 || step.percent === 75 || step.percent === 85) {
+          addLog('info', step.message);
+        }
+      });
+    }
+
     return () => {
       if (window.electronAPI?.removeScanStepListener) {
         window.electronAPI.removeScanStepListener();
       }
       if (window.electronAPI?.removeDeviceMonitorListener) {
         window.electronAPI.removeDeviceMonitorListener();
+      }
+      if (window.electronAPI?.removeInstallStepListener) {
+        window.electronAPI.removeInstallStepListener();
       }
     };
   }, []);
@@ -138,6 +173,38 @@ function App() {
       setIsScanning(false);
     }
   };
+
+  const handleInstall = async () => {
+    const toInstall = Object.keys(selectedDrivers).filter(k => selectedDrivers[k]);
+    if (toInstall.length === 0) return;
+
+    setIsInstalling(true);
+    addLog('info', `--- Initiating 1-Click Installation for: ${toInstall.map(t => t.toUpperCase()).join(', ')} ---`);
+
+    try {
+      const results = await window.electronAPI.installDrivers(toInstall);
+      if (results.adb && results.adb.success) {
+        setDriverStates(prev => ({
+          ...prev,
+          adb: {
+            ...prev.adb,
+            scanned: true,
+            installed: true,
+            path: results.adb.path
+          }
+        }));
+        addLog('success', `ADB Platform-Tools ready at: ${results.adb.path}`);
+        addLog('success', 'Windows User PATH updated. ADB & Fastboot commands are globally available.');
+      }
+    } catch (err) {
+      console.error('Installation error:', err);
+      addLog('error', `Installation interrupted: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsInstalling(false);
+    }
+  };
+
+  const selectedCount = Object.values(selectedDrivers).filter(Boolean).length;
 
   const isAnyDeviceConnected = deviceStatus.connected;
 
@@ -187,13 +254,19 @@ function App() {
             <div className="flex gap-2 shrink-0">
               <button 
                 onClick={handleScan}
-                disabled={isScanning}
+                disabled={isScanning || isInstalling}
                 className="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-lg shadow-sm hover:bg-slate-50 transition-all text-[13px] whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">
                 {isScanning && <Loader2 className="w-3.5 h-3.5 animate-spin text-green-600" />}
                 {isScanning ? 'Scanning System...' : 'Scan PC'}
               </button>
-              <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer">
-                Install selected (1)
+              <button 
+                onClick={handleInstall}
+                disabled={isInstalling || isScanning || selectedCount === 0}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-all text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
+                {isInstalling && <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />}
+                {isInstalling 
+                  ? `Installing (${installProgress.adb?.percent || 0}%)...` 
+                  : `Install selected (${selectedCount})`}
               </button>
             </div>
           </div>
@@ -208,22 +281,27 @@ function App() {
               desc="adb + fastboot binaries, added to PATH automatically"
               tags={['adb', 'fastboot', 'PATH setup']}
               isScanning={driverStates.adb.scanning}
+              progress={isInstalling && selectedDrivers.adb ? installProgress.adb?.percent : 0}
+              progressMessage={installProgress.adb?.message}
               status={
                 driverStates.adb.scanning
                   ? 'Scanning...'
-                  : driverStates.adb.scanned
-                    ? (driverStates.adb.installed ? 'Installed' : 'Not installed')
-                    : 'Not Scanned'
+                  : isInstalling && selectedDrivers.adb && installProgress.adb?.percent > 0 && installProgress.adb?.percent < 100
+                    ? `Installing ${installProgress.adb.percent}%`
+                    : driverStates.adb.scanned
+                      ? (driverStates.adb.installed ? 'Installed' : 'Not installed')
+                      : 'Not Scanned'
               }
               statusColor={
-                driverStates.adb.scanning
+                driverStates.adb.scanning || (isInstalling && selectedDrivers.adb)
                   ? 'text-blue-600 bg-blue-50 border border-blue-200'
                   : driverStates.adb.scanned
                     ? (driverStates.adb.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
                     : 'text-slate-500 bg-slate-100'
               }
               checkboxLabel={driverStates.adb.installed ? 'Reinstall' : 'Selected'}
-              checked={true}
+              checked={selectedDrivers.adb}
+              onToggle={() => setSelectedDrivers(prev => ({ ...prev, adb: !prev.adb }))}
               borderColor={driverStates.adb.installed ? 'border-green-200' : 'border-slate-200'}
               onExplore={driverStates.adb.installed && driverStates.adb.path ? () => window.electronAPI.openFolder(driverStates.adb.path) : null}
             />
@@ -250,7 +328,8 @@ function App() {
                     : 'text-slate-500 bg-slate-100'
               }
               checkboxLabel={driverStates.google.installed ? 'Reinstall' : 'Selected'}
-              checked={!driverStates.google.installed}
+              checked={selectedDrivers.google}
+              onToggle={() => setSelectedDrivers(prev => ({ ...prev, google: !prev.google }))}
               borderColor={driverStates.google.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
@@ -276,7 +355,8 @@ function App() {
                     : 'text-slate-500 bg-slate-100'
               }
               checkboxLabel={driverStates.mtk.installed ? 'Reinstall' : 'Selected'}
-              checked={!driverStates.mtk.installed}
+              checked={selectedDrivers.mtk}
+              onToggle={() => setSelectedDrivers(prev => ({ ...prev, mtk: !prev.mtk }))}
               borderColor={driverStates.mtk.installed ? 'border-green-200' : 'border-slate-200'}
             />
 
@@ -386,9 +466,24 @@ function NavItem({ icon: Icon, label, active, onClick }) {
   );
 }
 
-function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabel, checked, borderColor, onExplore, isScanning }) {
+function DriverCard({ 
+  icon, 
+  title, 
+  desc, 
+  tags, 
+  status, 
+  statusColor, 
+  checkboxLabel, 
+  checked, 
+  onToggle, 
+  borderColor, 
+  onExplore, 
+  isScanning,
+  progress = 0,
+  progressMessage = ''
+}) {
   return (
-    <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all", borderColor)}>
+    <div className={cn("bg-white border rounded-xl p-4 relative overflow-hidden transition-all shadow-2xs", borderColor)}>
       <div className="flex gap-3">
         <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
           {icon}
@@ -405,6 +500,22 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
                   {tag}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Real Live 0-100% Progress Bar */}
+          {progress > 0 && progress <= 100 && (
+            <div className="mt-3 w-full animate-fadeIn">
+              <div className="flex justify-between items-center text-[11px] mb-1">
+                <span className="text-slate-600 font-medium truncate max-w-[80%]">{progressMessage || 'Installing...'}</span>
+                <span className="text-emerald-600 font-bold">{progress}%</span>
+              </div>
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -426,10 +537,15 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
             </div>
           </div>
           
-          <div className="flex items-center gap-1.5 mb-0.5 mt-2">
-            <input type="checkbox" checked={checked} readOnly className="w-3.5 h-3.5 text-green-600 rounded border-slate-300 accent-green-600" />
+          <label className="flex items-center gap-1.5 mb-0.5 mt-2 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked={checked} 
+              onChange={onToggle} 
+              className="w-3.5 h-3.5 text-green-600 rounded border-slate-300 accent-green-600 cursor-pointer" 
+            />
             <span className="text-[12px] font-medium text-slate-700">{checkboxLabel}</span>
-          </div>
+          </label>
         </div>
       </div>
     </div>
