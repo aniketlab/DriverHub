@@ -84,75 +84,107 @@ export function DeviceMonitorPage({
               /* --- DISCONNECTED HERO STATE --- */
               <div className="flex-1 flex flex-col items-center justify-center text-center py-6">
                 
-                {/* Visual Centerpiece (Waiting Radar + Phone) */}
-                <div className="relative w-48 h-48 flex items-center justify-center mb-6">
+                {/* Visual Centerpiece (Heartbeat / Sonic Wave Pulse + Phone) */}
+                <div className="relative w-52 h-52 flex items-center justify-center mb-6">
                   <svg viewBox="0 0 200 200" className="w-full h-full">
                     <defs>
-                      {/* Gradient for smooth rotating radar sweep tail */}
-                      <linearGradient id="radarSweepGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#10B981" stopOpacity="0" />
-                        <stop offset="50%" stopColor="#10B981" stopOpacity="0.08" />
-                        <stop offset="100%" stopColor="#10B981" stopOpacity="0.28" />
-                      </linearGradient>
+                      {/* Organic Heartbeat Radial Mesh Glow */}
+                      <radialGradient id="dharkanGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
+                        <stop offset="45%" stopColor="#10B981" stopOpacity="0.12" />
+                        <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                      </radialGradient>
                     </defs>
 
-                    {/* Outer Guide Circle */}
-                    <circle cx="100" cy="95" r="75" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
+                    {/* Outer Boundary Ring */}
+                    <circle cx="100" cy="95" r="82" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
                     
-                    {/* Concentric Guide Ring */}
-                    <circle cx="100" cy="95" r="55" fill="none" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="4 4" />
+                    {/* Middle Subtle Dashed Ring */}
+                    <circle cx="100" cy="95" r="62" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="4 4" />
 
-                    {/* Expanding Sonar Ping Ring 1 */}
-                    <circle cx="100" cy="95" r="35" fill="none" stroke="#10B981" strokeWidth="1.2">
-                      <animate attributeName="r" values="30;75" dur="2.8s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.65;0" dur="2.8s" repeatCount="indefinite" />
+                    {/* 1. Organic Heartbeat Core Halo (Lub-Dub Rhythmic Breathing) */}
+                    <circle cx="100" cy="95" r="44" fill="url(#dharkanGlow)">
+                      <animate 
+                        attributeName="r" 
+                        values="36; 52; 40; 56; 36" 
+                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
+                        dur="2.4s" 
+                        repeatCount="indefinite" 
+                      />
+                      <animate 
+                        attributeName="opacity" 
+                        values="0.35; 0.9; 0.45; 1; 0.35" 
+                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
+                        dur="2.4s" 
+                        repeatCount="indefinite" 
+                      />
                     </circle>
 
-                    {/* Expanding Sonar Ping Ring 2 (Staggered offset) */}
-                    <circle cx="100" cy="95" r="35" fill="none" stroke="#10B981" strokeWidth="1.2">
-                      <animate attributeName="r" values="30;75" begin="1.4s" dur="2.8s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.65;0" begin="1.4s" dur="2.8s" repeatCount="indefinite" />
+                    {/* 2. Expanding Heartbeat Ripple Waves ("Dheere dheere bada hota hai") */}
+                    {/* Ripple Wave 1 */}
+                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
+                      <animate attributeName="r" values="30; 82" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeOpacity" values="0.7; 0" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
                     </circle>
 
-                    {/* Smooth 360-degree Continuous Rotating Radar Scanner */}
-                    <g>
-                      <animateTransform
-                        attributeName="transform"
-                        type="rotate"
-                        from="0 100 95"
-                        to="360 100 95"
-                        dur="3s"
-                        repeatCount="indefinite"
-                      />
-                      {/* Trailing Radar Sweep Sector */}
-                      <path
-                        d="M 100 95 L 100 20 A 75 75 0 0 1 153 42 Z"
-                        fill="url(#radarSweepGrad)"
-                      />
-                      {/* Leading Radar Scanner Line */}
-                      <line
-                        x1="100"
-                        y1="95"
-                        x2="153"
-                        y2="42"
-                        stroke="#10B981"
-                        strokeWidth="1.8"
-                        strokeOpacity="0.8"
-                        strokeLinecap="round"
-                      />
-                      {/* Leading Edge Ping Blip */}
-                      <circle cx="153" cy="42" r="2.2" fill="#10B981" fillOpacity="0.95" />
-                    </g>
+                    {/* Ripple Wave 2 (Staggered 1s) */}
+                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
+                      <animate attributeName="r" values="30; 82" begin="1s" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeOpacity" values="0.7; 0" begin="1s" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
+                    </circle>
 
-                    {/* Minimal Wireframe Smartphone (Centered at 100, 95) */}
+                    {/* Ripple Wave 3 (Staggered 2s) */}
+                    <circle cx="100" cy="95" r="30" fill="none" stroke="#10B981">
+                      <animate attributeName="r" values="30; 82" begin="2s" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeOpacity" values="0.7; 0" begin="2s" dur="3s" repeatCount="indefinite" />
+                      <animate attributeName="strokeWidth" values="1.8; 0.6" dur="3s" repeatCount="indefinite" />
+                    </circle>
+
+                    {/* 3. Phone Chassis (Elevated, centered at 100, 95) */}
                     <rect x="83" y="60" width="34" height="66" rx="8" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.8" />
-                    <rect x="86.5" y="64" width="27" height="58" rx="5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1" />
-                    {/* Speaker Slit */}
-                    <rect x="94" y="62" width="12" height="1.8" rx="0.9" fill="#94A3B8" />
+                    
+                    {/* OLED Screen with gentle green ambient tint */}
+                    <rect x="86.5" y="64" width="27" height="58" rx="5" fill="#F0FDF4" />
 
-                    {/* Waiting USB Cable & Port */}
-                    <line x1="100" y1="126" x2="100" y2="142" stroke="#64748B" strokeWidth="1.8" strokeDasharray="3 3" />
-                    <rect x="97" y="142" width="6" height="7" rx="1.5" fill="#334155" />
+                    {/* Speaker Notch */}
+                    <rect x="94" y="62" width="12" height="1.8" rx="0.9" fill="#059669" />
+
+                    {/* Heartbeat EKG Pulse Wave inside screen ("Dharkan" ECG line) */}
+                    <path
+                      d="M 90 94 L 94 94 L 96 87 L 98 100 L 101 90 L 103 95 L 110 94"
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <animate 
+                        attributeName="strokeOpacity" 
+                        values="0.3; 1; 0.45; 1; 0.3" 
+                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
+                        dur="2.4s" 
+                        repeatCount="indefinite" 
+                      />
+                    </path>
+
+                    {/* Tiny Breathing Heartbeat Indicator Dot inside screen */}
+                    <circle cx="100" cy="74" r="2" fill="#10B981">
+                      <animate 
+                        attributeName="opacity" 
+                        values="0.4; 1; 0.5; 1; 0.4" 
+                        keyTimes="0; 0.22; 0.38; 0.58; 1" 
+                        dur="2.4s" 
+                        repeatCount="indefinite" 
+                      />
+                    </circle>
+
+                    {/* 4. Waiting USB Cable (Flowing dashed pulse into connector) */}
+                    <line x1="100" y1="126" x2="100" y2="142" stroke="#10B981" strokeWidth="1.8" strokeDasharray="3 3">
+                      <animate attributeName="strokeDashoffset" values="0; 12" dur="1.2s" repeatCount="indefinite" />
+                    </line>
+                    <rect x="97" y="142" width="6" height="7" rx="1.5" fill="#059669" />
                   </svg>
                 </div>
 
