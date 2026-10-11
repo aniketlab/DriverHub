@@ -79,7 +79,7 @@ export function DeviceMonitorPage({
           {/* ========================================================= */}
           {/* LEFT COLUMN: HERO DEVICE SHOWCASE & CONTROLS (Cols 1-8)   */}
           {/* ========================================================= */}
-          <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px]">
+          <div className="col-span-12 lg:col-span-8 bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px]">
             
             {!isConnected ? (
               /* --- DISCONNECTED HERO STATE --- */
@@ -553,7 +553,7 @@ export function DeviceMonitorPage({
                   ACTIVITY
                 </h4>
                 
-                <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px]">
+                <div className="bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-xl p-4 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px]">
                   {activityLogs.length > 0 ? (
                     activityLogs.slice(-6).map((item, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 leading-relaxed">
