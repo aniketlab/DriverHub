@@ -8,8 +8,8 @@ import {
   ChevronRight, 
   Loader2, 
   FolderOpen,
-  CheckCircle2,
-  Zap
+  Smartphone,
+  CheckCircle2
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -29,12 +29,16 @@ function App() {
     mtk: { scanning: false, scanned: false, installed: false, name: null }
   });
 
-  // Real-time live connected device state
+  // Real-time live connected device state (with Brand & Model)
   const [deviceStatus, setDeviceStatus] = useState({
+    connected: false,
     adb: false,
     fastboot: false,
     mtk: false,
-    name: null
+    brand: null,
+    model: null,
+    rawModel: null,
+    mode: null
   });
 
   const prevDeviceRef = useRef({ adb: false, fastboot: false, mtk: false });
@@ -92,17 +96,17 @@ function App() {
       });
     }
 
-    // 2. Listen for real-time Device Monitor events
+    // 2. Listen for real-time Device Monitor events (with Brand & Model)
     if (window.electronAPI?.onDeviceMonitorUpdate) {
       window.electronAPI.onDeviceMonitorUpdate((status) => {
         setDeviceStatus(status);
 
         const wasConnected = prevDeviceRef.current.adb || prevDeviceRef.current.fastboot || prevDeviceRef.current.mtk;
-        const isNowConnected = status.adb || status.fastboot || status.mtk;
+        const isNowConnected = status.connected;
 
         if (!wasConnected && isNowConnected) {
-          const mode = status.fastboot ? 'Fastboot (Bootloader)' : status.adb ? 'ADB' : 'MTK BROM/Preloader';
-          addLog('success', `USB Plugged: Phone detected in ${mode} mode!`);
+          const deviceLabel = status.model ? `${status.brand || ''} ${status.model}` : (status.brand || 'Android Device');
+          addLog('success', `USB Plugged: ${deviceLabel} connected in ${status.mode || 'USB'} mode!`);
         } else if (wasConnected && !isNowConnected) {
           addLog('info', 'USB Unplugged: Device disconnected.');
         }
@@ -136,7 +140,7 @@ function App() {
     }
   };
 
-  const isAnyDeviceConnected = deviceStatus.adb || deviceStatus.fastboot || deviceStatus.mtk;
+  const isAnyDeviceConnected = deviceStatus.connected;
 
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans">
@@ -304,57 +308,67 @@ function App() {
         </div>
       </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR (Now fully interactive with real USB detection) */}
+      {/* RIGHT SIDEBAR: DEVICE MONITOR (Refined Typography & Smart Model Detection) */}
       <div className="w-[250px] bg-white border-l border-slate-200 p-5 pt-10 h-full flex flex-col relative z-10 shadow-sm no-drag-region shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
           <span className="flex h-2 w-2 relative">
-            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-green-400" : "bg-slate-300")} />
-            <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-green-500" : "bg-slate-400")} />
+            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-emerald-400" : "bg-slate-300")} />
+            <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-emerald-500" : "bg-slate-400")} />
           </span>
         </div>
         
         {/* Animated Phone Centerpiece */}
         <div className={cn(
-          "border rounded-2xl aspect-square flex items-center justify-center relative mb-4 transition-all duration-500 shadow-sm",
+          "border rounded-2xl aspect-square flex flex-col items-center justify-center relative mb-3.5 transition-all duration-500 shadow-xs",
           isAnyDeviceConnected 
-            ? "border-green-300 bg-green-50/50 shadow-green-100 shadow-md" 
-            : "border-slate-200 bg-white"
+            ? "border-emerald-200/80 bg-emerald-50/30 shadow-emerald-100/50" 
+            : "border-slate-200/80 bg-white"
         )}>
           {isAnyDeviceConnected ? (
             <>
-              <div className="absolute inset-0 m-auto w-24 h-24 border-2 border-green-200 rounded-full animate-ping opacity-30" />
-              <div className="absolute inset-0 m-auto w-16 h-16 border-2 border-green-400 rounded-full animate-pulse" />
-              <MonitorSmartphone className="w-9 h-9 text-green-600 relative z-10 drop-shadow-sm transition-transform scale-110" />
+              <div className="absolute inset-0 m-auto w-24 h-24 border border-emerald-300/40 rounded-full animate-ping opacity-25" />
+              <div className="absolute inset-0 m-auto w-16 h-16 border border-emerald-400/50 rounded-full animate-pulse" />
+              <Smartphone className="w-9 h-9 text-emerald-600 relative z-10 transition-transform scale-105" />
+              {deviceStatus.brand && (
+                <span className="mt-2 px-2 py-0.5 bg-white/95 border border-emerald-200 text-emerald-700 font-medium text-[10px] rounded-full shadow-2xs relative z-10">
+                  {deviceStatus.brand}
+                </span>
+              )}
             </>
           ) : (
             <>
               <div className="absolute inset-0 m-auto w-20 h-20 border border-slate-100 rounded-full" />
-              <MonitorSmartphone className="w-8 h-8 text-slate-300 relative z-10" />
+              <Smartphone className="w-8 h-8 text-slate-300 relative z-10" />
             </>
           )}
         </div>
 
         {/* Live Device Status Tagline */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-4 min-h-[46px] flex flex-col justify-center">
           {isAnyDeviceConnected ? (
             <div className="animate-fadeIn">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-700">
-                <Zap className="w-3 h-3 fill-green-600" /> Connected
-              </span>
-              <p className="text-[11px] text-slate-600 mt-1.5 font-medium truncate px-1">
-                {deviceStatus.name || 'Android Device'}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Connected</span>
+              </div>
+              <h5 className="text-[13px] font-semibold text-slate-800 leading-tight truncate px-1">
+                {deviceStatus.model || 'Android Phone'}
+              </h5>
+              <p className="text-[11px] text-slate-400 font-normal mt-0.5 truncate px-1">
+                {deviceStatus.rawModel && deviceStatus.model !== deviceStatus.rawModel ? `${deviceStatus.rawModel} • ` : ''}
+                {deviceStatus.mode || 'USB Mode'}
               </p>
             </div>
           ) : (
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-slate-400 leading-relaxed font-normal">
               Connect your phone via USB.<br/>Mode is detected live.
             </p>
           )}
         </div>
 
-        {/* Individual Status Badges */}
-        <div className="flex flex-col gap-2.5">
+        {/* Individual Status Badges with Refined Typography */}
+        <div className="flex flex-col gap-2">
           <MonitorStatus 
             label="ADB" 
             connected={deviceStatus.adb} 
@@ -444,21 +458,23 @@ function DriverCard({ icon, title, desc, tags, status, statusColor, checkboxLabe
 function MonitorStatus({ label, connected }) {
   return (
     <div className={cn(
-      "flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all duration-300 shadow-sm",
+      "flex items-center justify-between px-3 py-2 rounded-lg border transition-all duration-300 shadow-2xs",
       connected 
-        ? "bg-green-50/70 border-green-300 text-green-900" 
-        : "bg-white border-slate-200 text-slate-700"
+        ? "bg-emerald-50/50 border-emerald-200/80 text-emerald-950" 
+        : "bg-white border-slate-200/70 text-slate-600"
     )}>
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <span className={cn(
-          "w-2 h-2 rounded-full shrink-0 transition-colors",
-          connected ? "bg-green-500 shadow-sm shadow-green-400 animate-pulse" : "bg-slate-300"
+          "w-1.5 h-1.5 rounded-full shrink-0 transition-colors",
+          connected ? "bg-emerald-500 shadow-2xs shadow-emerald-400 animate-pulse" : "bg-slate-300"
         )} />
         <span className="text-[12px] font-medium truncate">{label}</span>
       </div>
       <span className={cn(
-        "text-[10px] font-bold uppercase tracking-wider shrink-0 px-1.5 py-0.5 rounded",
-        connected ? "text-green-700 bg-green-100" : "text-slate-400"
+        "text-[10px] font-medium tracking-wide uppercase shrink-0 px-2 py-0.5 rounded-md transition-colors",
+        connected 
+          ? "text-emerald-700 bg-white border border-emerald-200/60 shadow-2xs" 
+          : "text-slate-400 bg-slate-50"
       )}>
         {connected ? 'CONNECTED' : 'WAITING'}
       </span>
