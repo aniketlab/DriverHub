@@ -87,20 +87,64 @@ export function DeviceMonitorPage({
                 {/* Visual Centerpiece (Waiting Radar + Phone) */}
                 <div className="relative w-48 h-48 flex items-center justify-center mb-6">
                   <svg viewBox="0 0 200 200" className="w-full h-full">
+                    <defs>
+                      {/* Gradient for smooth rotating radar sweep tail */}
+                      <linearGradient id="radarSweepGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#10B981" stopOpacity="0" />
+                        <stop offset="50%" stopColor="#10B981" stopOpacity="0.08" />
+                        <stop offset="100%" stopColor="#10B981" stopOpacity="0.28" />
+                      </linearGradient>
+                    </defs>
+
                     {/* Outer Guide Circle */}
                     <circle cx="100" cy="95" r="75" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
                     
                     {/* Concentric Guide Ring */}
                     <circle cx="100" cy="95" r="55" fill="none" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="4 4" />
-                    
-                    {/* Mint Sector Arc (Top Right Scanner Sweep) */}
-                    <path
-                      d="M 100 95 L 100 20 A 75 75 0 0 1 153 42 Z"
-                      fill="#10B981"
-                      fillOpacity="0.08"
-                    />
 
-                    {/* Minimal Wireframe Smartphone */}
+                    {/* Expanding Sonar Ping Ring 1 */}
+                    <circle cx="100" cy="95" r="35" fill="none" stroke="#10B981" strokeWidth="1.2">
+                      <animate attributeName="r" values="30;75" dur="2.8s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.65;0" dur="2.8s" repeatCount="indefinite" />
+                    </circle>
+
+                    {/* Expanding Sonar Ping Ring 2 (Staggered offset) */}
+                    <circle cx="100" cy="95" r="35" fill="none" stroke="#10B981" strokeWidth="1.2">
+                      <animate attributeName="r" values="30;75" begin="1.4s" dur="2.8s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.65;0" begin="1.4s" dur="2.8s" repeatCount="indefinite" />
+                    </circle>
+
+                    {/* Smooth 360-degree Continuous Rotating Radar Scanner */}
+                    <g>
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 100 95"
+                        to="360 100 95"
+                        dur="3s"
+                        repeatCount="indefinite"
+                      />
+                      {/* Trailing Radar Sweep Sector */}
+                      <path
+                        d="M 100 95 L 100 20 A 75 75 0 0 1 153 42 Z"
+                        fill="url(#radarSweepGrad)"
+                      />
+                      {/* Leading Radar Scanner Line */}
+                      <line
+                        x1="100"
+                        y1="95"
+                        x2="153"
+                        y2="42"
+                        stroke="#10B981"
+                        strokeWidth="1.8"
+                        strokeOpacity="0.8"
+                        strokeLinecap="round"
+                      />
+                      {/* Leading Edge Ping Blip */}
+                      <circle cx="153" cy="42" r="2.2" fill="#10B981" fillOpacity="0.95" />
+                    </g>
+
+                    {/* Minimal Wireframe Smartphone (Centered at 100, 95) */}
                     <rect x="83" y="60" width="34" height="66" rx="8" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.8" />
                     <rect x="86.5" y="64" width="27" height="58" rx="5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1" />
                     {/* Speaker Slit */}

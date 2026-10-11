@@ -749,9 +749,53 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
     return (
       <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
         <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px]">
+          <defs>
+            <linearGradient id="sidebarRadarGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0" />
+              <stop offset="50%" stopColor="#10B981" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#10B981" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+
           {/* Symmetrical Inactive Guide Rings */}
           <circle cx="80" cy="75" r="56" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
           <circle cx="80" cy="75" r="42" fill="none" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+
+          {/* Expanding Sonar Ping Ring */}
+          <circle cx="80" cy="75" r="25" fill="none" stroke="#10B981" strokeWidth="1.2">
+            <animate attributeName="r" values="22;56" dur="2.8s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.6;0" dur="2.8s" repeatCount="indefinite" />
+          </circle>
+
+          {/* Smooth 360-degree Continuous Rotating Radar Scanner */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 80 75"
+              to="360 80 75"
+              dur="3s"
+              repeatCount="indefinite"
+            />
+            {/* Trailing Radar Sweep Sector */}
+            <path
+              d="M 80 75 L 80 19 A 56 56 0 0 1 120 35 Z"
+              fill="url(#sidebarRadarGrad)"
+            />
+            {/* Leading Radar Scanner Line */}
+            <line
+              x1="80"
+              y1="75"
+              x2="120"
+              y2="35"
+              stroke="#10B981"
+              strokeWidth="1.6"
+              strokeOpacity="0.8"
+              strokeLinecap="round"
+            />
+            {/* Leading Edge Ping Blip */}
+            <circle cx="120" cy="35" r="2" fill="#10B981" fillOpacity="0.95" />
+          </g>
 
           {/* Symmetrical Disconnected Phone Wireframe */}
           <rect x="66" y="49" width="28" height="52" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1.5" />
