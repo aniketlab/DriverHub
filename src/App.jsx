@@ -35,6 +35,10 @@ function App() {
     fastboot: false,
     mtk: false,
     mtp: false,
+    fastbootError: false,
+    adbError: false,
+    mtkError: false,
+    driverError: false,
     brand: null,
     model: null,
     rawModel: null,
@@ -54,7 +58,15 @@ function App() {
     mtk: { percent: 0, message: '' }
   });
 
-  const prevDeviceRef = useRef({ connected: false, adb: false, fastboot: false, mtk: false, mtp: false });
+  const prevDeviceRef = useRef({ 
+    connected: false, 
+    adb: false, 
+    fastboot: false, 
+    mtk: false, 
+    mtp: false,
+    fastbootError: false,
+    driverError: false 
+  });
 
   // Dynamic live terminal logs
   const [logs, setLogs] = useState([
@@ -119,12 +131,20 @@ function App() {
 
         if (!wasConnected && isNowConnected) {
           const deviceLabel = status.model ? `${status.brand || ''} ${status.model}` : (status.brand || 'Android Device');
-          addLog('success', `USB Plugged: ${deviceLabel} connected (${status.mode || 'USB'}).`);
+          if (status.driverError) {
+            addLog('warning', `USB Plugged: ${deviceLabel} detected (${status.mode || 'Device'}). Driver missing in Windows Device Manager.`);
+          } else {
+            addLog('success', `USB Plugged: ${deviceLabel} connected (${status.mode || 'USB'}).`);
+          }
         } else if (wasConnected && !isNowConnected) {
           addLog('info', 'USB Unplugged: Device disconnected.');
         } else if (wasConnected && isNowConnected) {
           if (!prevDeviceRef.current.adb && status.adb) {
             addLog('success', 'ADB Debugging mode activated.');
+          } else if (!prevDeviceRef.current.fastboot && status.fastboot) {
+            addLog('success', 'Fastboot Bootloader mode connected.');
+          } else if (status.fastbootError && !prevDeviceRef.current.fastbootError) {
+            addLog('warning', 'Fastboot device detected, but Windows driver is missing (Code 28 / Yellow mark).');
           } else if (!prevDeviceRef.current.mtp && status.mtp) {
             addLog('info', 'File Transfer (MTP) mode active.');
           }
@@ -446,15 +466,24 @@ function App() {
           mode={deviceStatus.mode}
           brand={deviceStatus.brand}
           model={deviceStatus.model}
+          hasError={deviceStatus.driverError}
         />
 
         {/* Live Device Status Tagline & Name Display */}
         <div className="text-center mb-4 min-h-[50px] flex flex-col items-center justify-center">
           {isAnyDeviceConnected ? (
             <div className="flex flex-col items-center animate-fadeIn w-full px-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Connected</span>
+              <div className={cn(
+                "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border mb-1",
+                deviceStatus.driverError 
+                  ? "bg-amber-50 text-amber-700 border-amber-300"
+                  : "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+              )}>
+                <span className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  deviceStatus.driverError ? "bg-amber-500 animate-pulse" : "bg-emerald-500 animate-pulse"
+                )} />
+                <span>{deviceStatus.driverError ? "Driver Missing ⚠️" : "Connected"}</span>
               </div>
               <h5 className="text-[13px] font-semibold text-slate-800 leading-tight truncate max-w-full">
                 {deviceStatus.model || 'Android Phone'}
@@ -480,14 +509,17 @@ function App() {
           <MonitorStatus 
             label="ADB" 
             connected={deviceStatus.adb} 
+            hasError={deviceStatus.adbError}
           />
           <MonitorStatus 
             label="Fastboot" 
             connected={deviceStatus.fastboot} 
+            hasError={deviceStatus.fastbootError}
           />
           <MonitorStatus 
             label="MTK BROM / Preloader" 
             connected={deviceStatus.mtk} 
+            hasError={deviceStatus.mtkError}
           />
         </div>
       </div>
@@ -615,18 +647,26 @@ function DriverCard({
   );
 }
 
-function MonitorStatus({ label, connected }) {
+function MonitorStatus({ label, connected, hasError }) {
+  const isMissingDriver = hasError && !connected;
+
   return (
     <div className={cn(
       "flex items-center justify-between px-3 py-2 rounded-lg border transition-all duration-300 shadow-2xs",
       connected 
         ? "bg-emerald-50/50 border-emerald-200/80 text-emerald-950" 
-        : "bg-white border-slate-200/70 text-slate-600"
+        : isMissingDriver
+          ? "bg-amber-50/60 border-amber-300/80 text-amber-950"
+          : "bg-white border-slate-200/70 text-slate-600"
     )}>
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <span className={cn(
           "w-1.5 h-1.5 rounded-full shrink-0 transition-colors",
-          connected ? "bg-emerald-500 shadow-2xs shadow-emerald-400 animate-pulse" : "bg-slate-300"
+          connected 
+            ? "bg-emerald-500 shadow-2xs shadow-emerald-400 animate-pulse" 
+            : isMissingDriver 
+              ? "bg-amber-500 shadow-2xs shadow-amber-400 animate-pulse" 
+              : "bg-slate-300"
         )} />
         <span className="text-[12px] font-medium truncate">{label}</span>
       </div>
@@ -634,15 +674,17 @@ function MonitorStatus({ label, connected }) {
         "text-[10px] font-medium tracking-wide uppercase shrink-0 px-2 py-0.5 rounded-md transition-colors",
         connected 
           ? "text-emerald-700 bg-white border border-emerald-200/60 shadow-2xs" 
-          : "text-slate-400 bg-slate-50"
+          : isMissingDriver
+            ? "text-amber-800 bg-amber-100/80 border border-amber-300 shadow-2xs"
+            : "text-slate-400 bg-slate-50"
       )}>
-        {connected ? 'CONNECTED' : 'WAITING'}
+        {connected ? 'CONNECTED' : isMissingDriver ? 'DRIVER MISSING' : 'WAITING'}
       </span>
     </div>
   );
 }
 
-function DeviceMonitorVisual({ connected, mode, brand, model }) {
+function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
   if (!connected) {
     return (
       <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
@@ -667,37 +709,45 @@ function DeviceMonitorVisual({ connected, mode, brand, model }) {
   }
 
   return (
-    <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-emerald-200/90 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30 shadow-xs">
-      {/* Ambient Radial Green Halo */}
-      <div className="absolute w-28 h-28 bg-emerald-400/20 rounded-full blur-xl pointer-events-none animate-pulse" />
+    <div className={cn(
+      "rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden shadow-xs",
+      hasError 
+        ? "border border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/30"
+        : "border border-emerald-200/90 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30"
+    )}>
+      {/* Ambient Radial Halo */}
+      <div className={cn(
+        "absolute w-28 h-28 rounded-full blur-xl pointer-events-none animate-pulse",
+        hasError ? "bg-amber-400/20" : "bg-emerald-400/20"
+      )} />
 
       {/* 100% Mathematically Symmetrical Vector Display */}
       <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10 drop-shadow-xs">
         {/* Animated Concentric Radar Halo */}
-        <circle cx="80" cy="75" r="62" fill="none" stroke="#A7F3D0" strokeWidth="1.5" opacity="0.6">
+        <circle cx="80" cy="75" r="62" fill="none" stroke={hasError ? "#FCD34D" : "#A7F3D0"} strokeWidth="1.5" opacity="0.6">
           <animate attributeName="r" values="52;66;52" dur="3s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.7;0.15;0.7" dur="3s" repeatCount="indefinite" />
         </circle>
         
         {/* Middle Pulse Circle */}
-        <circle cx="80" cy="75" r="48" fill="#ECFDF5" fillOpacity="0.5" stroke="#6EE7B7" strokeWidth="1.5" />
+        <circle cx="80" cy="75" r="48" fill={hasError ? "#FFFBEB" : "#ECFDF5"} fillOpacity="0.5" stroke={hasError ? "#FBBF24" : "#6EE7B7"} strokeWidth="1.5" />
 
         {/* High-Tech Smartphone Mockup (Center: x=80, y=75) */}
         {/* Chassis */}
-        <rect x="64" y="46" width="32" height="58" rx="6.5" fill="#0F172A" stroke="#10B981" strokeWidth="1.5" />
+        <rect x="64" y="46" width="32" height="58" rx="6.5" fill="#0F172A" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="1.5" />
         {/* OLED Glass Screen */}
-        <rect x="66.5" y="49" width="27" height="52" rx="4.5" fill="#022C22" />
+        <rect x="66.5" y="49" width="27" height="52" rx="4.5" fill={hasError ? "#451A03" : "#022C22"} />
 
         {/* Camera Notch / Speaker */}
-        <rect x="76" y="50.5" width="8" height="1.5" rx="0.75" fill="#064E3B" />
+        <rect x="76" y="50.5" width="8" height="1.5" rx="0.75" fill={hasError ? "#78350F" : "#064E3B"} />
 
         {/* Clean Minimalist Gesture Bar */}
-        <rect x="76" y="94" width="8" height="1.2" rx="0.6" fill="#10B981" opacity="0.7" />
+        <rect x="76" y="94" width="8" height="1.2" rx="0.6" fill={hasError ? "#F59E0B" : "#10B981"} opacity="0.7" />
 
         {/* Connected USB-C Port & Cable */}
-        <line x1="80" y1="104" x2="80" y2="114" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
-        <rect x="78" y="112" width="4" height="5" rx="1" fill="#059669" />
-        <line x1="80" y1="117" x2="80" y2="126" stroke="#10B981" strokeWidth="1.5" strokeDasharray="2 2" strokeLinecap="round" />
+        <line x1="80" y1="104" x2="80" y2="114" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="2" strokeLinecap="round" />
+        <rect x="78" y="112" width="4" height="5" rx="1" fill={hasError ? "#D97706" : "#059669"} />
+        <line x1="80" y1="117" x2="80" y2="126" stroke={hasError ? "#F59E0B" : "#10B981"} strokeWidth="1.5" strokeDasharray="2 2" strokeLinecap="round" />
       </svg>
     </div>
   );

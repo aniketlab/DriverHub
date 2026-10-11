@@ -166,25 +166,33 @@ export async function checkConnectedDevices() {
     let hasMtp = false;
     let hasUsbPhysical = false;
 
+    let adbDriverError = false;
+    let fastbootDriverError = false;
+    let mtkDriverError = false;
+
     for (const item of deviceList) {
       const name = (item.FriendlyName || '').toLowerCase();
       const id = (item.InstanceId || '').toLowerCase();
       const pnpClass = (item.PNPClass || '').toLowerCase();
+      const isProblematic = (typeof item.ConfigManagerErrorCode === 'number' && item.ConfigManagerErrorCode !== 0) || (item.Status && item.Status !== 'OK');
 
       // 1. Check Fastboot / Bootloader
       if (name.includes('bootloader') || name.includes('fastboot') || id.includes('pid_d00d') || id.includes('pid_4ee0')) {
         hasFastboot = true;
         hasUsbPhysical = true;
+        if (isProblematic) fastbootDriverError = true;
       } 
       // 2. Check MTK BROM / Preloader / VCOM
       else if (name.includes('preloader') || name.includes('vcom') || id.includes('vid_0e8d') || name.includes('mediatek')) {
         hasMtk = true;
         hasUsbPhysical = true;
+        if (isProblematic) mtkDriverError = true;
       } 
       // 3. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
       else if (name.includes('adb') || (pnpClass === 'androidusbdeviceclass' && !name.includes('bootloader') && !name.includes('fastboot'))) {
         hasAdb = true;
         hasUsbPhysical = true;
+        if (isProblematic) adbDriverError = true;
       }
       // 4. Check File Transfer / MTP (WPD class or MTP description)
       else if (pnpClass === 'wpd' || name.includes('mtp') || id.includes('ms_comp_mtp')) {
@@ -201,11 +209,11 @@ export async function checkConnectedDevices() {
 
     let detectedMode = 'USB Connected';
     if (hasFastboot) {
-      detectedMode = 'Fastboot Mode';
+      detectedMode = fastbootDriverError ? 'Fastboot (Driver Missing ⚠️)' : 'Fastboot Mode';
     } else if (hasMtk) {
-      detectedMode = 'MediaTek BROM / Preloader';
+      detectedMode = mtkDriverError ? 'MediaTek (Driver Missing ⚠️)' : 'MediaTek BROM / Preloader';
     } else if (hasAdb) {
-      detectedMode = 'ADB Debugging';
+      detectedMode = adbDriverError ? 'ADB (Driver Missing ⚠️)' : 'ADB Debugging';
     } else if (hasMtp) {
       detectedMode = 'File Transfer (MTP)';
     } else if (isConnected) {
@@ -217,11 +225,15 @@ export async function checkConnectedDevices() {
 
     return {
       connected: isConnected,
-      adb: hasAdb,
-      fastboot: hasFastboot,
-      mtk: hasMtk,
+      adb: hasAdb && !adbDriverError,
+      adbError: adbDriverError,
+      fastboot: hasFastboot && !fastbootDriverError,
+      fastbootError: fastbootDriverError,
+      mtk: hasMtk && !mtkDriverError,
+      mtkError: mtkDriverError,
       mtp: hasMtp,
       mode: isConnected ? detectedMode : null,
+      driverError: fastbootDriverError || adbDriverError || mtkDriverError,
       brand: resolved.brand || (isConnected ? (parsed.Brand || 'Android') : null),
       model: resolved.model || parsed.Model,
       rawModel: rawModel

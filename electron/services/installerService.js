@@ -314,11 +314,24 @@ export async function installGoogleDriver(eventSender) {
 
   const effectiveInfPath = fs.existsSync(infPath) ? infPath : path.join(bundledGoogleDir, 'android_winusb.inf');
 
-  notify(60, 'Registering android_winusb.inf into Windows DriverStore...');
-  await sleep(300);
-
-  notify(75, 'Installing driver package via Windows PnP Utility...');
+  notify(70, 'Installing driver package via Windows PnP Utility...');
   await executePnPUtil(effectiveInfPath);
+
+  // 2. Stage and install Motorola Fastboot / Bootloader driver
+  const bundledMotoDir = getBundledDir('drivers', 'motorola');
+  const targetMotoDir = path.join(DRIVERS_STAGING_DIR, 'motorola');
+  if (fs.existsSync(bundledMotoDir)) {
+    copyFolderRecursive(bundledMotoDir, targetMotoDir);
+    const motoInf2 = path.join(targetMotoDir, 'motoandroid2.inf');
+    if (fs.existsSync(motoInf2)) {
+      try {
+        notify(82, 'Registering Motorola Fastboot driver (motoandroid2.inf)...');
+        await executePnPUtil(motoInf2);
+      } catch (e) {
+        console.warn('Motorola Fastboot driver install notice:', e.message);
+      }
+    }
+  }
 
   notify(95, 'Verifying driver installation in Windows DriverStore...');
   await sleep(350);

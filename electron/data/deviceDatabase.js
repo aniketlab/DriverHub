@@ -432,9 +432,15 @@ export const DEVICE_CATALOG = {
   'XT2363-1': { brand: 'Motorola', model: 'Moto G34 5G' },
   'XT2363-2': { brand: 'Motorola', model: 'Moto G34 5G' },
   'XT2363-3': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2363-4': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2363-5': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'XT2363': { brand: 'Motorola', model: 'Moto G34 5G' },
   'moto g34 5G': { brand: 'Motorola', model: 'Moto G34 5G' },
   'moto_g34_5G': { brand: 'Motorola', model: 'Moto G34 5G' },
   'fogos': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'fogos S': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'Fastboot fogos S': { brand: 'Motorola', model: 'Moto G34 5G' },
+  'Fastboot fogos': { brand: 'Motorola', model: 'Moto G34 5G' },
   'XT2343-1': { brand: 'Motorola', model: 'Moto G54 5G' },
   'XT2433-1': { brand: 'Motorola', model: 'Moto G64 5G' },
   'XT2347-1': { brand: 'Motorola', model: 'Moto G84 5G' },
@@ -486,6 +492,17 @@ export function resolveDevice(rawModel, detectedBrand) {
   // 1. Direct dictionary match
   if (DEVICE_CATALOG[clean]) {
     return DEVICE_CATALOG[clean];
+  }
+
+  // Fastboot string normalization (e.g., "Fastboot fogos S" -> "fogos")
+  const strippedFastboot = clean
+    .replace(/^fastboot\s+/i, '')
+    .replace(/\s+fastboot$/i, '')
+    .replace(/\s+S$/i, '')
+    .trim();
+
+  if (strippedFastboot && DEVICE_CATALOG[strippedFastboot]) {
+    return DEVICE_CATALOG[strippedFastboot];
   }
 
   // 2. Case-insensitive dictionary match
