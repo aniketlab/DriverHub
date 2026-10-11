@@ -567,13 +567,13 @@ function NavItem({ icon: Icon, label, active, onClick }) {
     <button 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap cursor-pointer",
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
         active 
-          ? "bg-green-50 text-green-700" 
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          ? "bg-green-50 text-green-800 font-semibold border-green-200/90 shadow-sm" 
+          : "border-transparent text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900"
       )}
     >
-      <Icon className={cn("w-4 h-4 shrink-0", active ? "text-green-600" : "text-slate-400")} />
+      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600" : "text-slate-400")} />
       {label}
     </button>
   );
