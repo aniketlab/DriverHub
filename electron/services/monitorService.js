@@ -37,12 +37,14 @@ function getScriptPath() {
 
 let isChecking = false;
 
+let lastKnownPhysicalDevice = null;
+
 // Dynamically discover candidate ADB executable paths
 function getAdbExecutable() {
   const candidates = [
+    'C:\\platform-tools-latest-windows\\adb.exe',
     path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools', 'adb.exe'),
     path.join(__dirname, '..', 'bin', 'platform-tools', 'adb.exe'),
-    'C:\\platform-tools-latest-windows\\adb.exe',
     path.join(os.homedir(), 'Downloads', 'platform-tools', 'adb.exe'),
     path.join(os.homedir(), 'Downloads', 'Programs', 'POCO M7 Plus', 'platform-tools', 'adb.exe'),
   ];
@@ -60,6 +62,108 @@ function getAdbExecutable() {
     }
   }
   return 'adb';
+}
+
+function getFastbootExecutable() {
+  const candidates = [
+    'C:\\platform-tools-latest-windows\\fastboot.exe',
+    path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'platform-tools', 'fastboot.exe'),
+    path.join(__dirname, '..', 'bin', 'platform-tools', 'fastboot.exe'),
+    path.join(os.homedir(), 'Downloads', 'platform-tools', 'fastboot.exe'),
+    path.join(os.homedir(), 'Downloads', 'Programs', 'POCO M7 Plus', 'platform-tools', 'fastboot.exe'),
+  ];
+
+  if (process.resourcesPath) {
+    candidates.push(
+      path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'bin', 'platform-tools', 'fastboot.exe'),
+      path.join(process.resourcesPath, 'electron', 'bin', 'platform-tools', 'fastboot.exe')
+    );
+  }
+
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      return `"${c}"`;
+    }
+  }
+  return 'fastboot';
+}
+
+// Direct fastboot query (< 50ms)
+async function checkFastbootDirect() {
+  try {
+    const fbCmd = getFastbootExecutable();
+    const { stdout, stderr } = await execPromise(`${fbCmd} devices`, { timeout: 1200 });
+    const output = ((stdout || '') + (stderr || '')).trim();
+    if (!output) return null;
+
+    const lines = output.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 2 && parts[1].toLowerCase().includes('fastboot')) {
+        const serial = parts[0];
+
+        let product = null;
+        let unlocked = null;
+        let isUserspace = false;
+
+        try {
+          const { stdout: pOut, stderr: pErr } = await execPromise(`${fbCmd} -s ${serial} getvar product`, { timeout: 1000 });
+          const m = ((pOut || '') + (pErr || '')).match(/product:\s*([^\r\n]+)/i);
+          if (m) product = m[1].trim();
+        } catch {}
+
+        try {
+          const { stdout: uOut, stderr: uErr } = await execPromise(`${fbCmd} -s ${serial} getvar unlocked`, { timeout: 1000 });
+          const m = ((uOut || '') + (uErr || '')).match(/unlocked:\s*([^\r\n]+)/i);
+          if (m) {
+            const v = m[1].trim().toLowerCase();
+            unlocked = (v === 'yes' || v === 'true' || v === '1') ? 'Unlocked 🟢' : 'Locked 🔒';
+          }
+        } catch {}
+
+        try {
+          const { stdout: sOut } = await execPromise(`${fbCmd} -s ${serial} getvar is-userspace`, { timeout: 800 });
+          if ((sOut || '').includes('yes')) isUserspace = true;
+        } catch {}
+
+        let resolved = null;
+        if (product) {
+          resolved = resolveDevice(product);
+        }
+
+        if ((!resolved || resolved.model.includes('Device') || resolved.brand === 'Google') && lastKnownPhysicalDevice) {
+          resolved = {
+            brand: lastKnownPhysicalDevice.brand,
+            model: lastKnownPhysicalDevice.model
+          };
+        } else if (!resolved) {
+          resolved = { brand: 'Android', model: 'Android Bootloader Device' };
+        }
+
+        return {
+          connected: true,
+          fastboot: true,
+          adb: false,
+          mtk: false,
+          mtp: false,
+          mode: isUserspace ? 'FastbootD Mode' : 'Fastboot Mode',
+          brand: resolved.brand || 'Android',
+          model: resolved.model || 'Android Bootloader',
+          rawModel: product ? `${product} • Fastboot` : (lastKnownPhysicalDevice?.model ? `${lastKnownPhysicalDevice.model} • Fastboot` : 'Bootloader'),
+          serial: serial,
+          androidVersion: isUserspace ? 'FastbootD (Userspace)' : 'Fastboot Bootloader',
+          battery: 'Host USB Powered',
+          bootloaderState: unlocked || 'Unlocked (Bootloader)',
+          storage: lastKnownPhysicalDevice?.storage ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage) : 'Device Protected',
+          usbSpeed: 'USB 3.0',
+          driverName: 'Android Bootloader Interface'
+        };
+      }
+    }
+  } catch {}
+  return null;
 }
 
 // Ultra-fast direct ADB query (< 50ms)
@@ -99,6 +203,15 @@ async function checkAdbDirect() {
           }
 
           const resolved = resolveDevice(rawModel || serial, brand);
+
+          if (resolved.model && !resolved.model.includes('Device')) {
+            lastKnownPhysicalDevice = {
+              brand: resolved.brand,
+              model: resolved.model,
+              rawModel: rawModel,
+              storage: null
+            };
+          }
 
           let androidVersion = null;
           let batteryInfo = { level: null, status: 'Charging', isCharging: true };
@@ -143,6 +256,9 @@ async function checkAdbDirect() {
                     free: parts[3],
                     percent: parts[4]
                   };
+                  if (lastKnownPhysicalDevice) {
+                    lastKnownPhysicalDevice.storage = storageInfo;
+                  }
                 }
               }
             } catch {}
@@ -187,6 +303,12 @@ async function doCheckConnectedDevices() {
     const directAdbResult = await checkAdbDirect();
     if (directAdbResult) {
       return directAdbResult;
+    }
+
+    // Tier 1.5: Check native Fastboot directly (< 50ms, 100% accurate)
+    const directFastbootResult = await checkFastbootDirect();
+    if (directFastbootResult) {
+      return directFastbootResult;
     }
 
     // Tier 2: Query Windows USB PnP (For Fastboot, MTK BROM, Preloader, VCOM, MTP, Charging)
@@ -289,7 +411,31 @@ async function doCheckConnectedDevices() {
       }
     }
 
-    const resolved = resolveDevice(rawModel, parsed.Brand);
+    let resolved = resolveDevice(rawModel, parsed.Brand);
+
+    // If real physical phone was detected (e.g. MTP or normal USB), cache it
+    if (resolved.model && !resolved.model.includes('Device') && resolved.brand !== 'Android') {
+      lastKnownPhysicalDevice = {
+        brand: resolved.brand,
+        model: resolved.model,
+        rawModel: rawModel,
+        storage: parsed.Storage || null
+      };
+    }
+
+    // If in Fastboot mode and identity is generic "Google Device" / "Android Bootloader"
+    if (hasFastboot) {
+      if ((!resolved.model || resolved.model.includes('Device') || resolved.brand === 'Google') && lastKnownPhysicalDevice) {
+        resolved = {
+          brand: lastKnownPhysicalDevice.brand,
+          model: lastKnownPhysicalDevice.model
+        };
+      }
+    }
+
+    const storageDisplay = hasFastboot
+      ? (lastKnownPhysicalDevice?.storage ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage) : 'Device Protected')
+      : (parsed.Storage || null);
 
     return {
       connected: isConnected,
@@ -306,11 +452,11 @@ async function doCheckConnectedDevices() {
       model: resolved.model || parsed.Model,
       rawModel: rawModel,
       usbSpeed: parsed.UsbSpeed || 'USB 2.0',
-      driverName: parsed.DriverName || (hasMtp ? 'MTP USB Device' : 'Android USB Driver'),
-      storage: parsed.Storage || null,
+      driverName: parsed.DriverName || (hasMtp ? 'MTP USB Device' : (hasFastboot ? 'Android Bootloader Interface' : 'Android USB Driver')),
+      storage: storageDisplay,
       battery: isConnected ? 'USB Powered' : null,
-      androidVersion: hasMtp ? 'File Transfer (MTP)' : null,
-      bootloaderState: hasFastboot ? 'Fastboot Mode' : null
+      androidVersion: hasMtp ? 'File Transfer (MTP)' : (hasFastboot ? 'Fastboot Bootloader' : null),
+      bootloaderState: hasFastboot ? 'Fastboot Bootloader' : null
     };
   } catch (err) {
     console.error('Device monitor error:', err.message);

@@ -454,12 +454,12 @@ export function DeviceMonitorPage({
                   {/* 1. Android OS / Mode */}
                   <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
                     <span className="text-[10px] text-slate-400 font-medium">
-                      {isMtp ? 'Connection Mode' : 'Android'}
+                      {isMtp ? 'Connection Mode' : (isFastboot ? 'Fastboot Mode' : 'Android')}
                     </span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1 truncate">
                       {isMtp 
                         ? 'MTP (File Transfer)' 
-                        : (deviceStatus?.androidVersion || (isAdb ? 'Android 14' : deviceStatus?.mode || 'Android'))}
+                        : (isFastboot ? (deviceStatus?.androidVersion || 'Fastboot Bootloader') : (deviceStatus?.androidVersion || (isAdb ? 'Android 14' : deviceStatus?.mode || 'Android')))}
                     </span>
                   </div>
 
@@ -493,7 +493,7 @@ export function DeviceMonitorPage({
                   <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
                     <span className="text-[10px] text-slate-400 font-medium">Driver</span>
                     <span className="text-[13px] font-bold text-slate-800 mt-1 truncate" title={deviceStatus?.driverName}>
-                      {deviceStatus?.driverName || (isFastboot ? 'Fastboot WinUSB' : isAdb ? 'Google USB Driver' : 'MTP USB Device')}
+                      {deviceStatus?.driverName || (isFastboot ? 'Android Bootloader Interface' : isAdb ? 'Google USB Driver' : 'MTP USB Device')}
                     </span>
                   </div>
 
@@ -517,7 +517,7 @@ export function DeviceMonitorPage({
                     <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
                       <span className="text-[10px] text-slate-400 font-medium">Bootloader</span>
                       <span className="text-[13px] font-bold text-slate-800 mt-1">
-                        {deviceStatus?.bootloaderState || (isFastboot ? 'Unlocked' : 'Locked')}
+                        {deviceStatus?.bootloaderState || (isFastboot ? 'Unlocked 🟢' : 'Locked')}
                       </span>
                     </div>
                   )}

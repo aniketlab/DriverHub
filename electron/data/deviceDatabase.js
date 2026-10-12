@@ -63,6 +63,16 @@ export const DEVICE_CATALOG = {
   'HD1911': { brand: 'OnePlus', model: 'OnePlus 7T Pro' },
   'HD1913': { brand: 'OnePlus', model: 'OnePlus 7T Pro' },
   'HD1925': { brand: 'OnePlus', model: 'OnePlus 7T Pro 5G McLaren' },
+  // Fastboot Product Codenames
+  'hotdogb': { brand: 'OnePlus', model: 'OnePlus 7T' },
+  'hotdog': { brand: 'OnePlus', model: 'OnePlus 7T Pro' },
+  'guacamole': { brand: 'OnePlus', model: 'OnePlus 7 Pro' },
+  'guacamoleb': { brand: 'OnePlus', model: 'OnePlus 7' },
+  'kebab': { brand: 'OnePlus', model: 'OnePlus 8T' },
+  'instantnoodle': { brand: 'OnePlus', model: 'OnePlus 8' },
+  'instantnoodlep': { brand: 'OnePlus', model: 'OnePlus 8 Pro' },
+  'lemonade': { brand: 'OnePlus', model: 'OnePlus 9' },
+  'lemonadep': { brand: 'OnePlus', model: 'OnePlus 9 Pro' },
 
   // OnePlus 8 Series
   'IN2010': { brand: 'OnePlus', model: 'OnePlus 8' },

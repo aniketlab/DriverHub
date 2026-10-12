@@ -62,7 +62,13 @@ if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
             "22D9" { $phoneBrand = "OnePlus / OPPO" }
             "2A70" { $phoneBrand = "OnePlus" }
             "04E8" { $phoneBrand = "Samsung" }
-            "18D1" { $phoneBrand = "Google" }
+            "18D1" { 
+                if ($activeDevices[0].Name -like "*Bootloader*" -or $activeDevices[0].Name -like "*Fastboot*") {
+                    $phoneBrand = "Android (Bootloader)"
+                } else {
+                    $phoneBrand = "Google"
+                }
+            }
             "2B4B" { $phoneBrand = "Vivo" }
             "19D2" { $phoneBrand = "RedMagic" }
             "2E04" { $phoneBrand = "Tecno" }
