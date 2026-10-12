@@ -148,6 +148,11 @@ async function checkAdbDirect() {
             } catch {}
           }
 
+          let batteryDisplay = 'Charging';
+          if (batteryInfo.level) {
+            batteryDisplay = `${batteryInfo.level} • ${batteryInfo.status}`;
+          }
+
           return {
             connected: true,
             adb: true,
@@ -161,9 +166,9 @@ async function checkAdbDirect() {
             rawModel: rawModel || serial,
             serial: serial,
             androidVersion: androidVersion || 'Android',
-            battery: batteryInfo,
+            battery: batteryDisplay,
             bootloaderState: bootloaderState,
-            storage: storageInfo,
+            storage: storageInfo ? `${storageInfo.free} free of ${storageInfo.total}` : 'Internal Storage',
             usbSpeed: 'USB 3.0',
             driverName: 'Android Composite ADB Interface'
           };
@@ -176,12 +181,7 @@ async function checkAdbDirect() {
   return null;
 }
 
-export async function checkConnectedDevices() {
-  if (isChecking) {
-    return null; // Avoid overlapping executions
-  }
-  isChecking = true;
-
+async function doCheckConnectedDevices() {
   try {
     // Tier 1: Check native ADB daemon directly (< 50ms, 100% accurate)
     const directAdbResult = await checkAdbDirect();
@@ -308,14 +308,43 @@ export async function checkConnectedDevices() {
       usbSpeed: parsed.UsbSpeed || 'USB 2.0',
       driverName: parsed.DriverName || (hasMtp ? 'MTP USB Device' : 'Android USB Driver'),
       storage: parsed.Storage || null,
-      battery: isConnected ? { level: null, status: 'Charging', isCharging: true } : null,
+      battery: isConnected ? 'USB Powered' : null,
       androidVersion: hasMtp ? 'File Transfer (MTP)' : null,
       bootloaderState: hasFastboot ? 'Fastboot Mode' : null
     };
   } catch (err) {
     console.error('Device monitor error:', err.message);
-    return { connected: false, adb: false, fastboot: false, mtk: false, brand: null, model: null, mode: null };
+    return { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
+  }
+}
+
+let consecutiveDisconnects = 0;
+let lastKnownDevice = null;
+
+export async function checkConnectedDevices() {
+  if (isChecking) {
+    return null; // Avoid overlapping executions
+  }
+  isChecking = true;
+
+  try {
+    const rawResult = await doCheckConnectedDevices();
+    if (rawResult && rawResult.connected) {
+      consecutiveDisconnects = 0;
+      lastKnownDevice = rawResult;
+      return rawResult;
+    }
+
+    // Debounce temporary 1-frame connection loss during USB mode switch / plug handshake
+    consecutiveDisconnects++;
+    if (consecutiveDisconnects < 2 && lastKnownDevice && lastKnownDevice.connected) {
+      return lastKnownDevice;
+    }
+
+    lastKnownDevice = null;
+    return rawResult || { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
   } finally {
     isChecking = false;
   }
 }
+

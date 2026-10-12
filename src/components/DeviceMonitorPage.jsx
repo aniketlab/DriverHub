@@ -49,6 +49,36 @@ export function DeviceMonitorPage({
   const storageFree = storageObj?.free || null;
   const storagePct = storageObj?.percent ? parseInt(storageObj.percent) : 25;
 
+  // Bulletproof Battery display: GUARANTEED to never be an Object (fixes White Screen of Death on ADB toggle)
+  const getBatteryLabel = () => {
+    if (isMtp) return 'USB Powered';
+    if (typeof deviceStatus?.battery === 'string') return deviceStatus.battery;
+    if (typeof deviceStatus?.battery === 'object' && deviceStatus?.battery !== null) {
+      if (deviceStatus.battery.level) {
+        return `${deviceStatus.battery.level} • ${deviceStatus.battery.status || ''}`.trim();
+      }
+      return deviceStatus.battery.status || 'Charging';
+    }
+    return isAdb ? '82% • Charging' : 'USB Powered';
+  };
+
+  const getBatteryPercent = () => {
+    if (isMtp) return 100;
+    let val = null;
+    if (typeof deviceStatus?.battery === 'string') val = deviceStatus.battery;
+    else if (typeof deviceStatus?.battery === 'object' && deviceStatus?.battery !== null) {
+      val = deviceStatus.battery.level;
+    }
+    const num = parseInt(val);
+    return !isNaN(num) && num > 0 ? num : 82;
+  };
+
+  const getStorageDisplay = () => {
+    if (typeof deviceStatus?.storage === 'string') return deviceStatus.storage;
+    if (storageTotal) return `${storageTotal} Internal`;
+    return '128 GB';
+  };
+
 
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none">
@@ -440,14 +470,12 @@ export function DeviceMonitorPage({
                     </span>
                     <div className="mt-1">
                       <span className="text-[13px] font-bold text-slate-800">
-                        {isMtp 
-                          ? 'USB Powered' 
-                          : (deviceStatus?.battery || (isAdb ? '82%' : 'Charging'))}
+                        {getBatteryLabel()}
                       </span>
                       <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
                         <div 
                           className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
-                          style={{ width: isMtp ? '100%' : (parseInt(deviceStatus?.battery) ? `${parseInt(deviceStatus?.battery)}%` : '82%') }} 
+                          style={{ width: `${getBatteryPercent()}%` }} 
                         />
                       </div>
                     </div>
@@ -506,7 +534,7 @@ export function DeviceMonitorPage({
                     </div>
                     <div className="mt-1">
                       <span className="text-[13px] font-bold text-slate-800 truncate block">
-                        {storageTotal ? `${storageTotal} Internal` : (typeof deviceStatus?.storage === 'string' ? deviceStatus.storage : '128 GB')}
+                        {getStorageDisplay()}
                       </span>
                       <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
                         <div 
