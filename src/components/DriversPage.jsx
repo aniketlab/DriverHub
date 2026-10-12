@@ -10,7 +10,9 @@ import {
   X, 
   ShieldCheck, 
   Download,
-  AlertCircle
+  AlertCircle,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -84,6 +86,7 @@ export function DriversPage({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'installed' | 'updates' | 'not_installed'
+  const [soundEnabled, setSoundEnabled] = useState(() => haptic.isEnabled());
   const [createRestorePoint, setCreateRestorePoint] = useState(() => {
     try {
       const saved = localStorage.getItem('driverhub_restore_point');
@@ -238,7 +241,7 @@ export function DriversPage({
   const isAllVisibleSelected = filteredPackages.length > 0 && filteredPackages.every(p => selectedIds.has(p.id));
 
   const handleToggleSelectAll = () => {
-    haptic.tick(550, 0.02, 0.04);
+    haptic.tick();
     if (isAllVisibleSelected) {
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -257,13 +260,13 @@ export function DriversPage({
   // Execution Handlers with Haptic Audio
   const handleInstallSingle = (id) => {
     if (isInstalling) return;
-    haptic.tick(650, 0.025, 0.05);
+    haptic.tick();
     onInstallDrivers?.([id], { createRestorePoint });
   };
 
   const handleInstallSelected = () => {
     if (isInstalling || selectedIds.size === 0) return;
-    haptic.tick(700, 0.03, 0.06);
+    haptic.tick();
     onInstallDrivers?.(Array.from(selectedIds), { createRestorePoint });
   };
 
@@ -328,9 +331,30 @@ export function DriversPage({
               }}
               disabled={isScanning || isInstalling}
               title="Re-scan DriverStore"
-              className="p-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-90 rounded-xl text-slate-600 shadow-2xs transition-all duration-150 cursor-pointer disabled:opacity-50"
+              className="p-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-[0.96] rounded-xl text-slate-600 shadow-2xs transition-all duration-150 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isScanning && "animate-spin text-emerald-600")} />
+            </button>
+
+            {/* Tactile Audio Mute / Unmute Toggle */}
+            <button
+              onClick={() => {
+                const next = haptic.toggle();
+                setSoundEnabled(next);
+              }}
+              title={soundEnabled ? "Tactile Audio: Enabled (Click to mute)" : "Tactile Audio: Muted (Click to unmute)"}
+              className={cn(
+                "p-2 border rounded-xl shadow-2xs transition-all duration-150 cursor-pointer active:scale-[0.96] flex items-center justify-center",
+                soundEnabled 
+                  ? "bg-white border-slate-200/90 text-emerald-600 hover:bg-slate-50" 
+                  : "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200/70"
+              )}
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5 text-slate-400" />
+              )}
             </button>
           </div>
         </div>
@@ -340,82 +364,53 @@ export function DriversPage({
         {/* ========================================================= */}
         <div 
           ref={tabsContainerRef} 
-          className="relative flex items-center p-1 bg-slate-200/60 backdrop-blur-sm rounded-xl w-fit border border-slate-300/40 shadow-inner"
+          className="relative flex items-center p-1 bg-slate-200/50 backdrop-blur-sm rounded-xl w-fit border border-slate-200/70 shadow-2xs select-none"
         >
           {/* Smooth Sliding Magnetic Background Pill */}
           <div
-            className="absolute top-1 bottom-1 bg-white rounded-lg shadow-xs pointer-events-none transition-all duration-300"
+            className="absolute left-0 top-1 bottom-1 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.03)] border border-slate-900/[0.04] pointer-events-none"
             style={{
-              transform: `translateX(${indicatorStyle.left - 4}px)`,
+              transform: `translateX(${indicatorStyle.left}px)`,
               width: `${indicatorStyle.width}px`,
+              transition: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), width 220ms cubic-bezier(0.16, 1, 0.3, 1)',
               opacity: indicatorStyle.ready ? 1 : 0,
-              transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
             }}
           />
 
-          <button
-            ref={el => { if (el) tabRefs.current['all'] = el; }}
-            onClick={() => {
-              if (activeFilter !== 'all') haptic.tab();
-              setActiveFilter('all');
-            }}
-            className={cn(
-              "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-95",
-              activeFilter === 'all'
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            All · {counts.all}
-          </button>
-          
-          <button
-            ref={el => { if (el) tabRefs.current['installed'] = el; }}
-            onClick={() => {
-              if (activeFilter !== 'installed') haptic.tab();
-              setActiveFilter('installed');
-            }}
-            className={cn(
-              "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-95",
-              activeFilter === 'installed'
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            Installed · {counts.installed}
-          </button>
-
-          <button
-            ref={el => { if (el) tabRefs.current['updates'] = el; }}
-            onClick={() => {
-              if (activeFilter !== 'updates') haptic.tab();
-              setActiveFilter('updates');
-            }}
-            className={cn(
-              "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-95",
-              activeFilter === 'updates'
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            Updates · {counts.updates}
-          </button>
-
-          <button
-            ref={el => { if (el) tabRefs.current['not_installed'] = el; }}
-            onClick={() => {
-              if (activeFilter !== 'not_installed') haptic.tab();
-              setActiveFilter('not_installed');
-            }}
-            className={cn(
-              "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 cursor-pointer active:scale-95",
-              activeFilter === 'not_installed'
-                ? "text-slate-900"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            Not installed · {counts.not_installed}
-          </button>
+          {[
+            { id: 'all', label: 'All', count: counts.all },
+            { id: 'installed', label: 'Installed', count: counts.installed },
+            { id: 'updates', label: 'Updates', count: counts.updates },
+            { id: 'not_installed', label: 'Not installed', count: counts.not_installed }
+          ].map(tab => {
+            const isActive = activeFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                ref={el => { if (el) tabRefs.current[tab.id] = el; }}
+                onClick={() => {
+                  if (activeFilter !== tab.id) haptic.tab();
+                  setActiveFilter(tab.id);
+                }}
+                className={cn(
+                  "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 cursor-pointer flex items-center gap-1.5 active:scale-[0.98]",
+                  isActive
+                    ? "text-slate-900 font-semibold"
+                    : "text-slate-500 hover:text-slate-800"
+                )}
+              >
+                <span>{tab.label}</span>
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.2 rounded-full font-mono transition-colors",
+                  isActive
+                    ? "bg-slate-100 text-slate-800 font-bold"
+                    : "text-slate-400 group-hover:text-slate-600"
+                )}>
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* ========================================================= */}
@@ -438,47 +433,43 @@ export function DriversPage({
                   {category}
                 </h3>
 
-                {/* Category Cards with Waterfall Entrance Stagger */}
+                {/* Category Cards */}
                 <div className="flex flex-col gap-2.5">
-                  {items.map((item, itemIdx) => {
+                  {items.map((item) => {
                     const isChecked = selectedIds.has(item.id);
                     const isCardInstalling = item.isThisInstalling;
-                    const staggerDelay = (catIdx * 2 + itemIdx) * 45;
 
                     return (
                       <div
-                        key={`${activeFilter}-${item.id}`}
-                        style={{
-                          animationDelay: `${staggerDelay}ms`
-                        }}
+                        key={item.id}
                         className={cn(
-                          "animate-card-in group bg-white rounded-2xl p-4 transition-all duration-200 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
+                          "group bg-white rounded-2xl p-4 transition-all duration-200 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
                           isChecked 
                             ? "border-2 border-emerald-500 ring-4 ring-emerald-500/10 shadow-xs" 
-                            : "border border-slate-200/80 hover:border-slate-300/90 hover:shadow-xs"
+                            : "border border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
                         )}
                       >
                         <div className="flex items-center justify-between gap-4">
                           
-                          {/* Left: Bouncy Checkbox + Icon + Details */}
+                          {/* Left: Checkbox + Icon + Details */}
                           <div className="flex items-center gap-3.5 min-w-0">
-                            {/* Checkbox with Spring Pop */}
+                            {/* Checkbox with Smooth Pop */}
                             <button
                               type="button"
                               onClick={() => handleToggleSelect(item.id)}
                               className={cn(
-                                "w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 cursor-pointer shrink-0 active:scale-75",
+                                "w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 active:scale-90",
                                 isChecked
-                                  ? "bg-emerald-600 border-emerald-600 text-white shadow-2xs animate-pop-bounce"
+                                  ? "bg-emerald-600 border-emerald-600 text-white shadow-2xs"
                                   : "border-slate-300 hover:border-slate-400 bg-white"
                               )}
                             >
-                              {isChecked && <Check className="w-3.5 h-3.5 stroke-[3] animate-pop-bounce" />}
+                              {isChecked && <Check className="w-3.5 h-3.5 stroke-[3] animate-check-pop" />}
                             </button>
 
                             {/* Icon Squircle */}
                             <div className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-transform duration-200 group-hover:scale-105",
+                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-transform duration-200 group-hover:scale-[1.03]",
                               item.iconBg
                             )}>
                               {renderIcon(item.iconType)}
@@ -507,7 +498,7 @@ export function DriversPage({
                             
                             {/* Mode Tag */}
                             <span className={cn(
-                              "text-[11px] font-semibold px-3 py-1 rounded-full border border-transparent select-none transition-transform duration-150 group-hover:scale-105",
+                              "text-[11px] font-semibold px-3 py-1 rounded-full border border-transparent select-none",
                               item.modeColor
                             )}>
                               {item.modeTag}
@@ -528,7 +519,7 @@ export function DriversPage({
                               onClick={() => handleInstallSingle(item.id)}
                               disabled={isInstalling}
                               className={cn(
-                                "min-w-[84px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
+                                "min-w-[84px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
                                 item.status === 'installed'
                                   ? "bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                                   : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-700/20 hover:shadow-xs"
@@ -550,7 +541,7 @@ export function DriversPage({
 
                         {/* Inline progress bar when installing this specific driver */}
                         {isCardInstalling && (
-                          <div className="mt-1 pt-2 border-t border-slate-100 flex flex-col gap-1.5 animate-card-in">
+                          <div className="mt-1 pt-2 border-t border-slate-100 flex flex-col gap-1.5 animate-luxury-in">
                             <div className="flex items-center justify-between text-[11px]">
                               <span className="text-slate-500 font-mono truncate max-w-md">
                                 {item.progressMessage || 'Installing package via Windows DriverStore...'}
@@ -594,18 +585,15 @@ export function DriversPage({
               aria-checked={createRestorePoint}
               onClick={handleToggleRestorePoint}
               className={cn(
-                "w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer focus:outline-none shrink-0 active:scale-95 shadow-inner",
+                "w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer focus:outline-none shrink-0 active:scale-[0.96] shadow-inner",
                 createRestorePoint ? "bg-emerald-600" : "bg-slate-300"
               )}
             >
               <span
                 className={cn(
-                  "w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-xs transition-all duration-300",
-                  createRestorePoint ? "left-[22px]" : "left-0.5"
+                  "w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-xs transition-transform duration-200 ease-out",
+                  createRestorePoint ? "translate-x-5" : "translate-x-0.5"
                 )}
-                style={{
-                  transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)"
-                }}
               />
             </button>
             <div className="flex flex-col">
@@ -626,7 +614,7 @@ export function DriversPage({
 
             <button
               onClick={handleToggleSelectAll}
-              className="px-4 py-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-95 text-slate-700 font-semibold rounded-xl text-xs shadow-2xs transition-all duration-150 cursor-pointer"
+              className="px-4 py-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-semibold rounded-xl text-xs shadow-2xs transition-all duration-150 cursor-pointer"
             >
               {isAllVisibleSelected ? "Deselect all" : "Select all"}
             </button>
@@ -634,7 +622,7 @@ export function DriversPage({
             <button
               onClick={handleInstallSelected}
               disabled={selectedIds.size === 0 || isInstalling}
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold rounded-xl text-xs shadow-sm shadow-emerald-700/20 transition-all duration-150 cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold rounded-xl text-xs shadow-sm shadow-emerald-700/20 transition-all duration-150 cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {isInstalling ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
