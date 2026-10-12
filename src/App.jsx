@@ -603,13 +603,13 @@ function NavItem({ icon: Icon, label, active, onClick }) {
     <button 
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
+        "group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
         active 
-          ? "bg-green-50 text-green-800 font-semibold border-green-200/90 shadow-sm" 
-          : "border-transparent text-slate-600 font-medium hover:bg-slate-50 hover:text-slate-900"
+          ? "bg-green-50 text-green-800 font-semibold border-green-200/90 shadow-2xs" 
+          : "border-transparent text-slate-600 font-medium hover:bg-slate-100 hover:text-slate-900 hover:border-slate-200/70 hover:shadow-2xs"
       )}
     >
-      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600" : "text-slate-400")} />
+      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600" : "text-slate-400 group-hover:text-slate-700")} />
       {label}
     </button>
   );

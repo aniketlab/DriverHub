@@ -65,7 +65,7 @@ export function DeviceMonitorPage({
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
               <span>Refresh</span>
@@ -468,14 +468,14 @@ export function DeviceMonitorPage({
 
                   <button
                     onClick={onRebootRecovery}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
                   >
                     Reboot to recovery
                   </button>
 
                   <button
                     onClick={onOpenShell}
-                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                    className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
                   >
                     Open ADB shell
                   </button>
