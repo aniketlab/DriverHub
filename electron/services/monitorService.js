@@ -100,16 +100,72 @@ async function checkAdbDirect() {
 
           const resolved = resolveDevice(rawModel || serial, brand);
 
+          let androidVersion = null;
+          let batteryInfo = { level: null, status: 'Charging', isCharging: true };
+          let bootloaderState = 'Locked';
+          let storageInfo = null;
+
+          if (state === 'device') {
+            try {
+              const { stdout: osRelease } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.build.version.release`, { timeout: 1200 });
+              if (osRelease.trim()) androidVersion = `Android ${osRelease.trim()}`;
+            } catch {}
+
+            try {
+              const { stdout: bDump } = await execPromise(`${adbCmd} -s ${serial} shell dumpsys battery`, { timeout: 1200 });
+              const levelMatch = bDump.match(/level:\s*(\d+)/i);
+              const statusMatch = bDump.match(/status:\s*(\d+)/i);
+              const isCharging = statusMatch && (statusMatch[1] === '2' || statusMatch[1] === '5');
+              if (levelMatch) {
+                batteryInfo = {
+                  level: `${levelMatch[1]}%`,
+                  status: isCharging ? 'Charging' : 'On Battery',
+                  isCharging: Boolean(isCharging)
+                };
+              }
+            } catch {}
+
+            try {
+              const { stdout: blProp } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.boot.flash.locked`, { timeout: 1000 });
+              if (blProp.trim() === '1') bootloaderState = 'Locked';
+              else if (blProp.trim() === '0') bootloaderState = 'Unlocked';
+            } catch {}
+
+            try {
+              const { stdout: dfOut } = await execPromise(`${adbCmd} -s ${serial} shell df -h /data`, { timeout: 1200 });
+              const lines = dfOut.trim().split('\n');
+              if (lines.length > 1) {
+                const parts = lines[1].trim().split(/\s+/);
+                if (parts.length >= 5) {
+                  storageInfo = {
+                    total: parts[1],
+                    used: parts[2],
+                    free: parts[3],
+                    percent: parts[4]
+                  };
+                }
+              }
+            } catch {}
+          }
+
           return {
             connected: true,
             adb: true,
+            adbAuthorized: state === 'device',
             fastboot: false,
             mtk: false,
             mtp: false,
-            mode: 'ADB Debugging',
+            mode: state === 'device' ? 'ADB Debugging' : 'ADB (Unauthorized)',
             brand: resolved.brand || brand || 'Android',
             model: resolved.model || rawModel || 'Android Device',
-            rawModel: rawModel || serial
+            rawModel: rawModel || serial,
+            serial: serial,
+            androidVersion: androidVersion || 'Android',
+            battery: batteryInfo,
+            bootloaderState: bootloaderState,
+            storage: storageInfo,
+            usbSpeed: 'USB 3.0',
+            driverName: 'Android Composite ADB Interface'
           };
         }
       }
@@ -248,7 +304,13 @@ export async function checkConnectedDevices() {
       driverError: fastbootDriverError || adbDriverError || mtkDriverError,
       brand: resolved.brand || (isConnected ? (parsed.Brand || 'Android') : null),
       model: resolved.model || parsed.Model,
-      rawModel: rawModel
+      rawModel: rawModel,
+      usbSpeed: parsed.UsbSpeed || 'USB 2.0',
+      driverName: parsed.DriverName || (hasMtp ? 'MTP USB Device' : 'Android USB Driver'),
+      storage: parsed.Storage || null,
+      battery: isConnected ? { level: null, status: 'Charging', isCharging: true } : null,
+      androidVersion: hasMtp ? 'File Transfer (MTP)' : null,
+      bootloaderState: hasFastboot ? 'Fastboot Mode' : null
     };
   } catch (err) {
     console.error('Device monitor error:', err.message);

@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeDeviceMonitorListener: () => ipcRenderer.removeAllListeners('device-monitor-update'),
   getConnectedDevices: () => ipcRenderer.invoke('get-connected-devices'),
   openFolder: (path) => ipcRenderer.invoke('open-folder', path),
+  rebootDevice: (mode) => ipcRenderer.invoke('reboot-device', mode),
+  openAdbShell: () => ipcRenderer.invoke('open-adb-shell'),
+  openPhoneStorage: (storagePath) => ipcRenderer.invoke('open-phone-storage', storagePath),
   runCommand: (command) => ipcRenderer.invoke('run-command', command),
   onLogMessage: (callback) => ipcRenderer.on('log-message', (_event, value) => callback(value)),
 });

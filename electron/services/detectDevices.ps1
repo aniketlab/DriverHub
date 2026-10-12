@@ -73,10 +73,65 @@ if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
     }
 }
 
-$output = [PSCustomObject]@{
-    Devices = @($activeDevices | Select-Object @{Name="FriendlyName"; Expression={$_.Name}}, @{Name="InstanceId"; Expression={$_.DeviceID}}, @{Name="PNPClass"; Expression={$_.PNPClass}}, Status, ConfigManagerErrorCode)
-    Brand   = $phoneBrand
-    Model   = $phoneModel
+$usbSpeed = "USB 2.0"
+$matchedDriver = "Android USB Driver"
+
+if ($activeDevices.Count -gt 0) {
+    try {
+        $primaryId = $activeDevices[0].DeviceID
+        $driverDesc = (Get-PnpDeviceProperty -InstanceId $primaryId -KeyName "DEVPKEY_Device_DriverDesc" -ErrorAction SilentlyContinue).Data
+        if ($driverDesc) { $matchedDriver = $driverDesc }
+        else { $matchedDriver = $activeDevices[0].Name }
+
+        $parentId = (Get-PnpDeviceProperty -InstanceId $primaryId -KeyName "DEVPKEY_Device_Parent" -ErrorAction SilentlyContinue).Data
+        if ($parentId) {
+            $parentDev = Get-PnpDevice -InstanceId $parentId -ErrorAction SilentlyContinue
+            if ($parentDev -and ($parentDev.FriendlyName -like "*3.0*" -or $parentDev.FriendlyName -like "*3.1*" -or $parentDev.FriendlyName -like "*3.2*" -or $parentDev.Service -eq "USBHUB3")) {
+                $usbSpeed = "USB 3.0"
+            } elseif ($parentId -like "*ROOT_HUB30*") {
+                $usbSpeed = "USB 3.0"
+            }
+        }
+    } catch {}
 }
 
-$output | ConvertTo-Json -Compress -Depth 2
+# Probe MTP Storage info (Name, Total, Free, Path) and Portable Device Friendly Name
+$storageData = $null
+try {
+    $shell = New-Object -ComObject Shell.Application
+    $thisPC = $shell.Namespace(17)
+    $portableDevice = $thisPC.Items() | Where-Object { 
+        $_.Name -notmatch 'Local Disk|New Volume|Kali|CD Drive|DVD Drive|^[A-Z]:' 
+    } | Select-Object -First 1
+
+    if ($portableDevice) {
+        if (-not $phoneModel -and $portableDevice.Name) {
+            $phoneModel = $portableDevice.Name
+        }
+        $folder = $portableDevice.GetFolder
+        $firstSub = $folder.Items() | Select-Object -First 1
+        if ($firstSub) {
+            $totalSize = $folder.GetDetailsOf($firstSub, 2)
+            $freeSpace = $folder.GetDetailsOf($firstSub, 3)
+            $pctFull = $folder.GetDetailsOf($firstSub, 4)
+            $storageData = [PSCustomObject]@{
+                Name    = $firstSub.Name
+                Total   = $totalSize
+                Free    = $freeSpace
+                Percent = $pctFull
+                Path    = $firstSub.Path
+            }
+        }
+    }
+} catch {}
+
+$output = [PSCustomObject]@{
+    Devices    = @($activeDevices | Select-Object @{Name="FriendlyName"; Expression={$_.Name}}, @{Name="InstanceId"; Expression={$_.DeviceID}}, @{Name="PNPClass"; Expression={$_.PNPClass}}, Status, ConfigManagerErrorCode)
+    Brand      = $phoneBrand
+    Model      = $phoneModel
+    UsbSpeed   = $usbSpeed
+    DriverName = $matchedDriver
+    Storage    = $storageData
+}
+
+$output | ConvertTo-Json -Compress -Depth 3

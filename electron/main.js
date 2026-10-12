@@ -5,6 +5,7 @@ import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
 import { installAdb, installGoogleDriver, installMtkDriver } from './services/installerService.js';
 import { syncDeviceDatabase } from './services/deviceSyncService.js';
+import { rebootDevice, openAdbShell, openPhoneStorage } from './services/deviceActionService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -100,6 +101,19 @@ function setupIpc() {
       console.log('Backend: Opening folder ->', folderPath);
       await shell.openPath(folderPath);
     }
+  });
+
+  // Device hardware actions
+  ipcMain.handle('reboot-device', async (event, mode) => {
+    return await rebootDevice(mode);
+  });
+
+  ipcMain.handle('open-adb-shell', async () => {
+    return await openAdbShell();
+  });
+
+  ipcMain.handle('open-phone-storage', async (event, storagePath) => {
+    return await openPhoneStorage(storagePath);
   });
 
   ipcMain.handle('run-command', async (event, command) => {

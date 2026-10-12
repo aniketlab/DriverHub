@@ -261,6 +261,48 @@ function App() {
     }
   };
 
+  const handleRebootDevice = async (mode) => {
+    try {
+      addLog('info', `Sending reboot command: ${mode}...`);
+      if (window.electronAPI?.rebootDevice) {
+        const res = await window.electronAPI.rebootDevice(mode);
+        addLog('success', res.message || `Rebooting to ${mode}...`);
+      } else {
+        addLog('warning', `Reboot to ${mode} (Mock - Electron API unavailable)`);
+      }
+    } catch (err) {
+      addLog('error', `Reboot failed: ${err.message}`);
+    }
+  };
+
+  const handleOpenAdbShell = async () => {
+    try {
+      addLog('info', 'Opening ADB shell terminal...');
+      if (window.electronAPI?.openAdbShell) {
+        const res = await window.electronAPI.openAdbShell();
+        addLog('success', res.message || 'ADB shell launched in terminal window.');
+      } else {
+        addLog('warning', 'ADB Shell (Mock - Electron API unavailable)');
+      }
+    } catch (err) {
+      addLog('error', `Failed to open ADB shell: ${err.message}`);
+    }
+  };
+
+  const handleOpenPhoneStorage = async (path) => {
+    try {
+      addLog('info', 'Opening phone internal storage in File Explorer...');
+      if (window.electronAPI?.openPhoneStorage) {
+        const res = await window.electronAPI.openPhoneStorage(path);
+        addLog('success', res.message || 'Phone storage opened in Windows File Explorer.');
+      } else {
+        addLog('warning', 'Phone Storage (Mock - Electron API unavailable)');
+      }
+    } catch (err) {
+      addLog('error', `Failed to open phone storage: ${err.message}`);
+    }
+  };
+
   const selectedCount = Object.values(selectedDrivers).filter(Boolean).length;
 
   const isAnyDeviceConnected = deviceStatus.connected;
@@ -319,15 +361,11 @@ function App() {
             deviceStatus={deviceStatus}
             onRefresh={handleScan}
             onNavigateToDrivers={() => setActiveTab('Dashboard')}
-            onRebootBootloader={() => {
-              addLog('info', 'Command triggered: adb reboot bootloader');
-            }}
-            onRebootRecovery={() => {
-              addLog('info', 'Command triggered: adb reboot recovery');
-            }}
-            onOpenShell={() => {
-              addLog('info', 'Command triggered: adb shell');
-            }}
+            onOpenPhoneStorage={handleOpenPhoneStorage}
+            onRebootBootloader={() => handleRebootDevice('bootloader')}
+            onRebootRecovery={() => handleRebootDevice('recovery')}
+            onRebootSystem={() => handleRebootDevice('system')}
+            onOpenShell={handleOpenAdbShell}
             activityLogs={logs.map(l => ({
               time: l.time,
               text: l.text,
