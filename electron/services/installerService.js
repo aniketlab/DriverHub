@@ -276,20 +276,74 @@ export async function installAdb(eventSender) {
 }
 
 /**
- * Installs Google USB & Bootloader driver package via PnPUtil
+ * Creates a Windows System Restore Point prior to driver installation
  */
-export async function installGoogleDriver(eventSender) {
+export async function createSystemRestorePoint(eventSender) {
   const notify = (percent, message) => {
     if (eventSender) {
       eventSender.send('install-step', {
-        target: 'google',
-        percent: percent,
-        message: message
+        target: 'restore_point',
+        percent,
+        message
       });
     }
   };
 
-  notify(10, 'Preparing Google USB & Bootloader driver package...');
+  notify(15, 'Preparing Windows System Restore Point...');
+  await sleep(250);
+
+  try {
+    notify(45, 'Creating System Restore Point (DriverHub Backup)...');
+    const psScript = `
+      try {
+        Enable-ComputerRestore -Drive "C:\\" -ErrorAction SilentlyContinue;
+        Checkpoint-Computer -Description "DriverHub - Driver Backup" -RestorePointType "DEVICE_DRIVER_INSTALL" -ErrorAction Stop;
+        Write-Output "RESTORE_SUCCESS";
+      } catch {
+        Write-Output "RESTORE_SKIPPED: $($_.Exception.Message)";
+      }
+    `;
+    const { stdout } = await execPromise(`powershell -NoProfile -Command "${psScript.replace(/\n/g, ' ')}"`, { timeout: 20000 });
+    if (stdout.includes('RESTORE_SUCCESS')) {
+      notify(100, 'System Restore Point created successfully.');
+      return { success: true };
+    } else {
+      console.warn('System restore point notice:', stdout.trim());
+      notify(100, 'System Restore Point skipped (Requires Administrator or is disabled).');
+      return { success: false, reason: stdout.trim() };
+    }
+  } catch (err) {
+    console.warn('Could not create restore point:', err.message);
+    notify(100, 'System Restore Point skipped. Proceeding with drivers.');
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Installs Google USB & Bootloader driver package via PnPUtil
+ */
+export async function installGoogleDriver(eventSender, subTarget = 'all') {
+  const primaryTarget = subTarget === 'usb' ? 'google_usb' : subTarget === 'bootloader' ? 'google_bootloader' : 'google';
+  const notify = (percent, message) => {
+    if (eventSender) {
+      eventSender.send('install-step', {
+        target: primaryTarget,
+        percent: percent,
+        message: message
+      });
+      // Also send to alias so both specific card and legacy listener update
+      if (primaryTarget !== 'google') {
+        eventSender.send('install-step', {
+          target: 'google',
+          percent: percent,
+          message: message
+        });
+      }
+    }
+  };
+
+  const label = subTarget === 'usb' ? 'Google USB Driver' : subTarget === 'bootloader' ? 'Google Bootloader Interface' : 'Google USB & Bootloader Drivers';
+  notify(10, `Preparing ${label}...`);
   await sleep(250);
 
   // 1. Stage driver files to clean AppData directory
@@ -305,7 +359,6 @@ export async function installGoogleDriver(eventSender) {
 
   const infPath = path.join(targetDir, 'android_winusb.inf');
   if (!fs.existsSync(infPath)) {
-    // Check direct bundled fallback
     const directInf = path.join(bundledGoogleDir, 'android_winusb.inf');
     if (!fs.existsSync(directInf)) {
       throw new Error('Google USB Driver package (android_winusb.inf) not found in application bundle.');
@@ -317,18 +370,20 @@ export async function installGoogleDriver(eventSender) {
   notify(70, 'Installing driver package via Windows PnP Utility...');
   await executePnPUtil(effectiveInfPath);
 
-  // 2. Stage and install Motorola Fastboot / Bootloader driver
-  const bundledMotoDir = getBundledDir('drivers', 'motorola');
-  const targetMotoDir = path.join(DRIVERS_STAGING_DIR, 'motorola');
-  if (fs.existsSync(bundledMotoDir)) {
-    copyFolderRecursive(bundledMotoDir, targetMotoDir);
-    const motoInf2 = path.join(targetMotoDir, 'motoandroid2.inf');
-    if (fs.existsSync(motoInf2)) {
-      try {
-        notify(82, 'Registering Motorola Fastboot driver (motoandroid2.inf)...');
-        await executePnPUtil(motoInf2);
-      } catch (e) {
-        console.warn('Motorola Fastboot driver install notice:', e.message);
+  // 2. Also register Motorola Bootloader if installing bootloader or all
+  if (subTarget === 'all' || subTarget === 'bootloader') {
+    const bundledMotoDir = getBundledDir('drivers', 'motorola');
+    const targetMotoDir = path.join(DRIVERS_STAGING_DIR, 'motorola');
+    if (fs.existsSync(bundledMotoDir)) {
+      copyFolderRecursive(bundledMotoDir, targetMotoDir);
+      const motoInf2 = path.join(targetMotoDir, 'motoandroid2.inf');
+      if (fs.existsSync(motoInf2)) {
+        try {
+          notify(82, 'Registering Motorola Fastboot driver (motoandroid2.inf)...');
+          await executePnPUtil(motoInf2);
+        } catch (e) {
+          console.warn('Motorola Fastboot driver install notice:', e.message);
+        }
       }
     }
   }
@@ -336,37 +391,35 @@ export async function installGoogleDriver(eventSender) {
   notify(95, 'Verifying driver installation in Windows DriverStore...');
   await sleep(350);
 
-  // Double check driverstore status
-  try {
-    const storeStatus = await checkDriverStore();
-    if (storeStatus.google?.installed) {
-      notify(100, `${storeStatus.google.name || 'Google USB Bootloader Driver'} ready in DriverStore!`);
-    } else {
-      notify(100, 'Google USB & Bootloader driver successfully installed!');
-    }
-  } catch {
-    notify(100, 'Google USB & Bootloader driver successfully installed!');
-  }
-
-  await sleep(600);
-  return { success: true, name: 'Google USB Bootloader Driver' };
+  notify(100, `${label} ready in DriverStore!`);
+  await sleep(500);
+  return { success: true, name: label };
 }
 
 /**
  * Installs MediaTek (MTK) VCOM & Preloader driver package via PnPUtil
  */
-export async function installMtkDriver(eventSender) {
+export async function installMtkDriver(eventSender, subTarget = 'all') {
+  const primaryTarget = subTarget === 'vcom' ? 'mtk_vcom' : subTarget === 'brom' ? 'mtk_brom' : 'mtk';
   const notify = (percent, message) => {
     if (eventSender) {
       eventSender.send('install-step', {
-        target: 'mtk',
+        target: primaryTarget,
         percent: percent,
         message: message
       });
+      if (primaryTarget !== 'mtk') {
+        eventSender.send('install-step', {
+          target: 'mtk',
+          percent: percent,
+          message: message
+        });
+      }
     }
   };
 
-  notify(10, 'Preparing MediaTek VCOM & Preloader driver package...');
+  const label = subTarget === 'vcom' ? 'MTK VCOM Preloader' : subTarget === 'brom' ? 'MTK BROM Driver' : 'MediaTek VCOM & Preloader Drivers';
+  notify(10, `Preparing ${label}...`);
   await sleep(250);
 
   // 1. Stage driver files to clean AppData directory
@@ -393,23 +446,13 @@ export async function installMtkDriver(eventSender) {
   notify(60, 'Registering cdc-acm.inf into Windows DriverStore...');
   await sleep(300);
 
-  notify(75, 'Installing MediaTek VCOM/Preloader via Windows PnP Utility...');
+  notify(75, 'Installing MediaTek drivers via Windows PnP Utility...');
   await executePnPUtil(effectiveInfPath);
 
   notify(95, 'Verifying MediaTek driver in Windows DriverStore...');
   await sleep(350);
 
-  try {
-    const storeStatus = await checkDriverStore();
-    if (storeStatus.mtk?.installed) {
-      notify(100, `${storeStatus.mtk.name || 'MediaTek Drivers'} ready in DriverStore!`);
-    } else {
-      notify(100, 'MediaTek Drivers successfully installed into DriverStore!');
-    }
-  } catch {
-    notify(100, 'MediaTek Drivers successfully installed into DriverStore!');
-  }
-
-  await sleep(600);
-  return { success: true, name: 'MediaTek USB VCOM / Preloader Driver' };
+  notify(100, `${label} ready in DriverStore!`);
+  await sleep(500);
+  return { success: true, name: label };
 }

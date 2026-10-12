@@ -14,6 +14,7 @@ import {
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { DeviceMonitorPage } from './components/DeviceMonitorPage';
+import { DriversPage } from './components/DriversPage';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -22,12 +23,22 @@ function cn(...inputs) {
 function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
+  const [installingTarget, setInstallingTarget] = useState(null);
 
-  // Individual driver scan states
+  // Individual driver scan states (legacy dashboard)
   const [driverStates, setDriverStates] = useState({
     adb: { scanning: false, scanned: false, installed: false, path: null },
     google: { scanning: false, scanned: false, installed: false },
     mtk: { scanning: false, scanned: false, installed: false, name: null }
+  });
+
+  // Granular driver packages state for dedicated Drivers page
+  const [packageStates, setPackageStates] = useState({
+    adb: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    google_usb: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    google_bootloader: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    mtk_vcom: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    mtk_brom: { installed: false, version: null, updateAvailable: false, isScanning: false }
   });
 
   // Real-time live connected device state (with Brand & Model)
@@ -86,9 +97,16 @@ function App() {
         const { target, state, data } = event;
 
         if (state === 'scanning') {
-          setDriverStates(prev => ({
+          if (['adb', 'google', 'mtk'].includes(target)) {
+            setDriverStates(prev => ({
+              ...prev,
+              [target]: { ...prev[target], scanning: true }
+            }));
+          }
+
+          setPackageStates(prev => ({
             ...prev,
-            [target]: { ...prev[target], scanning: true }
+            [target]: { ...prev[target], isScanning: true }
           }));
 
           if (target === 'adb') addLog('pending', 'Searching system PATH & LocalAppData for ADB Platform-Tools...');
@@ -96,14 +114,27 @@ function App() {
           if (target === 'mtk') addLog('pending', 'Scanning DriverStore for MediaTek VCOM & Preloader Drivers...');
         } 
         else if (state === 'done') {
-          setDriverStates(prev => ({
+          if (['adb', 'google', 'mtk'].includes(target)) {
+            setDriverStates(prev => ({
+              ...prev,
+              [target]: { 
+                scanning: false, 
+                scanned: true, 
+                installed: data.installed, 
+                path: data.path || null,
+                name: data.name || null
+              }
+            }));
+          }
+
+          setPackageStates(prev => ({
             ...prev,
-            [target]: { 
-              scanning: false, 
-              scanned: true, 
-              installed: data.installed, 
-              path: data.path || null,
-              name: data.name || null
+            [target]: {
+              ...prev[target],
+              isScanning: false,
+              installed: Boolean(data?.installed),
+              version: data?.version || prev[target]?.version || null,
+              updateAvailable: Boolean(data?.updateAvailable)
             }
           }));
 
@@ -177,7 +208,13 @@ function App() {
       });
     }
 
+    // Initial driver scan on app startup
+    const initTimer = setTimeout(() => {
+      handleScan();
+    }, 600);
+
     return () => {
+      clearTimeout(initTimer);
       if (window.electronAPI?.removeScanStepListener) {
         window.electronAPI.removeScanStepListener();
       }
@@ -258,6 +295,49 @@ function App() {
       addLog('error', `Installation interrupted: ${err.message || 'Unknown error'}`);
     } finally {
       setIsInstalling(false);
+    }
+  };
+
+  const handleInstallDrivers = async (targets = ['adb'], options = { createRestorePoint: true }) => {
+    if (!targets || targets.length === 0) return;
+    setIsInstalling(true);
+    setInstallingTarget(targets.length === 1 ? targets[0] : targets);
+    addLog('info', `--- Initiating Installation for: ${targets.map(t => t.toUpperCase()).join(', ')} ---`);
+    if (options.createRestorePoint) {
+      addLog('info', 'Creating Windows System Restore Point backup first...');
+    }
+
+    try {
+      if (window.electronAPI?.installDrivers) {
+        const results = await window.electronAPI.installDrivers({
+          targets,
+          createRestorePoint: options.createRestorePoint
+        });
+
+        setPackageStates(prev => {
+          const next = { ...prev };
+          targets.forEach(t => {
+            next[t] = {
+              ...next[t],
+              installed: true,
+              updateAvailable: false
+            };
+          });
+          return next;
+        });
+
+        addLog('success', `Installation completed successfully for: ${targets.join(', ')}.`);
+      } else {
+        addLog('warning', `Driver install simulated for: ${targets.join(', ')} (Mock mode).`);
+      }
+      await new Promise(r => setTimeout(r, 600));
+    } catch (err) {
+      console.error('Driver installation error:', err);
+      addLog('error', `Installation interrupted: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsInstalling(false);
+      setInstallingTarget(null);
+      handleScan();
     }
   };
 
@@ -360,7 +440,7 @@ function App() {
           <DeviceMonitorPage
             deviceStatus={deviceStatus}
             onRefresh={handleScan}
-            onNavigateToDrivers={() => setActiveTab('Dashboard')}
+            onNavigateToDrivers={() => setActiveTab('Drivers')}
             onOpenPhoneStorage={handleOpenPhoneStorage}
             onRebootBootloader={() => handleRebootDevice('bootloader')}
             onRebootRecovery={() => handleRebootDevice('recovery')}
@@ -372,6 +452,16 @@ function App() {
               highlight: l.type === 'success'
             }))}
             isRefreshing={isScanning}
+          />
+        ) : activeTab === 'Drivers' ? (
+          <DriversPage
+            packageStates={packageStates}
+            isScanning={isScanning}
+            isInstalling={isInstalling}
+            installingTarget={installingTarget}
+            installProgress={installProgress}
+            onScan={handleScan}
+            onInstallDrivers={handleInstallDrivers}
           />
         ) : (
           <>

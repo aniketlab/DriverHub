@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
-import { installAdb, installGoogleDriver, installMtkDriver } from './services/installerService.js';
+import { installAdb, installGoogleDriver, installMtkDriver, createSystemRestorePoint } from './services/installerService.js';
 import { syncDeviceDatabase } from './services/deviceSyncService.js';
 import { rebootDevice, openAdbShell, openPhoneStorage } from './services/deviceActionService.js';
 
@@ -68,25 +68,38 @@ function setupIpc() {
 
     // Step 1: ADB Platform Tools
     sender.send('scan-step', { target: 'adb', state: 'scanning' });
-    await delay(700);
+    await delay(350);
     const adb = await checkAdbStatus();
     sender.send('scan-step', { target: 'adb', state: 'done', data: adb });
 
     // Step 2: DriverStore for Google and MTK drivers
     sender.send('scan-step', { target: 'google', state: 'scanning' });
-    await delay(700);
+    sender.send('scan-step', { target: 'google_usb', state: 'scanning' });
+    sender.send('scan-step', { target: 'google_bootloader', state: 'scanning' });
+    await delay(400);
     const driverStore = await checkDriverStore();
     sender.send('scan-step', { target: 'google', state: 'done', data: driverStore.google });
+    if (driverStore.packages) {
+      sender.send('scan-step', { target: 'google_usb', state: 'done', data: driverStore.packages.google_usb });
+      sender.send('scan-step', { target: 'google_bootloader', state: 'done', data: driverStore.packages.google_bootloader });
+    }
 
     // Step 3: MTK drivers
     sender.send('scan-step', { target: 'mtk', state: 'scanning' });
-    await delay(600);
+    sender.send('scan-step', { target: 'mtk_vcom', state: 'scanning' });
+    sender.send('scan-step', { target: 'mtk_brom', state: 'scanning' });
+    await delay(300);
     sender.send('scan-step', { target: 'mtk', state: 'done', data: driverStore.mtk });
+    if (driverStore.packages) {
+      sender.send('scan-step', { target: 'mtk_vcom', state: 'done', data: driverStore.packages.mtk_vcom });
+      sender.send('scan-step', { target: 'mtk_brom', state: 'done', data: driverStore.packages.mtk_brom });
+    }
 
     return {
       adb,
       google: driverStore.google,
-      mtk: driverStore.mtk
+      mtk: driverStore.mtk,
+      packages: driverStore.packages
     };
   });
 
@@ -121,16 +134,33 @@ function setupIpc() {
     return `Executed: ${command}`;
   });
 
-  // 1-Click Driver & Tools Installer
-  ipcMain.handle('install-drivers', async (event, targets = ['adb']) => {
-    console.log('Backend: Starting installation of targets:', targets);
+  // 1-Click Driver & Tools Installer with System Restore Support
+  ipcMain.handle('install-drivers', async (event, payload = ['adb']) => {
+    let targets = [];
+    let createRestorePoint = false;
+
+    if (Array.isArray(payload)) {
+      targets = payload;
+    } else if (payload && typeof payload === 'object') {
+      targets = payload.targets || [];
+      createRestorePoint = Boolean(payload.createRestorePoint);
+    }
+
+    console.log('Backend: Starting installation of targets:', targets, 'createRestorePoint:', createRestorePoint);
     const sender = event.sender;
     const results = {};
 
+    if (createRestorePoint) {
+      try {
+        await createSystemRestorePoint(sender);
+      } catch (err) {
+        console.warn('Restore point creation failed:', err);
+      }
+    }
+
     if (targets.includes('adb')) {
       try {
-        const adbResult = await installAdb(sender);
-        results.adb = adbResult;
+        results.adb = await installAdb(sender);
       } catch (err) {
         console.error('ADB install error:', err);
         sender.send('install-step', {
@@ -143,35 +173,63 @@ function setupIpc() {
       }
     }
 
-    if (targets.includes('google')) {
+    if (targets.includes('google_usb') || targets.includes('google')) {
       try {
-        const googleResult = await installGoogleDriver(sender);
-        results.google = googleResult;
+        results.google_usb = await installGoogleDriver(sender, 'usb');
       } catch (err) {
-        console.error('Google driver install error:', err);
+        console.error('Google USB driver install error:', err);
         sender.send('install-step', {
-          target: 'google',
+          target: 'google_usb',
           percent: 0,
           error: true,
-          message: `Google driver installation failed: ${err.message}`
+          message: `Google USB driver install failed: ${err.message}`
         });
-        results.google = { success: false, error: err.message };
+        results.google_usb = { success: false, error: err.message };
       }
     }
 
-    if (targets.includes('mtk')) {
+    if (targets.includes('google_bootloader') || (targets.includes('google') && !targets.includes('google_usb'))) {
       try {
-        const mtkResult = await installMtkDriver(sender);
-        results.mtk = mtkResult;
+        results.google_bootloader = await installGoogleDriver(sender, 'bootloader');
       } catch (err) {
-        console.error('MTK driver install error:', err);
+        console.error('Google Bootloader install error:', err);
         sender.send('install-step', {
-          target: 'mtk',
+          target: 'google_bootloader',
           percent: 0,
           error: true,
-          message: `MTK driver installation failed: ${err.message}`
+          message: `Google Bootloader install failed: ${err.message}`
         });
-        results.mtk = { success: false, error: err.message };
+        results.google_bootloader = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('mtk_vcom') || targets.includes('mtk')) {
+      try {
+        results.mtk_vcom = await installMtkDriver(sender, 'vcom');
+      } catch (err) {
+        console.error('MTK VCOM install error:', err);
+        sender.send('install-step', {
+          target: 'mtk_vcom',
+          percent: 0,
+          error: true,
+          message: `MTK VCOM install failed: ${err.message}`
+        });
+        results.mtk_vcom = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('mtk_brom') || (targets.includes('mtk') && !targets.includes('mtk_vcom'))) {
+      try {
+        results.mtk_brom = await installMtkDriver(sender, 'brom');
+      } catch (err) {
+        console.error('MTK BROM install error:', err);
+        sender.send('install-step', {
+          target: 'mtk_brom',
+          percent: 0,
+          error: true,
+          message: `MTK BROM install failed: ${err.message}`
+        });
+        results.mtk_brom = { success: false, error: err.message };
       }
     }
 
