@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
 import { 
   Terminal, 
   ArrowDownToLine, 
@@ -95,6 +95,30 @@ export function DriversPage({
       return true;
     }
   });
+
+  // Track installation transitions for "Vault Lock" SVG checkmark & Shockwave bursts
+  const prevInstallingRef = useRef(isInstalling);
+  const [recentlyInstalled, setRecentlyInstalled] = useState({});
+
+  useEffect(() => {
+    if (prevInstallingRef.current && !isInstalling) {
+      const newRecent = {};
+      const now = Date.now();
+      DRIVER_DEFS.forEach(def => {
+        if (packageStates[def.id]?.installed) {
+          newRecent[def.id] = now;
+        }
+      });
+      setRecentlyInstalled(newRecent);
+      haptic.success();
+
+      const timer = setTimeout(() => {
+        setRecentlyInstalled({});
+      }, 3200);
+      return () => clearTimeout(timer);
+    }
+    prevInstallingRef.current = isInstalling;
+  }, [isInstalling, packageStates]);
 
   // Dynamic Magnetic Sliding Indicator Refs & State
   const tabRefs = useRef({});
@@ -438,15 +462,20 @@ export function DriversPage({
                   {items.map((item) => {
                     const isChecked = selectedIds.has(item.id);
                     const isCardInstalling = item.isThisInstalling;
+                    const isRecentlyInstalled = Boolean(recentlyInstalled[item.id]);
 
                     return (
                       <div
                         key={item.id}
                         className={cn(
-                          "group bg-white rounded-2xl p-4 transition-all duration-200 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
-                          isChecked 
-                            ? "border-2 border-emerald-500 ring-4 ring-emerald-500/10 shadow-xs" 
-                            : "border border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
+                          "group bg-white rounded-2xl p-4 transition-all duration-300 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
+                          isCardInstalling && "animate-card-installing border-emerald-500/80 ring-2 ring-emerald-500/20",
+                          isRecentlyInstalled && "animate-shockwave-burst border-emerald-500 ring-4 ring-emerald-500/25",
+                          !isCardInstalling && !isRecentlyInstalled && (
+                            isChecked 
+                              ? "border-2 border-emerald-500 ring-4 ring-emerald-500/10 shadow-xs" 
+                              : "border border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
+                          )
                         )}
                       >
                         <div className="flex items-center justify-between gap-4">
@@ -493,7 +522,7 @@ export function DriversPage({
                             </div>
                           </div>
 
-                          {/* Right: Mode Badge + Status Badge + Action Button */}
+                          {/* Right: Mode Badge + Status Badge + Morphing Action Capsule */}
                           <div className="flex items-center gap-3 shrink-0">
                             
                             {/* Mode Tag */}
@@ -514,47 +543,77 @@ export function DriversPage({
                               {item.statusLabel}
                             </span>
 
-                            {/* Action Button with Tactile Press Scale */}
-                            <button
-                              onClick={() => handleInstallSingle(item.id)}
-                              disabled={isInstalling}
-                              className={cn(
-                                "min-w-[84px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
-                                item.status === 'installed'
-                                  ? "bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-                                  : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-700/20 hover:shadow-xs"
-                              )}
-                            >
-                              {isCardInstalling ? (
-                                <>
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                  <span>{item.progress > 0 ? `${item.progress}%` : 'Working...'}</span>
-                                </>
-                              ) : (
+                            {/* Morphing Action Engine: Idle -> Cyber-Capsule -> SVG Locked */}
+                            {isCardInstalling ? (
+                              <div className="relative min-w-[145px] h-8 bg-slate-950 border border-emerald-500/50 rounded-xl overflow-hidden flex items-center justify-between px-3 shadow-inner animate-luxury-in">
+                                {/* Staging Fill Level */}
+                                <div 
+                                  className="absolute inset-y-0 left-0 bg-emerald-600/35 transition-all duration-300 pointer-events-none"
+                                  style={{ width: `${Math.max(item.progress, 12)}%` }}
+                                />
+                                {/* Laser Shimmer Sweep */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/25 to-transparent w-full pointer-events-none animate-laser-sweep" />
+                                
+                                {/* Left Telemetry Tag */}
+                                <div className="relative z-10 flex items-center gap-1.5 text-emerald-400 text-[10px] font-mono tracking-wider font-semibold">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                                  <span>STAGING</span>
+                                </div>
+
+                                {/* Right Percentage */}
+                                <span className="relative z-10 text-emerald-300 font-mono font-bold text-xs tracking-tight">
+                                  {item.progress}%
+                                </span>
+                              </div>
+                            ) : isRecentlyInstalled ? (
+                              <div className="min-w-[105px] h-8 px-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-700 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs animate-luxury-in font-medium text-xs select-none">
+                                <svg className="w-4 h-4 text-emerald-600 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle className="animate-draw-circle" cx="12" cy="12" r="10" />
+                                  <path className="animate-draw-check" d="M8 12.5l2.5 2.5 5.5-5.5" />
+                                </svg>
+                                <span className="font-mono text-[11px] font-bold tracking-tight text-emerald-800">SIGNED</span>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleInstallSingle(item.id)}
+                                disabled={isInstalling}
+                                className={cn(
+                                  "min-w-[84px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 active:scale-[0.98] cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
+                                  item.status === 'installed'
+                                    ? "bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-700/20 hover:shadow-xs"
+                                )}
+                              >
                                 <span>{item.actionLabel}</span>
-                              )}
-                            </button>
+                              </button>
+                            )}
 
                           </div>
 
                         </div>
 
-                        {/* Inline progress bar when installing this specific driver */}
+                        {/* Inline Cyber-Clean Progress Bar & Live Kernel Telemetry */}
                         {isCardInstalling && (
-                          <div className="mt-1 pt-2 border-t border-slate-100 flex flex-col gap-1.5 animate-luxury-in">
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span className="text-slate-500 font-mono truncate max-w-md">
-                                {item.progressMessage || 'Installing package via Windows DriverStore...'}
-                              </span>
-                              <span className="text-emerald-600 font-bold font-mono">
+                          <div className="mt-1 pt-2.5 border-t border-slate-100 flex flex-col gap-2 animate-luxury-in">
+                            <div className="flex items-center justify-between text-[11px] font-mono">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                                <span className="text-slate-600 font-mono text-[10px] truncate max-w-md">
+                                  {item.progressMessage || 'Injecting INF package into Windows DriverStore...'}
+                                </span>
+                                <span className="text-emerald-500 font-bold animate-cursor-blink text-[10px]">█</span>
+                              </div>
+                              <span className="text-emerald-600 font-bold font-mono text-xs shrink-0">
                                 {item.progress}%
                               </span>
                             </div>
-                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div className="relative w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                               <div 
-                                className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+                                className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full transition-all duration-300 relative overflow-hidden"
                                 style={{ width: `${Math.max(item.progress, 5)}%` }}
-                              />
+                              >
+                                <div className="absolute inset-0 bg-white/40 animate-laser-sweep pointer-events-none" />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -622,12 +681,25 @@ export function DriversPage({
             <button
               onClick={handleInstallSelected}
               disabled={selectedIds.size === 0 || isInstalling}
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold rounded-xl text-xs shadow-sm shadow-emerald-700/20 transition-all duration-150 cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              className={cn(
+                "relative overflow-hidden px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer flex items-center gap-2",
+                isInstalling
+                  ? "bg-slate-950 border border-emerald-500/50 text-emerald-400 shadow-inner min-w-[215px] justify-between"
+                  : "bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white shadow-sm shadow-emerald-700/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              )}
             >
               {isInstalling ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-              ) : null}
-              <span>Install selected ({selectedIds.size})</span>
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent animate-laser-sweep pointer-events-none" />
+                  <div className="relative z-10 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="font-mono text-emerald-300 text-[11px] tracking-wide">STAGING DRIVERS...</span>
+                  </div>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 relative z-10" />
+                </>
+              ) : (
+                <span>Install selected ({selectedIds.size})</span>
+              )}
             </button>
           </div>
 

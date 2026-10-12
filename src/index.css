@@ -76,3 +76,83 @@ body {
   animation: pulseGlow 2.5s infinite;
 }
 
+/* Option B: Cyber-Clean Industrial Installation Motion Graphics */
+@keyframes laserSweep {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(250%); }
+}
+
+.animate-laser-sweep {
+  animation: laserSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes activeCardPulse {
+  0%, 100% {
+    border-color: rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15), 0 4px 20px -2px rgba(16, 185, 129, 0.1);
+  }
+  50% {
+    border-color: rgba(16, 185, 129, 0.85);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3), 0 8px 28px 0px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.animate-card-installing {
+  animation: activeCardPulse 2s ease-in-out infinite;
+}
+
+@keyframes shockwaveBurst {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7), 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(16, 185, 129, 0), 0 0 24px rgba(16, 185, 129, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-shockwave-burst {
+  animation: shockwaveBurst 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes drawCircle {
+  0% {
+    stroke-dashoffset: 70;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCheck {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-circle {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 70;
+  animation: drawCircle 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-draw-check {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: drawCheck 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.18s forwards;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-cursor-blink {
+  animation: cursorBlink 0.8s infinite;
+}
+
