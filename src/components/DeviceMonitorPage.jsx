@@ -564,10 +564,10 @@ export function DeviceMonitorPage({
                 {/* Bottom Section: Context-Aware Dynamic Action Buttons */}
                 {isMtp ? (
                   /* MTP Mode Actions (File Management Focused) */
-                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Open phone storage folder in Windows File Explorer"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
@@ -576,7 +576,7 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={() => setShowUsbGuide(true)}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Learn how to turn on USB debugging to enable ADB bootloader actions"
                     >
                       <Terminal className="w-3.5 h-3.5 text-slate-500" />
@@ -586,7 +586,7 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 ml-auto disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                       title="Refresh hardware status"
                     >
                       <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
@@ -595,37 +595,37 @@ export function DeviceMonitorPage({
                   </div>
                 ) : isAdb ? (
                   /* ADB Mode Actions (Reboot & Terminal Suite) */
-                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={onRebootBootloader}
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot bootloader"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />
-                      <span>Reboot to Bootloader</span>
+                      <span>Reboot Bootloader</span>
                     </button>
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot recovery"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Reboot to Recovery</span>
+                      <span>Reboot Recovery</span>
                     </button>
 
                     <button
                       onClick={onOpenShell}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Open interactive cmd.exe adb shell terminal"
                     >
                       <Terminal className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Open ADB Shell</span>
+                      <span>ADB Shell</span>
                     </button>
 
                     <button
                       onClick={onRebootSystem}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 ml-auto"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot"
                     >
                       <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
@@ -634,10 +634,10 @@ export function DeviceMonitorPage({
                   </div>
                 ) : isFastboot ? (
                   /* Fastboot Mode Actions */
-                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={onRebootSystem}
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
@@ -646,7 +646,7 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={onRebootBootloader}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot-bootloader"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5 text-slate-500" />
@@ -655,7 +655,7 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot recovery"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
@@ -665,7 +665,7 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 ml-auto disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                       title="Refresh hardware status"
                     >
                       <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
@@ -674,10 +674,10 @@ export function DeviceMonitorPage({
                   </div>
                 ) : (
                   /* Default Fallback Actions */
-                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
-                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
                       <span>Browse Phone</span>
@@ -685,9 +685,9 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 ml-auto"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
                       <span>Refresh Status</span>
                     </button>
                   </div>
