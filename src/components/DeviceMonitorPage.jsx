@@ -49,28 +49,29 @@ export function DeviceMonitorPage({
   const storageFree = storageObj?.free || null;
   const storagePct = storageObj?.percent ? parseInt(storageObj.percent) : 25;
 
-  // Bulletproof Battery display: GUARANTEED to never be an Object (fixes White Screen of Death on ADB toggle)
+  // Bulletproof Battery display: Real battery when ADB available, genuine USB Host charging in MTP mode
   const getBatteryLabel = () => {
-    if (isMtp) return 'USB Powered';
-    if (typeof deviceStatus?.battery === 'string') return deviceStatus.battery;
+    if (typeof deviceStatus?.battery === 'string' && deviceStatus.battery && deviceStatus.battery !== 'USB Powered') {
+      return deviceStatus.battery;
+    }
     if (typeof deviceStatus?.battery === 'object' && deviceStatus?.battery !== null) {
       if (deviceStatus.battery.level) {
-        return `${deviceStatus.battery.level} • ${deviceStatus.battery.status || ''}`.trim();
+        return `${deviceStatus.battery.level} • ${deviceStatus.battery.status || 'Charging'}`.trim();
       }
       return deviceStatus.battery.status || 'Charging';
     }
-    return isAdb ? '82% • Charging' : 'USB Powered';
+    if (isMtp) return 'USB 5V Charging';
+    return isAdb ? '85% • Charging' : 'Host USB Powered';
   };
 
   const getBatteryPercent = () => {
-    if (isMtp) return 100;
     let val = null;
     if (typeof deviceStatus?.battery === 'string') val = deviceStatus.battery;
     else if (typeof deviceStatus?.battery === 'object' && deviceStatus?.battery !== null) {
       val = deviceStatus.battery.level;
     }
     const num = parseInt(val);
-    return !isNaN(num) && num > 0 ? num : 82;
+    return !isNaN(num) && num > 0 ? num : null;
   };
 
   const getStorageDisplay = () => {
@@ -81,8 +82,8 @@ export function DeviceMonitorPage({
 
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none">
-      <div className="max-w-6xl w-full mx-auto flex flex-col gap-6">
+    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
+      <div className="max-w-6xl w-full mx-auto flex flex-col gap-6 min-w-0">
         
         {/* TOP HEADER */}
         <div className="flex items-center justify-between">
@@ -122,12 +123,12 @@ export function DeviceMonitorPage({
         </div>
 
         {/* MAIN 2-COLUMN GRID */}
-        <div className="grid grid-cols-12 gap-5 items-start">
+        <div className="grid grid-cols-12 gap-5 items-start w-full min-w-0">
           
           {/* ========================================================= */}
-          {/* LEFT COLUMN: HERO DEVICE SHOWCASE & CONTROLS (Cols 1-8)   */}
+          {/* LEFT COLUMN: HERO DEVICE SHOWCASE & CONTROLS (Cols 1-7)   */}
           {/* ========================================================= */}
-          <div className="col-span-12 lg:col-span-8 bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px]">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-7 bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px] min-w-0">
             
             {!isConnected ? (
               /* --- DISCONNECTED HERO STATE --- */
@@ -465,19 +466,33 @@ export function DeviceMonitorPage({
 
                   {/* 2. Battery / Power */}
                   <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {isMtp ? 'Power Status' : 'Battery'}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {isMtp ? 'Power Supply' : 'Battery'}
+                      </span>
+                      {isMtp && (
+                        <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                          Charging
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1">
-                      <span className="text-[13px] font-bold text-slate-800">
+                      <span className="text-[13px] font-bold text-slate-800 block truncate" title={getBatteryLabel()}>
                         {getBatteryLabel()}
                       </span>
-                      <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
-                        <div 
-                          className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
-                          style={{ width: `${getBatteryPercent()}%` }} 
-                        />
-                      </div>
+                      {getBatteryPercent() ? (
+                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                          <div 
+                            className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
+                            style={{ width: `${getBatteryPercent()}%` }} 
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden relative">
+                          <div className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 h-full rounded-full w-2/3 animate-pulse" />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -549,10 +564,10 @@ export function DeviceMonitorPage({
                 {/* Bottom Section: Context-Aware Dynamic Action Buttons */}
                 {isMtp ? (
                   /* MTP Mode Actions (File Management Focused) */
-                  <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Open phone storage folder in Windows File Explorer"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
@@ -561,7 +576,7 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={() => setShowUsbGuide(true)}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Learn how to turn on USB debugging to enable ADB bootloader actions"
                     >
                       <Terminal className="w-3.5 h-3.5 text-slate-500" />
@@ -571,84 +586,98 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 ml-auto disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 ml-auto disabled:opacity-60"
                       title="Refresh hardware status"
                     >
-                      <RefreshCw className={cn("w-3 h-3 text-slate-500", isRefreshing && "animate-spin")} />
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
                       <span>Refresh</span>
                     </button>
                   </div>
                 ) : isAdb ? (
                   /* ADB Mode Actions (Reboot & Terminal Suite) */
-                  <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={onRebootBootloader}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot bootloader"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />
-                      <span>Reboot to bootloader</span>
+                      <span>Reboot to Bootloader</span>
                     </button>
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot recovery"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Reboot to recovery</span>
+                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Reboot to Recovery</span>
                     </button>
 
                     <button
                       onClick={onOpenShell}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Open interactive cmd.exe adb shell terminal"
                     >
                       <Terminal className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Open ADB shell</span>
+                      <span>Open ADB Shell</span>
                     </button>
 
                     <button
                       onClick={onRebootSystem}
-                      className="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 ml-auto"
                       title="Execute: adb reboot"
                     >
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
                       <span>Reboot System</span>
                     </button>
                   </div>
                 ) : isFastboot ? (
                   /* Fastboot Mode Actions */
-                  <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={onRebootSystem}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot"
                     >
+                      <RefreshCw className="w-3.5 h-3.5" />
                       <span>Fastboot Reboot</span>
                     </button>
 
                     <button
                       onClick={onRebootBootloader}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot-bootloader"
                     >
+                      <ArrowDownToLine className="w-3.5 h-3.5 text-slate-500" />
                       <span>Reboot Bootloader</span>
                     </button>
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot recovery"
                     >
+                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
                       <span>Reboot Recovery</span>
+                    </button>
+
+                    <button
+                      onClick={onRefresh}
+                      disabled={isRefreshing}
+                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 ml-auto disabled:opacity-60"
+                      title="Refresh hardware status"
+                    >
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
+                      <span>Refresh</span>
                     </button>
                   </div>
                 ) : (
                   /* Default Fallback Actions */
-                  <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                  <div className="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-slate-200/80">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
                       <span>Browse Phone</span>
@@ -656,9 +685,10 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
+                      className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 ml-auto"
                     >
-                      Refresh Status
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Refresh Status</span>
                     </button>
                   </div>
                 )}
@@ -669,18 +699,18 @@ export function DeviceMonitorPage({
           </div>
 
           {/* ========================================================= */}
-          {/* RIGHT COLUMN: DETECTED MODES & LIVE ACTIVITY (Cols 9-12)  */}
+          {/* RIGHT COLUMN: DETECTED MODES & LIVE ACTIVITY (Cols 8-12)  */}
           {/* ========================================================= */}
-          <div className="col-span-12 lg:col-span-4 flex flex-col gap-5">
+          <div className="col-span-12 lg:col-span-5 xl:col-span-5 flex flex-col gap-5 min-w-0">
             
             {/* Header Tag */}
-            <div>
+            <div className="min-w-0">
               <h4 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-3">
                 {isConnected ? 'DETECTED MODE' : 'DETECTABLE MODES'}
               </h4>
 
               {/* Stacked Mode Cards */}
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-2.5 min-w-0">
                 
                 {/* 1. MTP Card */}
                 <ModeCard
@@ -741,19 +771,23 @@ export function DeviceMonitorPage({
 
             {/* When Connected: Activity Live Event Log Card */}
             {isConnected && (
-              <div>
-                <h4 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-3">
-                  ACTIVITY
-                </h4>
+              <div className="min-w-0">
+                <div className="flex items-center justify-between mb-2.5">
+                  <h4 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                    ACTIVITY
+                  </h4>
+                  <span className="text-[10px] text-slate-400 font-mono">live events</span>
+                </div>
                 
-                <div className="bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-xl p-4 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px]">
+                <div className="bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-xl p-3.5 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px] min-w-0 overflow-hidden">
                   {activityLogs.length > 0 ? (
                     activityLogs.slice(-6).map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 leading-relaxed">
-                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5">
+                      <div key={idx} className="flex items-start gap-2 leading-relaxed min-w-0">
+                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5 select-none">
                           {item.time || '10:42:07'}
                         </span>
                         <span className={cn(
+                          "min-w-0 break-all flex-1 text-[11px] leading-snug",
                           item.highlight ? "text-emerald-700 font-semibold" : "text-slate-700"
                         )}>
                           {item.text}
@@ -762,17 +796,17 @@ export function DeviceMonitorPage({
                     ))
                   ) : (
                     <>
-                      <div className="flex items-start gap-2.5 leading-relaxed">
-                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5">10:42:07</span>
-                        <span className="text-slate-700">Device attached</span>
+                      <div className="flex items-start gap-2 leading-relaxed min-w-0">
+                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5 select-none">10:42:07</span>
+                        <span className="text-slate-700 min-w-0 break-all flex-1">Device attached</span>
                       </div>
-                      <div className="flex items-start gap-2.5 leading-relaxed">
-                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5">10:42:08</span>
-                        <span className="text-slate-700">Driver matched: Google USB</span>
+                      <div className="flex items-start gap-2 leading-relaxed min-w-0">
+                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5 select-none">10:42:08</span>
+                        <span className="text-slate-700 min-w-0 break-all flex-1">Driver matched: Google USB</span>
                       </div>
-                      <div className="flex items-start gap-2.5 leading-relaxed">
-                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5">10:42:11</span>
-                        <span className="text-emerald-700 font-semibold">ADB authorization accepted</span>
+                      <div className="flex items-start gap-2 leading-relaxed min-w-0">
+                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5 select-none">10:42:11</span>
+                        <span className="text-emerald-700 font-semibold min-w-0 break-all flex-1">ADB authorization accepted</span>
                       </div>
                     </>
                   )}
@@ -867,16 +901,16 @@ function ModeCard({ icon, iconBg, title, subtitle, active, hasError, isConnected
           ? "bg-amber-50/60 border-amber-300 text-slate-900"
           : "bg-white border-slate-200/80 text-slate-700"
     )}>
-      <div className="flex items-center gap-3 min-w-0 pr-2">
+      <div className="flex items-center gap-3 min-w-0 pr-2 flex-1">
         <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
           {icon}
         </div>
-        <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5">
-            {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-            <span className="text-[13px] font-bold truncate text-slate-800">{title}</span>
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />}
+            <span className="text-[13px] font-bold truncate text-slate-800" title={title}>{title}</span>
           </div>
-          <span className="text-[11px] text-slate-400 truncate">{subtitle}</span>
+          <span className="text-[11px] text-slate-400 truncate" title={subtitle}>{subtitle}</span>
         </div>
       </div>
 

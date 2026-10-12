@@ -143,10 +143,12 @@ export async function openPhoneStorage(customPath = null) {
     console.warn('Could not stage openPhoneStorage.ps1:', e);
   }
 
+  const arg = customPath ? ` -CustomPath "${customPath.replace(/"/g, '`"')}"` : '';
+
   return new Promise((resolve) => {
-    exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptToRun}"`, (err) => {
+    exec(`powershell -Sta -NoProfile -ExecutionPolicy Bypass -File "${scriptToRun}"${arg}`, (err) => {
       if (err) {
-        console.warn('PowerShell storage open failed, opening This PC:', err);
+        console.warn('PowerShell storage open encountered an error, falling back to shell:MyComputerFolder:', err);
         exec('explorer.exe shell:MyComputerFolder');
       }
       resolve({ success: true, message: 'Opened phone storage in Windows File Explorer.' });
