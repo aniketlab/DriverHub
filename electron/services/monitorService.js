@@ -107,11 +107,18 @@ async function checkFastbootDirect() {
         let product = null;
         let unlocked = null;
         let isUserspace = false;
+        let manufacturer = null;
 
         try {
           const { stdout: pOut, stderr: pErr } = await execPromise(`${fbCmd} -s ${serial} getvar product`, { timeout: 1000 });
           const m = ((pOut || '') + (pErr || '')).match(/product:\s*([^\r\n]+)/i);
           if (m) product = m[1].trim();
+        } catch {}
+
+        try {
+          const { stdout: mOut, stderr: mErr } = await execPromise(`${fbCmd} -s ${serial} getvar manufacturer`, { timeout: 800 });
+          const m = ((mOut || '') + (mErr || '')).match(/manufacturer:\s*([^\r\n]+)/i);
+          if (m) manufacturer = m[1].trim();
         } catch {}
 
         try {
@@ -130,17 +137,35 @@ async function checkFastbootDirect() {
 
         let resolved = null;
         if (product) {
-          resolved = resolveDevice(product);
+          resolved = resolveDevice(product, manufacturer);
         }
 
-        if ((!resolved || resolved.model.includes('Device') || resolved.brand === 'Google') && lastKnownPhysicalDevice) {
+        // Strict physical serial comparison:
+        // Cache is ONLY valid if the physical hardware serial numbers match exactly!
+        const isSamePhysicalSerial = Boolean(
+          lastKnownPhysicalDevice &&
+          lastKnownPhysicalDevice.serial &&
+          serial &&
+          lastKnownPhysicalDevice.serial.trim().toLowerCase() === serial.trim().toLowerCase()
+        );
+
+        // If a different device is plugged in, immediately purge stale cache
+        if (lastKnownPhysicalDevice && !isSamePhysicalSerial) {
+          lastKnownPhysicalDevice = null;
+        }
+
+        if ((!resolved || resolved.model.includes('Device') || resolved.brand === 'Google') && isSamePhysicalSerial) {
           resolved = {
             brand: lastKnownPhysicalDevice.brand,
             model: lastKnownPhysicalDevice.model
           };
         } else if (!resolved) {
-          resolved = { brand: 'Android', model: 'Android Bootloader Device' };
+          resolved = { brand: manufacturer || 'Android', model: product ? `${product} (Bootloader)` : 'Android Bootloader Device' };
         }
+
+        const storageDisplay = isSamePhysicalSerial && lastKnownPhysicalDevice?.storage
+          ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage)
+          : 'Device Protected';
 
         return {
           connected: true,
@@ -149,14 +174,14 @@ async function checkFastbootDirect() {
           mtk: false,
           mtp: false,
           mode: isUserspace ? 'FastbootD Mode' : 'Fastboot Mode',
-          brand: resolved.brand || 'Android',
-          model: resolved.model || 'Android Bootloader',
-          rawModel: product ? `${product} • Fastboot` : (lastKnownPhysicalDevice?.model ? `${lastKnownPhysicalDevice.model} • Fastboot` : 'Bootloader'),
+          brand: resolved.brand || manufacturer || 'Android',
+          model: resolved.model || (product ? `${product} (Bootloader)` : 'Android Bootloader'),
+          rawModel: product ? `${product} • Fastboot` : (isSamePhysicalSerial && lastKnownPhysicalDevice?.model ? `${lastKnownPhysicalDevice.model} • Fastboot` : 'Bootloader'),
           serial: serial,
           androidVersion: isUserspace ? 'FastbootD (Userspace)' : 'Fastboot Bootloader',
           battery: 'Host USB Powered',
           bootloaderState: unlocked || 'Unlocked (Bootloader)',
-          storage: lastKnownPhysicalDevice?.storage ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage) : 'Device Protected',
+          storage: storageDisplay,
           usbSpeed: 'USB 3.0',
           driverName: 'Android Bootloader Interface'
         };
@@ -206,6 +231,7 @@ async function checkAdbDirect() {
 
           if (resolved.model && !resolved.model.includes('Device')) {
             lastKnownPhysicalDevice = {
+              serial: serial,
               brand: resolved.brand,
               model: resolved.model,
               rawModel: rawModel,
@@ -399,6 +425,19 @@ async function doCheckConnectedDevices() {
     }
 
     let rawModel = parsed.Model || null;
+    let usbSerial = null;
+
+    for (const item of deviceList) {
+      const id = (item.InstanceId || '');
+      const parts = id.split('\\');
+      if (parts.length >= 3) {
+        const lastPart = parts[parts.length - 1].trim();
+        if (lastPart && !lastPart.includes('&') && lastPart.length >= 4) {
+          usbSerial = lastPart;
+          break;
+        }
+      }
+    }
 
     // Fall back to specific device names if parsed.Model is generic or empty
     if (!rawModel || /interface|composite|controller|winusb/i.test(rawModel)) {
@@ -413,9 +452,10 @@ async function doCheckConnectedDevices() {
 
     let resolved = resolveDevice(rawModel, parsed.Brand);
 
-    // If real physical phone was detected (e.g. MTP or normal USB), cache it
+    // If real physical phone was detected (e.g. MTP or normal USB), cache it WITH its serial
     if (resolved.model && !resolved.model.includes('Device') && resolved.brand !== 'Android') {
       lastKnownPhysicalDevice = {
+        serial: usbSerial || null,
         brand: resolved.brand,
         model: resolved.model,
         rawModel: rawModel,
@@ -423,9 +463,21 @@ async function doCheckConnectedDevices() {
       };
     }
 
+    const isSamePhysicalSerial = Boolean(
+      lastKnownPhysicalDevice &&
+      lastKnownPhysicalDevice.serial &&
+      usbSerial &&
+      lastKnownPhysicalDevice.serial.trim().toLowerCase() === usbSerial.trim().toLowerCase()
+    );
+
+    // If a different device was plugged in, purge stale cache
+    if (lastKnownPhysicalDevice && usbSerial && !isSamePhysicalSerial) {
+      lastKnownPhysicalDevice = null;
+    }
+
     // If in Fastboot mode and identity is generic "Google Device" / "Android Bootloader"
     if (hasFastboot) {
-      if ((!resolved.model || resolved.model.includes('Device') || resolved.brand === 'Google') && lastKnownPhysicalDevice) {
+      if ((!resolved.model || resolved.model.includes('Device') || resolved.brand === 'Google') && isSamePhysicalSerial) {
         resolved = {
           brand: lastKnownPhysicalDevice.brand,
           model: lastKnownPhysicalDevice.model
@@ -434,7 +486,7 @@ async function doCheckConnectedDevices() {
     }
 
     const storageDisplay = hasFastboot
-      ? (lastKnownPhysicalDevice?.storage ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage) : 'Device Protected')
+      ? (isSamePhysicalSerial && lastKnownPhysicalDevice?.storage ? (lastKnownPhysicalDevice.storage.total ? `${lastKnownPhysicalDevice.storage.total} (Protected)` : lastKnownPhysicalDevice.storage) : 'Device Protected')
       : (parsed.Storage || null);
 
     return {
@@ -488,6 +540,7 @@ export async function checkConnectedDevices() {
     }
 
     lastKnownDevice = null;
+    lastKnownPhysicalDevice = null; // Clean cache completely on true physical disconnect
     return rawResult || { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
   } finally {
     isChecking = false;
