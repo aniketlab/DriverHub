@@ -82,7 +82,7 @@ export function DeviceMonitorPage({
 
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
+    <div className="flex-1 flex flex-col h-full bg-transparent relative overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
       <div className="max-w-6xl w-full mx-auto flex flex-col gap-6 min-w-0">
         
         {/* TOP HEADER */}

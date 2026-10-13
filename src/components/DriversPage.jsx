@@ -307,7 +307,7 @@ export function DriversPage({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-y-auto no-drag-region p-6 pt-5 select-none min-w-0">
+    <div className="flex-1 flex flex-col h-full bg-transparent relative overflow-y-auto no-drag-region p-6 pt-5 select-none min-w-0">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6 flex-1 min-w-0">
         
         {/* ========================================================= */}
