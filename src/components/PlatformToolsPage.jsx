@@ -266,10 +266,10 @@ export function PlatformToolsPage({
         {/* ========================================================= */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
               Platform Tools
             </h2>
-            <p className="text-[13px] text-slate-500 mt-0.5 font-normal">
+            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
               Official Android SDK Platform-Tools · adb and fastboot
             </p>
           </div>
@@ -277,10 +277,10 @@ export function PlatformToolsPage({
           <button
             onClick={handleCheckUpdates}
             disabled={checkingUpdates || isInstallingAdb}
-            className="px-4 py-2 bg-white/95 hover:bg-white active:scale-[0.98] border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
+            className="px-4 py-2 bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-800 active:scale-[0.98] border border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
             title="Check Google repository for Platform-Tools updates"
           >
-            <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", checkingUpdates && "animate-spin text-emerald-600")} />
+            <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", checkingUpdates && "animate-spin text-emerald-600 dark:text-emerald-400")} />
             <span>{checkingUpdates ? 'Checking...' : 'Check for updates'}</span>
           </button>
         </div>
@@ -291,44 +291,44 @@ export function PlatformToolsPage({
         <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
           
           {/* LEFT CARD: Platform-Tools installed & Controls (Cols 1-8) */}
-          <div className="col-span-12 lg:col-span-8 xl:col-span-8 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between gap-4.5 min-w-0">
+          <div className="col-span-12 lg:col-span-8 xl:col-span-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between gap-4.5 min-w-0 transition-colors">
             
             {/* Header: Terminal Prompt Icon + Title + Status Pill */}
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100/90 flex items-center justify-center text-emerald-600 font-mono font-bold text-lg shrink-0 shadow-2xs">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100/90 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-mono font-bold text-lg shrink-0 shadow-2xs">
                 {'>_'}
               </div>
 
               <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-none">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                   Platform-Tools installed
                 </h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
                   {status.upToDate ? 'Up to date' : 'Update available'}
                 </span>
               </div>
             </div>
 
             {/* Path Box */}
-            <div className="w-full bg-slate-50/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 font-mono text-xs text-slate-700 select-all truncate shadow-inner">
+            <div className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 font-mono text-xs text-slate-700 dark:text-slate-200 select-all truncate shadow-inner">
               {status.path}
             </div>
 
             {/* Real Download / Reinstall Progress Bar (Synchronized with Drivers & Dashboard tabs) */}
             {isInstallingAdb && (
-              <div className="w-full bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-3 flex flex-col gap-1.5 transition-all">
+              <div className="w-full bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-200/90 dark:border-emerald-800/70 rounded-xl p-3 flex flex-col gap-1.5 transition-all">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-emerald-900 flex items-center gap-1.5 truncate max-w-[80%]">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 shrink-0" />
+                  <span className="font-semibold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5 truncate max-w-[80%]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>{adbProgress?.message || 'Deploying Platform-Tools...'}</span>
                   </span>
-                  <span className="font-mono font-bold text-emerald-700 shrink-0">
+                  <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 shrink-0">
                     {adbProgress?.percent || 0}%
                   </span>
                 </div>
-                <div className="w-full bg-emerald-200/50 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-emerald-200/50 dark:bg-emerald-900/60 h-2 rounded-full overflow-hidden">
                   <div 
-                    className="bg-emerald-600 h-full rounded-full transition-all duration-300"
+                    className="bg-emerald-600 dark:bg-emerald-500 h-full rounded-full transition-all duration-300"
                     style={{ width: `${adbProgress?.percent || 0}%` }}
                   />
                 </div>
@@ -345,7 +345,7 @@ export function PlatformToolsPage({
                 <div 
                   className={cn(
                     "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    status.inPath ? "bg-emerald-600" : "bg-slate-200"
+                    status.inPath ? "bg-emerald-600 dark:bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"
                   )}
                 >
                   <span
@@ -355,7 +355,7 @@ export function PlatformToolsPage({
                     )}
                   />
                 </div>
-                <span className="text-xs font-semibold text-slate-700 select-none group-hover:text-slate-900 transition-colors">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   Add to system PATH
                 </span>
               </label>
@@ -368,7 +368,7 @@ export function PlatformToolsPage({
                 <div 
                   className={cn(
                     "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                    status.autoUpdate ? "bg-emerald-600" : "bg-slate-200"
+                    status.autoUpdate ? "bg-emerald-600 dark:bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"
                   )}
                 >
                   <span
@@ -378,7 +378,7 @@ export function PlatformToolsPage({
                     )}
                   />
                 </div>
-                <span className="text-xs font-semibold text-slate-700 select-none group-hover:text-slate-900 transition-colors">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   Auto-update on launch
                 </span>
               </label>
@@ -388,16 +388,16 @@ export function PlatformToolsPage({
             <div className="flex flex-wrap items-center gap-2.5 pt-1">
               <button
                 onClick={handleOpenFolder}
-                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
                 title="Open platform-tools folder in Windows File Explorer"
               >
-                <FolderOpen className="w-3.5 h-3.5 text-slate-500" />
+                <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Open folder</span>
               </button>
 
               <button
                 onClick={handleChangeLocation}
-                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
                 title="Select a custom platform-tools directory"
               >
                 <span>Change location</span>
@@ -406,11 +406,11 @@ export function PlatformToolsPage({
               <button
                 onClick={handleReinstall}
                 disabled={isInstallingAdb}
-                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                 title="Re-extract and verify official platform-tools binaries"
               >
                 {isInstallingAdb ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
                 ) : null}
                 <span>{isInstallingAdb ? 'Reinstalling...' : 'Reinstall'}</span>
               </button>
@@ -419,16 +419,16 @@ export function PlatformToolsPage({
           </div>
 
           {/* RIGHT CARD: ADB SERVER (Cols 9-12) */}
-          <div className="col-span-12 lg:col-span-4 xl:col-span-4 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[200px] min-w-0">
+          <div className="col-span-12 lg:col-span-4 xl:col-span-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[200px] min-w-0 transition-colors">
             
             {/* Top Label & Server State */}
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase block">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
                   ADB SERVER
                 </span>
                 {status.serverRunning && (
-                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/60">
                     tcp:{status.serverPort || 5037}
                   </span>
                 )}
@@ -438,9 +438,9 @@ export function PlatformToolsPage({
               <div className="flex items-center gap-2 mt-2">
                 <span className={cn(
                   "w-2.5 h-2.5 rounded-full shrink-0",
-                  status.serverRunning ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                  status.serverRunning ? "bg-emerald-500 animate-pulse" : "bg-slate-400 dark:bg-slate-600"
                 )} />
-                <h4 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">
+                <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
                   {status.serverRunning ? 'Running' : 'Stopped'}
                 </h4>
               </div>
@@ -449,18 +449,18 @@ export function PlatformToolsPage({
               {deviceStatus?.connected ? (
                 <div 
                   onClick={onNavigateToDeviceMonitor}
-                  className="mt-3.5 p-2.5 rounded-xl bg-slate-50/90 hover:bg-emerald-50/40 border border-slate-200/80 hover:border-emerald-200 transition-all cursor-pointer flex items-center justify-between gap-2 group"
+                  className="mt-3.5 p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/90 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40 border border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all cursor-pointer flex items-center justify-between gap-2 group"
                   title="Click to view full hardware telemetry in Device Monitor"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                       <Smartphone className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-slate-800 truncate leading-tight group-hover:text-emerald-950">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight group-hover:text-emerald-950 dark:group-hover:text-white">
                         {deviceStatus.model || 'Android Phone'}
                       </span>
-                      <span className="text-[10px] font-mono text-emerald-700 leading-none mt-0.5">
+                      <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 leading-none mt-0.5">
                         {deviceStatus.serial ? `${deviceStatus.serial} · ${deviceStatus.adb ? 'Authorized' : 'Connected'}` : 'ADB Link Active'}
                       </span>
                     </div>
@@ -468,8 +468,8 @@ export function PlatformToolsPage({
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                 </div>
               ) : (
-                <div className="mt-3.5 p-2 rounded-xl bg-slate-50/60 border border-slate-200/60 flex items-center gap-2 text-slate-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                <div className="mt-3.5 p-2 rounded-xl bg-slate-50/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
                   <span className="text-[11px] font-mono truncate">No devices attached</span>
                 </div>
               )}
@@ -480,27 +480,27 @@ export function PlatformToolsPage({
               <button
                 onClick={() => handleServerAction('restart')}
                 disabled={serverBusy}
-                className="flex-1 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                className="flex-1 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                 title="Restart ADB daemon (kill-server followed by start-server)"
               >
-                <RotateCw className={cn("w-3.5 h-3.5 text-slate-500", serverBusy && "animate-spin")} />
+                <RotateCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", serverBusy && "animate-spin")} />
                 <span>Restart</span>
               </button>
 
               <button
                 onClick={() => handleServerAction(status.serverRunning ? 'stop' : 'start')}
                 disabled={serverBusy}
-                className="flex-1 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                className="flex-1 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                 title={status.serverRunning ? "Stop ADB background daemon" : "Start ADB daemon"}
               >
                 {status.serverRunning ? (
                   <>
-                    <Square className="w-3 h-3 text-slate-500" />
+                    <Square className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                     <span>Stop</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-3 h-3 text-emerald-600" />
+                    <Play className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     <span>Start</span>
                   </>
                 )}
@@ -515,7 +515,7 @@ export function PlatformToolsPage({
         {/* ROW 2: INCLUDED TOOLS (4 Cards Grid)                     */}
         {/* ========================================================= */}
         <div className="flex flex-col gap-2.5">
-          <h4 className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+          <h4 className="text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
             INCLUDED TOOLS
           </h4>
 
@@ -523,20 +523,20 @@ export function PlatformToolsPage({
             {status.tools.map((tool) => (
               <div 
                 key={tool.name}
-                className="bg-white/95 border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between min-h-[92px] hover:border-slate-300 transition-colors"
+                className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between min-h-[92px] hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-slate-900 text-[13px]">
+                  <span className="font-mono font-bold text-slate-900 dark:text-white text-[13px]">
                     {tool.name}
                   </span>
                   {tool.exists ? (
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" strokeWidth={2.5} />
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" strokeWidth={2.5} />
                   ) : (
-                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                    <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0" />
                   )}
                 </div>
 
-                <p className="text-[11px] text-slate-500 leading-snug mt-2">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug mt-2">
                   {tool.desc}
                 </p>
               </div>
@@ -547,24 +547,24 @@ export function PlatformToolsPage({
         {/* ========================================================= */}
         {/* ROW 3: QUICK TERMINAL (Preset Chips + Input + Output Box) */}
         {/* ========================================================= */}
-        <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3.5">
+        <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3.5 transition-colors">
           
           {/* Header Row: Label + Live Device Badge + Preset Chips */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mr-1">
+              <span className="text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mr-1">
                 QUICK TERMINAL
               </span>
 
               {/* Real Live Hardware Telemetry Pill */}
               {deviceStatus?.connected ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-2xs">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/90 dark:border-emerald-800/70 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>{deviceStatus.model || 'Device'} Online ({deviceStatus.serial || 'ADB'})</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200/80">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
                   <span>Waiting for USB device</span>
                 </span>
               )}
@@ -584,8 +584,8 @@ export function PlatformToolsPage({
                     className={cn(
                       "px-3 py-1 rounded-full font-mono text-xs font-medium border transition-all cursor-pointer shadow-2xs",
                       isSelected
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/80"
+                        ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                        : "bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-200/80 dark:border-slate-700/80"
                     )}
                   >
                     {chip}
@@ -597,8 +597,8 @@ export function PlatformToolsPage({
 
           {/* Interactive Command Input Box */}
           <div className="flex items-center gap-2.5">
-            <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 shadow-2xs transition-all">
-              <span className="font-mono text-slate-400 text-xs font-bold mr-2 select-none">
+            <div className="flex-1 flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/10 shadow-2xs transition-all">
+              <span className="font-mono text-slate-400 dark:text-slate-500 text-xs font-bold mr-2 select-none">
                 {'>'}
               </span>
               <input
@@ -609,14 +609,14 @@ export function PlatformToolsPage({
                   if (e.key === 'Enter') handleRunCommand();
                 }}
                 placeholder="adb devices"
-                className="w-full font-mono text-xs text-slate-900 placeholder:text-slate-400 bg-transparent focus:outline-none"
+                className="w-full font-mono text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-transparent focus:outline-none"
               />
             </div>
 
             <button
               onClick={() => handleRunCommand()}
               disabled={terminalRunning || !command.trim()}
-              className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+              className="px-6 py-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-50"
             >
               {terminalRunning ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
@@ -626,7 +626,7 @@ export function PlatformToolsPage({
           </div>
 
           {/* Terminal Output Screen */}
-          <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-4 font-mono text-xs text-slate-800 leading-relaxed min-h-[92px] max-h-[190px] overflow-y-auto whitespace-pre-wrap select-text shadow-inner">
+          <div className="bg-slate-50/90 dark:bg-[#070b14] border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-800 dark:text-slate-200 leading-relaxed min-h-[92px] max-h-[190px] overflow-y-auto whitespace-pre-wrap select-text shadow-inner transition-colors">
             {terminalOutput ? (
               terminalOutput.split('\n').map((line, idx) => {
                 // Syntax coloring for device lines
@@ -640,14 +640,14 @@ export function PlatformToolsPage({
                     {isDeviceLine ? (
                       <span>
                         {line.replace(/\bdevice\b/, '')}
-                        <span className="text-emerald-600 font-bold">device</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">device</span>
                       </span>
                     ) : isUnauthorized ? (
-                      <span className="text-amber-600 font-medium">{line}</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">{line}</span>
                     ) : isFastboot ? (
-                      <span className="text-amber-600 font-bold">{line}</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">{line}</span>
                     ) : isError ? (
-                      <span className="text-red-600 font-medium">{line}</span>
+                      <span className="text-red-600 dark:text-red-400 font-medium">{line}</span>
                     ) : (
                       line
                     )}
@@ -655,7 +655,7 @@ export function PlatformToolsPage({
                 );
               })
             ) : (
-              <span className="text-slate-400">Terminal ready. Type a command above and click Run.</span>
+              <span className="text-slate-400 dark:text-slate-500">Terminal ready. Type a command above and click Run.</span>
             )}
           </div>
 

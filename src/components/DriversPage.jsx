@@ -315,10 +315,10 @@ export function DriversPage({
         {/* ========================================================= */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
               Drivers
             </h1>
-            <p className="text-xs text-slate-500 mt-1 font-medium transition-all duration-300">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium transition-all duration-300">
               {counts.all} packages · {counts.installed} installed · {counts.needAttention} need attention
             </p>
           </div>
@@ -326,13 +326,13 @@ export function DriversPage({
           <div className="flex items-center gap-2.5">
             {/* Search Input Box with Focus Glow */}
             <div className="relative w-64 group">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 group-focus-within:text-emerald-600" />
+              <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 group-focus-within:text-emerald-600 dark:group-focus-within:text-emerald-400" />
               <input
                 type="text"
                 placeholder="Search drivers"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-7 py-2 bg-white border border-slate-200/90 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-500 shadow-2xs transition-all duration-200"
+                className="w-full pl-8 pr-7 py-2 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/90 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-500 shadow-2xs transition-all duration-200"
               />
               {searchQuery && (
                 <button 
@@ -340,7 +340,7 @@ export function DriversPage({
                     haptic.tick();
                     setSearchQuery('');
                   }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 active:scale-75 transition-all cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 active:scale-75 transition-all cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -355,9 +355,9 @@ export function DriversPage({
               }}
               disabled={isScanning || isInstalling}
               title="Re-scan DriverStore"
-              className="p-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-[0.96] rounded-xl text-slate-600 shadow-2xs transition-all duration-150 cursor-pointer disabled:opacity-50"
+              className="p-2 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/90 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.96] rounded-xl text-slate-600 dark:text-slate-300 shadow-2xs transition-all duration-150 cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isScanning && "animate-spin text-emerald-600")} />
+              <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isScanning && "animate-spin text-emerald-600 dark:text-emerald-400")} />
             </button>
 
             {/* Tactile Audio Mute / Unmute Toggle */}
@@ -370,14 +370,14 @@ export function DriversPage({
               className={cn(
                 "p-2 border rounded-xl shadow-2xs transition-all duration-150 cursor-pointer active:scale-[0.96] flex items-center justify-center",
                 soundEnabled 
-                  ? "bg-white border-slate-200/90 text-emerald-600 hover:bg-slate-50" 
-                  : "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200/70"
+                  ? "bg-white dark:bg-slate-800 border-slate-200/90 dark:border-slate-700/90 text-emerald-600 dark:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-700" 
+                  : "bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:bg-slate-200/70 dark:hover:bg-slate-700/60"
               )}
             >
               {soundEnabled ? (
-                <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
+                <Volume2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <VolumeX className="w-3.5 h-3.5 text-slate-400" />
+                <VolumeX className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               )}
             </button>
           </div>
@@ -388,11 +388,11 @@ export function DriversPage({
         {/* ========================================================= */}
         <div 
           ref={tabsContainerRef} 
-          className="relative flex items-center p-1 bg-slate-200/50 backdrop-blur-sm rounded-xl w-fit border border-slate-200/70 shadow-2xs select-none"
+          className="relative flex items-center p-1 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl w-fit border border-slate-200/70 dark:border-slate-700/60 shadow-2xs select-none transition-colors"
         >
           {/* Smooth Sliding Magnetic Background Pill */}
           <div
-            className="absolute left-0 top-1 bottom-1 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.03)] border border-slate-900/[0.04] pointer-events-none"
+            className="absolute left-0 top-1 bottom-1 bg-white dark:bg-slate-700 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.03)] border border-slate-900/[0.04] dark:border-slate-600/50 pointer-events-none transition-colors"
             style={{
               transform: `translateX(${indicatorStyle.left}px)`,
               width: `${indicatorStyle.width}px`,
@@ -419,16 +419,16 @@ export function DriversPage({
                 className={cn(
                   "relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 cursor-pointer flex items-center gap-1.5 active:scale-[0.98]",
                   isActive
-                    ? "text-slate-900 font-semibold"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "text-slate-900 dark:text-white font-semibold"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                 )}
               >
                 <span>{tab.label}</span>
                 <span className={cn(
                   "text-[10px] px-1.5 py-0.2 rounded-full font-mono transition-colors",
                   isActive
-                    ? "bg-slate-100 text-slate-800 font-bold"
-                    : "text-slate-400 group-hover:text-slate-600"
+                    ? "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold"
+                    : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
                 )}>
                   {tab.count}
                 </span>
@@ -468,13 +468,13 @@ export function DriversPage({
                       <div
                         key={item.id}
                         className={cn(
-                          "group bg-white rounded-2xl p-4 transition-all duration-300 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
+                          "group bg-white dark:bg-slate-900/95 rounded-2xl p-4 transition-all duration-300 shadow-2xs flex flex-col gap-3 relative overflow-hidden",
                           isCardInstalling && "animate-card-installing border-emerald-500/80 ring-2 ring-emerald-500/20",
                           isRecentlyInstalled && "animate-shockwave-burst border-emerald-500 ring-4 ring-emerald-500/25",
                           !isCardInstalling && !isRecentlyInstalled && (
                             isChecked 
                               ? "border-2 border-emerald-500 ring-4 ring-emerald-500/10 shadow-xs" 
-                              : "border border-slate-200/80 hover:border-slate-300 hover:shadow-xs"
+                              : "border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs"
                           )
                         )}
                       >
@@ -490,7 +490,7 @@ export function DriversPage({
                                 "w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 active:scale-90",
                                 isChecked
                                   ? "bg-emerald-600 border-emerald-600 text-white shadow-2xs"
-                                  : "border-slate-300 hover:border-slate-400 bg-white"
+                                  : "border-slate-300 dark:border-slate-600 hover:border-slate-400 bg-white dark:bg-slate-800"
                               )}
                             >
                               {isChecked && <Check className="w-3.5 h-3.5 stroke-[3] animate-check-pop" />}
@@ -507,16 +507,16 @@ export function DriversPage({
                             {/* Title & Description */}
                             <div className="flex flex-col min-w-0">
                               <div className="flex items-center gap-2">
-                                <h4 className="text-[13px] font-bold text-slate-800 truncate">
+                                <h4 className="text-[13px] font-bold text-slate-800 dark:text-white truncate">
                                   {item.title}
                                 </h4>
                                 {item.version && (
-                                  <span className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded-md">
+                                  <span className="text-[10px] text-slate-400 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
                                     v{item.version}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-slate-500 truncate">
+                              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                 {item.desc}
                               </p>
                             </div>
@@ -536,9 +536,9 @@ export function DriversPage({
                             {/* Status Badge */}
                             <span className={cn(
                               "text-xs font-medium px-3.5 py-1 rounded-full select-none transition-all duration-200",
-                              item.status === 'installed' && "bg-emerald-100/80 text-emerald-800",
-                              item.status === 'updates' && "bg-amber-100/80 text-amber-800 animate-pulse",
-                              item.status === 'not_installed' && "bg-slate-100 text-slate-600"
+                              item.status === 'installed' && "bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300",
+                              item.status === 'updates' && "bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 animate-pulse",
+                              item.status === 'not_installed' && "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                             )}>
                               {item.statusLabel}
                             </span>
@@ -566,12 +566,12 @@ export function DriversPage({
                                 </span>
                               </div>
                             ) : isRecentlyInstalled ? (
-                              <div className="min-w-[105px] h-8 px-2.5 bg-emerald-500/10 border border-emerald-500/40 text-emerald-700 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs animate-luxury-in font-medium text-xs select-none">
-                                <svg className="w-4 h-4 text-emerald-600 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                              <div className="min-w-[105px] h-8 px-2.5 bg-emerald-500/10 dark:bg-emerald-950/60 border border-emerald-500/40 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 rounded-xl flex items-center justify-center gap-1.5 shadow-2xs animate-luxury-in font-medium text-xs select-none">
+                                <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                   <circle className="animate-draw-circle" cx="12" cy="12" r="10" />
                                   <path className="animate-draw-check" d="M8 12.5l2.5 2.5 5.5-5.5" />
                                 </svg>
-                                <span className="font-mono text-[11px] font-bold tracking-tight text-emerald-800">SIGNED</span>
+                                <span className="font-mono text-[11px] font-bold tracking-tight text-emerald-800 dark:text-emerald-300">SIGNED</span>
                               </div>
                             ) : (
                               <button
@@ -580,7 +580,7 @@ export function DriversPage({
                                 className={cn(
                                   "min-w-[84px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 active:scale-[0.98] cursor-pointer shadow-2xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
                                   item.status === 'installed'
-                                    ? "bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                                    ? "bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300"
                                     : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-700/20 hover:shadow-xs"
                                 )}
                               >
@@ -594,20 +594,20 @@ export function DriversPage({
 
                         {/* Inline Cyber-Clean Progress Bar & Live Kernel Telemetry */}
                         {isCardInstalling && (
-                          <div className="mt-1 pt-2.5 border-t border-slate-100 flex flex-col gap-2 animate-luxury-in">
+                          <div className="mt-1 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2 animate-luxury-in">
                             <div className="flex items-center justify-between text-[11px] font-mono">
                               <div className="flex items-center gap-1.5 min-w-0">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
-                                <span className="text-slate-600 font-mono text-[10px] truncate max-w-md">
+                                <span className="text-slate-600 dark:text-slate-300 font-mono text-[10px] truncate max-w-md">
                                   {item.progressMessage || 'Injecting INF package into Windows DriverStore...'}
                                 </span>
                                 <span className="text-emerald-500 font-bold animate-cursor-blink text-[10px]">█</span>
                               </div>
-                              <span className="text-emerald-600 font-bold font-mono text-xs shrink-0">
+                              <span className="text-emerald-600 dark:text-emerald-400 font-bold font-mono text-xs shrink-0">
                                 {item.progress}%
                               </span>
                             </div>
-                            <div className="relative w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div className="relative w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                               <div 
                                 className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full transition-all duration-300 relative overflow-hidden"
                                 style={{ width: `${Math.max(item.progress, 5)}%` }}
@@ -633,8 +633,8 @@ export function DriversPage({
       {/* ========================================================= */}
       {/* FLOATING STICKY ACTION BAR AT BOTTOM                      */}
       {/* ========================================================= */}
-      <div className="sticky bottom-0 left-0 right-0 mt-auto pt-2 pb-1 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent">
-        <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-3.5 px-5 shadow-lg flex items-center justify-between gap-4">
+      <div className="sticky bottom-0 left-0 right-0 mt-auto pt-2 pb-1 bg-gradient-to-t from-slate-50 dark:from-[#0a0f1d] via-slate-50/90 dark:via-[#0a0f1d]/90 to-transparent">
+        <div className="max-w-4xl mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-3.5 px-5 shadow-lg flex items-center justify-between gap-4 transition-colors">
           
           {/* Left: Spring Toggle Switch for Restore Point */}
           <div className="flex items-center gap-3 select-none">
@@ -645,7 +645,7 @@ export function DriversPage({
               onClick={handleToggleRestorePoint}
               className={cn(
                 "w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer focus:outline-none shrink-0 p-0.5 shadow-inner flex items-center active:scale-[0.96]",
-                createRestorePoint ? "bg-emerald-600" : "bg-slate-300"
+                createRestorePoint ? "bg-emerald-600 dark:bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
               )}
             >
               <span
@@ -656,10 +656,10 @@ export function DriversPage({
               />
             </button>
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-slate-800 leading-tight">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">
                 Create a restore point first
               </span>
-              <span className="text-[11px] text-slate-400 leading-tight">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">
                 You can roll back if a driver causes trouble
               </span>
             </div>
@@ -667,13 +667,13 @@ export function DriversPage({
 
           {/* Right: Selection Counter + Select All + Install Selected */}
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-slate-500 font-sans transition-all duration-200">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 font-sans transition-all duration-200">
               {selectedIds.size} selected
             </span>
 
             <button
               onClick={handleToggleSelectAll}
-              className="px-4 py-2 bg-white border border-slate-200/90 hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-semibold rounded-xl text-xs shadow-2xs transition-all duration-150 cursor-pointer"
+              className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-semibold rounded-xl text-xs shadow-2xs transition-all duration-150 cursor-pointer"
             >
               {isAllVisibleSelected ? "Deselect all" : "Select all"}
             </button>

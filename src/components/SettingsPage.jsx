@@ -1,0 +1,755 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Check, 
+  RefreshCw, 
+  FolderOpen, 
+  ShieldCheck, 
+  AlertCircle, 
+  ExternalLink, 
+  ChevronRight, 
+  ChevronDown, 
+  FileText, 
+  Bug, 
+  ArrowLeft, 
+  RotateCcw, 
+  Smartphone, 
+  Loader2,
+  X
+} from 'lucide-react';
+import clsx from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function GithubIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
+    </svg>
+  );
+}
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+export function SettingsPage({
+  theme,
+  onThemeChange,
+  addLog = () => {}
+}) {
+  const [currentView, setCurrentView] = useState('settings'); // 'settings' | 'about'
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [lastCheckedTime, setLastCheckedTime] = useState('Today, 10:40 AM');
+  const [showChangelogModal, setShowChangelogModal] = useState(false);
+
+  // Settings State
+  const [settings, setSettings] = useState({
+    theme: theme || 'light',
+    language: 'English',
+    startWithWindows: false,
+    minimizeToTray: true,
+    autoDetectDevices: true,
+    connectionNotifications: true,
+    createRestorePoint: true,
+    checkForDriverUpdates: true,
+    downloadFolder: 'C:\\Android\\drivers',
+    isAdmin: true,
+    version: '1.0.0',
+    platform: 'Windows 10 / 11, 64-bit'
+  });
+
+  // Load real settings from backend on mount
+  useEffect(() => {
+    const loadRealSettings = async () => {
+      try {
+        if (window.electronAPI?.getSettings) {
+          const res = await window.electronAPI.getSettings();
+          if (res) {
+            setSettings(prev => ({
+              ...prev,
+              ...res,
+              theme: theme || res.theme || 'light'
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load settings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadRealSettings();
+  }, [theme]);
+
+  // Handle setting toggle or value change
+  const updateSetting = async (key, val) => {
+    const updated = { ...settings, [key]: val };
+    setSettings(updated);
+
+    if (key === 'theme' && onThemeChange) {
+      onThemeChange(val);
+    }
+
+    try {
+      if (window.electronAPI?.saveSettings) {
+        await window.electronAPI.saveSettings({ [key]: val });
+      }
+    } catch (err) {
+      console.error('Failed to save setting:', err);
+    }
+  };
+
+  // Reset all to defaults
+  const handleResetToDefaults = async () => {
+    try {
+      if (window.electronAPI?.resetSettings) {
+        const res = await window.electronAPI.resetSettings();
+        setSettings(prev => ({ ...prev, ...res }));
+        if (onThemeChange) onThemeChange(res.theme || 'light');
+      }
+    } catch (err) {
+      console.error('Reset settings error:', err);
+    }
+  };
+
+  // Browse download folder
+  const handleChangeDownloadFolder = async () => {
+    try {
+      if (window.electronAPI?.changeDownloadFolder) {
+        const res = await window.electronAPI.changeDownloadFolder();
+        if (res && res.success && res.path) {
+          setSettings(prev => ({ ...prev, downloadFolder: res.path }));
+        }
+      }
+    } catch (err) {
+      console.error('Change folder error:', err);
+    }
+  };
+
+  // Open logs folder
+  const handleOpenLogs = async () => {
+    try {
+      if (window.electronAPI?.openLogsFolder) {
+        await window.electronAPI.openLogsFolder();
+      }
+    } catch (err) {
+      console.error('Open logs error:', err);
+    }
+  };
+
+  // Open external URL
+  const handleOpenUrl = async (url) => {
+    try {
+      if (window.electronAPI?.openExternalUrl) {
+        await window.electronAPI.openExternalUrl(url);
+      } else {
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      console.error('Open URL error:', err);
+    }
+  };
+
+  // Check for updates button
+  const handleCheckForUpdates = async () => {
+    if (checkingUpdate) return;
+    setCheckingUpdate(true);
+    try {
+      await new Promise(r => setTimeout(r, 800));
+      const now = new Date();
+      setLastCheckedTime(`Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  // Switch Toggle Helper
+  const Switch = ({ checked, onChange, disabled = false }) => (
+    <div
+      onClick={() => !disabled && onChange(!checked)}
+      className={cn(
+        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none select-none",
+        checked ? "bg-emerald-600 dark:bg-emerald-500" : "bg-slate-200 dark:bg-slate-700",
+        disabled && "opacity-60 cursor-not-allowed"
+      )}
+    >
+      <span
+        className={cn(
+          "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
+          checked ? "translate-x-4" : "translate-x-0"
+        )}
+      />
+    </div>
+  );
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-transparent relative overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
+      <div className="max-w-5xl w-full mx-auto flex flex-col gap-5 min-w-0">
+        
+        {/* ========================================================= */}
+        {/* VIEW 1: SETTINGS OVERVIEW PAGE                            */}
+        {/* ========================================================= */}
+        {currentView === 'settings' ? (
+          <>
+            {/* Header */}
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                Settings
+              </h2>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
+                Appearance, detection and install behavior
+              </p>
+            </div>
+
+            {/* Top 2 Cards: GENERAL & INSTALLATION */}
+            <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
+              
+              {/* 1. GENERAL CARD (Cols 1-6) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  GENERAL
+                </span>
+
+                <div className="flex flex-col gap-4">
+                  {/* Row 1: Theme Selector (Light, Dark, System) */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Theme
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Choose how Driver Hub looks
+                      </span>
+                    </div>
+
+                    <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs">
+                      {(['light', 'dark', 'system']).map((m) => {
+                        const isCurrent = settings.theme === m;
+                        return (
+                          <button
+                            key={m}
+                            onClick={() => updateSetting('theme', m)}
+                            className={cn(
+                              "px-2.5 py-1 text-xs font-semibold rounded-lg capitalize transition-all cursor-pointer",
+                              isCurrent
+                                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs"
+                                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                            )}
+                          >
+                            {m}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Row 2: Language */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Language
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Interface language
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <select
+                        value={settings.language}
+                        onChange={(e) => updateSetting('language', e.target.value)}
+                        className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl pl-3 pr-8 py-1.5 shadow-2xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                      >
+                        <option value="English">English</option>
+                        <option value="Hindi">हिन्दी (Hindi)</option>
+                        <option value="Spanish">Español</option>
+                        <option value="German">Deutsch</option>
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Row 3: Start with Windows */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Start with Windows
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Launch quietly in the system tray
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.startWithWindows}
+                      onChange={(v) => updateSetting('startWithWindows', v)}
+                    />
+                  </div>
+
+                  {/* Row 4: Minimize to tray */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Minimize to tray
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Keep running when the window is closed
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.minimizeToTray}
+                      onChange={(v) => updateSetting('minimizeToTray', v)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. INSTALLATION CARD (Cols 7-12) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  INSTALLATION
+                </span>
+
+                <div className="flex flex-col gap-4">
+                  {/* Row 1: Create restore point */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Create restore point
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Before every driver install
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.createRestorePoint}
+                      onChange={(v) => updateSetting('createRestorePoint', v)}
+                    />
+                  </div>
+
+                  {/* Row 2: Check for driver updates */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Check for driver updates
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Look for newer versions on launch
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.checkForDriverUpdates}
+                      onChange={(v) => updateSetting('checkForDriverUpdates', v)}
+                    />
+                  </div>
+
+                  {/* Row 3: Download folder */}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Download folder
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug shrink-0">
+                        Where driver packages are saved
+                      </span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span 
+                          className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-lg px-2.5 py-1 text-[11px] font-mono text-slate-600 dark:text-slate-300 truncate max-w-[150px]"
+                          title={settings.downloadFolder}
+                        >
+                          {settings.downloadFolder}
+                        </span>
+                        <button
+                          onClick={handleChangeDownloadFolder}
+                          className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 4: Run as Administrator */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Run as Administrator
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Needed to install drivers on Windows
+                      </span>
+                    </div>
+                    <Switch
+                      checked={Boolean(settings.isAdmin)}
+                      onChange={() => {}}
+                      disabled={true}
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom 2 Cards: DEVICE DETECTION & ABOUT APP TILE */}
+            <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
+              
+              {/* 3. DEVICE DETECTION (Cols 1-6) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  DEVICE DETECTION
+                </span>
+
+                <div className="flex flex-col gap-4">
+                  {/* Row 1: Auto-detect devices */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Auto-detect devices
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Watch USB ports for ADB, Fastboot and MTK modes
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.autoDetectDevices}
+                      onChange={(v) => updateSetting('autoDetectDevices', v)}
+                    />
+                  </div>
+
+                  {/* Row 2: Connection notifications */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
+                        Connection notifications
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                        Show a popup when a phone connects or disconnects
+                      </span>
+                    </div>
+                    <Switch
+                      checked={settings.connectionNotifications}
+                      onChange={(v) => updateSetting('connectionNotifications', v)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. DRIVER HUB APP TILE (Cols 7-12) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex items-center justify-between gap-4 transition-colors">
+                
+                <div className="flex items-center gap-3.5 min-w-0">
+                  {/* Real Original Driver Hub App Icon from /logo/ */}
+                  <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-2xs border border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center p-1">
+                    <img 
+                      src="./logo/driverhub_app_icon_squircle.png" 
+                      alt="Driver Hub" 
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/logo/driverhub_app_icon_squircle.png';
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-col min-w-0">
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+                      Driver Hub
+                    </h4>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Version 1.0.0 · Up to date
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setCurrentView('about')}
+                  className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer shrink-0"
+                >
+                  About & updates
+                </button>
+              </div>
+
+            </div>
+
+            {/* Footer Row: Changes saved automatically & Reset to defaults */}
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                Changes are saved automatically
+              </span>
+
+              <button
+                onClick={handleResetToDefaults}
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
+              >
+                Reset to defaults
+              </button>
+            </div>
+          </>
+        ) : (
+          /* ========================================================= */
+          /* VIEW 2: ABOUT & UPDATES SUB-PAGE                          */
+          /* ========================================================= */
+          <>
+            {/* Header & Breadcrumb Nav */}
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setCurrentView('settings')}
+                className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors w-fit cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Settings</span>
+                <span className="text-slate-400">/</span>
+                <span className="text-slate-700 dark:text-slate-200 font-semibold">About & updates</span>
+              </button>
+
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight mt-1">
+                About
+              </h2>
+            </div>
+
+            {/* Top 2 Cards: Hero Info + Update Status */}
+            <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
+              
+              {/* Left Hero Card (Cols 1-8) */}
+              <div className="col-span-12 lg:col-span-8 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-6 shadow-xs flex items-center gap-5 transition-colors">
+                {/* Real Original Driver Hub App Icon from /logo/ */}
+                <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 shadow-xs border border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center p-1.5">
+                  <img 
+                    src="./logo/driverhub_app_icon_squircle.png" 
+                    alt="Driver Hub" 
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/logo/driverhub_app_icon_squircle.png';
+                    }}
+                  />
+                </div>
+
+                <div className="flex flex-col min-w-0">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
+                    Driver Hub
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+                    All-in-one Android driver installer for Windows
+                  </p>
+                  
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                      Version 1.0.0
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                      Windows 10 / 11
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Update Card (Cols 9-12) */}
+              <div className="col-span-12 lg:col-span-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 transition-colors">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                      <Check className="w-3 h-3" strokeWidth={3} />
+                    </div>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                      You are up to date
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">
+                    Last checked {lastCheckedTime}
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleCheckForUpdates}
+                  disabled={checkingUpdate}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", checkingUpdate && "animate-spin")} />
+                  <span>{checkingUpdate ? 'Checking...' : 'Check for updates'}</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Middle 2 Cards: APP DETAILS & LINKS */}
+            <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
+              
+              {/* APP DETAILS (Cols 1-6) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3 transition-colors">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  APP DETAILS
+                </span>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                  <div className="flex items-center justify-between py-2.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">Version</span>
+                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">1.0.0</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">Platform</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">Windows 10 / 11, 64-bit</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">Bundled tools</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">ADB, Fastboot</span>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2.5 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">Driver packs</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200">Google USB, MediaTek</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* LINKS (Cols 7-12) */}
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3 transition-colors">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  LINKS
+                </span>
+
+                <div className="flex flex-col gap-1">
+                  {/* What is new (changelog) */}
+                  <button
+                    onClick={() => setShowChangelogModal(true)}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                        What is new (changelog)
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+
+                  {/* Report an issue */}
+                  <button
+                    onClick={() => handleOpenUrl('https://github.com/aniketlab/DriverHub/issues')}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Bug className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                        Report an issue
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+
+                  {/* Open source on GitHub */}
+                  <button
+                    onClick={() => handleOpenUrl('https://github.com/aniketlab/DriverHub')}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <GithubIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                        Open source on GitHub
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+
+                  {/* View logs folder */}
+                  <button
+                    onClick={handleOpenLogs}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors text-left cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FolderOpen className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                        View logs folder
+                      </span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Card: MADE BY & CREDITS */}
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors">
+              <div className="flex flex-col min-w-[160px]">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  MADE BY
+                </span>
+                <span className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                  Aniket
+                </span>
+                <button
+                  onClick={() => handleOpenUrl('https://github.com/aniketlab')}
+                  className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-mono text-left cursor-pointer mt-0.5"
+                >
+                  github.com/aniketlab
+                </button>
+              </div>
+
+              <div className="flex flex-col md:max-w-md">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
+                  CREDITS
+                </span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
+                  Uses Google Android Platform-Tools and the Google USB Driver. MediaTek drivers belong to their respective owners. Driver Hub only helps you install them.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+      </div>
+
+      {/* CHANGELOG MODAL */}
+      {showChangelogModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl flex flex-col gap-4 animate-scaleUp">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Release Notes · v1.0.0
+              </h3>
+              <button
+                onClick={() => setShowChangelogModal(false)}
+                className="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5 max-h-[60vh] overflow-y-auto leading-relaxed">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 rounded-xl">
+                <span className="font-bold text-emerald-800 dark:text-emerald-300 block mb-1">
+                  🎉 Driver Hub v1.0.0 Official Launch
+                </span>
+                <span>Complete Android Driver & Platform-Tools Management Suite for Windows 10 & 11.</span>
+              </div>
+
+              <ul className="list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
+                <li><strong>All-in-one Driver Installer:</strong> Google USB Driver, Android Bootloader Interface, MediaTek VCOM & Preloader BROM.</li>
+                <li><strong>Live Device Monitor:</strong> Real-time USB hardware bus telemetry, MTP/ADB/Fastboot auto-detection, and live battery/specs reading.</li>
+                <li><strong>Platform Tools Hub:</strong> Bundled ADB & Fastboot with interactive quick terminal, PATH management, and TCP socket server controls.</li>
+                <li><strong>System Restore Protection:</strong> Automatic Windows Restore Point creation prior to any DriverStore modifications.</li>
+                <li><strong>Dark & Light Themes:</strong> Polished high-contrast dark theme with calibrated responsive ambient glows.</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setShowChangelogModal(false)}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

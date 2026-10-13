@@ -132,7 +132,7 @@ export function DeviceMonitorPage({
           {/* ========================================================= */}
           {/* LEFT COLUMN: HERO DEVICE SHOWCASE & CONTROLS (Cols 1-7)   */}
           {/* ========================================================= */}
-          <div className="col-span-12 lg:col-span-7 xl:col-span-7 bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px] min-w-0">
+          <div className="col-span-12 lg:col-span-7 xl:col-span-7 bg-white/94 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-6 sm:p-7 shadow-xs flex flex-col justify-between min-h-[490px] min-w-0 transition-colors">
             
             {!isConnected ? (
               /* --- DISCONNECTED HERO STATE --- */
@@ -957,16 +957,16 @@ export function DeviceMonitorPage({
                   <span className="text-[10px] text-slate-400 font-mono">live events</span>
                 </div>
                 
-                <div className="bg-white/94 backdrop-blur-sm border border-slate-200/90 rounded-xl p-3.5 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px] min-w-0 overflow-hidden">
+                <div className="bg-white/94 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-xl p-3.5 shadow-2xs font-mono text-[11px] flex flex-col gap-2 min-h-[160px] min-w-0 overflow-hidden transition-colors">
                   {activityLogs.length > 0 ? (
                     activityLogs.slice(-6).map((item, idx) => (
                       <div key={idx} className="flex items-start gap-2 leading-relaxed min-w-0">
-                        <span className="text-slate-400 shrink-0 font-sans text-[10px] mt-0.5 select-none">
+                        <span className="text-slate-400 dark:text-slate-500 shrink-0 font-sans text-[10px] mt-0.5 select-none">
                           {item.time || '10:42:07'}
                         </span>
                         <span className={cn(
                           "min-w-0 break-all flex-1 text-[11px] leading-snug",
-                          item.highlight ? "text-emerald-700 font-semibold" : "text-slate-700"
+                          item.highlight ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-slate-700 dark:text-slate-200"
                         )}>
                           {item.text}
                         </span>
@@ -1074,10 +1074,10 @@ function ModeCard({ icon, iconBg, title, subtitle, active, hasError, isConnected
     <div className={cn(
       "border rounded-xl p-3 flex items-center justify-between transition-all duration-300 shadow-2xs",
       active
-        ? "bg-emerald-50/50 border-emerald-300 text-slate-900 shadow-xs"
+        ? "bg-emerald-50/50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-slate-900 dark:text-white shadow-xs"
         : hasError
-          ? "bg-amber-50/60 border-amber-300 text-slate-900"
-          : "bg-white border-slate-200/80 text-slate-700"
+          ? "bg-amber-50/60 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-slate-900 dark:text-white"
+          : "bg-white dark:bg-slate-900/95 border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-200"
     )}>
       <div className="flex items-center gap-3 min-w-0 pr-2 flex-1">
         <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
@@ -1086,21 +1086,21 @@ function ModeCard({ icon, iconBg, title, subtitle, active, hasError, isConnected
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-1.5 min-w-0">
             {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />}
-            <span className="text-[13px] font-bold truncate text-slate-800" title={title}>{title}</span>
+            <span className="text-[13px] font-bold truncate text-slate-800 dark:text-slate-100" title={title}>{title}</span>
           </div>
-          <span className="text-[11px] text-slate-400 truncate" title={subtitle}>{subtitle}</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate" title={subtitle}>{subtitle}</span>
         </div>
       </div>
 
       <span className={cn(
         "text-[11px] font-semibold shrink-0 px-2.5 py-1 rounded-md transition-colors",
         active
-          ? "text-emerald-700 bg-white border border-emerald-200 shadow-2xs"
+          ? "text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 shadow-2xs"
           : hasError
-            ? "text-amber-700 bg-amber-100/70 border border-amber-300"
+            ? "text-amber-700 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700"
             : isConnected
-              ? "text-slate-400"
-              : "text-slate-400 font-medium"
+              ? "text-slate-400 dark:text-slate-500"
+              : "text-slate-400 dark:text-slate-500 font-medium"
       )}>
         {active ? 'Active' : hasError ? 'Driver Error' : isConnected ? 'Idle' : 'Waiting'}
       </span>

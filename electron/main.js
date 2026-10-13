@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog, Tray, Menu } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
@@ -14,6 +15,15 @@ import {
   handleAdbServerAction, 
   executeTerminalCommand 
 } from './services/platformToolsService.js';
+import { 
+  loadSettings, 
+  saveSettings, 
+  resetSettingsToDefault, 
+  selectDownloadFolder, 
+  openLogsFolderInExplorer, 
+  isUserAdmin,
+  showConnectionNotification 
+} from './services/settingsService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,13 +31,59 @@ const __dirname = path.dirname(__filename);
 const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
 let mainWindow = null;
 let monitorInterval = null;
+let tray = null;
+let isQuitting = false;
+let lastConnectedState = false;
+let lastConnectedModel = null;
+
+function createTray() {
+  const iconPath = path.join(__dirname, '../public/logo/driverhub_app_icon_squircle.png');
+  if (fs.existsSync(iconPath)) {
+    try {
+      tray = new Tray(iconPath);
+      const contextMenu = Menu.buildFromTemplate([
+        { 
+          label: 'Open Driver Hub', 
+          click: () => { 
+            if (mainWindow) {
+              mainWindow.show(); 
+              mainWindow.focus(); 
+            }
+          } 
+        },
+        { type: 'separator' },
+        { 
+          label: 'Quit', 
+          click: () => { 
+            isQuitting = true; 
+            app.quit(); 
+          } 
+        }
+      ]);
+      tray.setToolTip('Driver Hub');
+      tray.setContextMenu(contextMenu);
+      tray.on('double-click', () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      });
+    } catch (e) {
+      console.warn('Tray init warning:', e.message);
+    }
+  }
+}
 
 function createWindow() {
+  const currentSettings = loadSettings();
+  const isDark = currentSettings.theme === 'dark';
+
   mainWindow = new BrowserWindow({
     width: 1050,
     height: 700,
     minWidth: 900,
     minHeight: 600,
+    icon: path.join(__dirname, '../public/logo/driverhub_app_icon_squircle.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -35,8 +91,8 @@ function createWindow() {
     },
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#ffffff',
-      symbolColor: '#1e293b',
+      color: isDark ? '#090d16' : '#ffffff',
+      symbolColor: isDark ? '#f8fafc' : '#1e293b',
       height: 38
     }
   });
@@ -48,6 +104,14 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
+  mainWindow.on('close', (event) => {
+    const settings = loadSettings();
+    if (!isQuitting && settings.minimizeToTray) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -58,10 +122,24 @@ function startDeviceMonitoring() {
   
   // Poll USB PnP devices every 2.5 seconds
   monitorInterval = setInterval(async () => {
+    const settings = loadSettings();
+    if (!settings.autoDetectDevices) return;
+
     if (mainWindow && !mainWindow.isDestroyed()) {
       const devices = await checkConnectedDevices();
       if (devices !== null) {
         mainWindow.webContents.send('device-monitor-update', devices);
+
+        // Check for device connection transitions for notifications
+        if (devices.connected && !lastConnectedState) {
+          showConnectionNotification(devices.model, true);
+        } else if (!devices.connected && lastConnectedState) {
+          showConnectionNotification(lastConnectedModel, false);
+        }
+        lastConnectedState = Boolean(devices.connected);
+        if (devices.connected && devices.model) {
+          lastConnectedModel = devices.model;
+        }
       }
     }
   }, 2500);
@@ -181,6 +259,52 @@ function setupIpc() {
     return await executeTerminalCommand(command);
   });
 
+  // Settings & About Hub IPC Handlers
+  ipcMain.handle('settings:get', () => {
+    const settings = loadSettings();
+    return {
+      ...settings,
+      isAdmin: isUserAdmin(),
+      version: '1.0.0',
+      platform: 'Windows 10 / 11, 64-bit'
+    };
+  });
+
+  ipcMain.handle('settings:save', (event, newSettings) => {
+    return saveSettings(newSettings);
+  });
+
+  ipcMain.handle('settings:reset', () => {
+    return resetSettingsToDefault();
+  });
+
+  ipcMain.handle('settings:change-download-folder', async () => {
+    return await selectDownloadFolder(mainWindow);
+  });
+
+  ipcMain.handle('settings:open-logs', async () => {
+    return await openLogsFolderInExplorer();
+  });
+
+  ipcMain.handle('settings:open-external', async (event, url) => {
+    if (url && typeof url === 'string') {
+      await shell.openExternal(url);
+    }
+  });
+
+  ipcMain.handle('settings:set-theme', (event, theme) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      const isDark = theme === 'dark';
+      try {
+        mainWindow.setTitleBarOverlay({
+          color: isDark ? '#090d16' : '#ffffff',
+          symbolColor: isDark ? '#f8fafc' : '#1e293b'
+        });
+      } catch {}
+    }
+    return { success: true };
+  });
+
   // 1-Click Driver & Tools Installer with System Restore Support
   ipcMain.handle('install-drivers', async (event, payload = ['adb']) => {
     let targets = [];
@@ -287,6 +411,7 @@ function setupIpc() {
 app.whenReady().then(() => {
   setupIpc();
   createWindow();
+  createTray();
   startDeviceMonitoring();
 
   // Background non-blocking sync for newly released smartphones (5s delay)
@@ -301,9 +426,16 @@ app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => {
+  isQuitting = true;
+});
+
 app.on('window-all-closed', () => {
   if (monitorInterval) clearInterval(monitorInterval);
-  if (process.platform !== 'darwin') {
-    app.quit();
+  const settings = loadSettings();
+  if (!settings.minimizeToTray || isQuitting) {
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
   }
 });

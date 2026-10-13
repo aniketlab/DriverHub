@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Custom modern variables based on the UI design */
 :root {
   --background: #f8fafc;
@@ -9,6 +11,16 @@
   --card: #ffffff;
   --card-foreground: #0f172a;
   --border: #e2e8f0;
+}
+
+.dark {
+  --background: #0a0f1d;
+  --foreground: #f8fafc;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --card: #111827;
+  --card-foreground: #f8fafc;
+  --border: #1f293d;
 }
 
 body {

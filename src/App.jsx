@@ -17,6 +17,7 @@ import { twMerge } from 'tailwind-merge';
 import { DeviceMonitorPage } from './components/DeviceMonitorPage';
 import { DriversPage } from './components/DriversPage';
 import { PlatformToolsPage } from './components/PlatformToolsPage';
+import { SettingsPage } from './components/SettingsPage';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -26,6 +27,66 @@ function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
   const [installingTarget, setInstallingTarget] = useState(null);
+
+  // Theme Management (Light / Dark / System)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('driverhub_theme') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  const applyTheme = (targetTheme) => {
+    let isDark = false;
+    if (targetTheme === 'dark') {
+      isDark = true;
+    } else if (targetTheme === 'system') {
+      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } else {
+      isDark = false;
+    }
+
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    setTheme(targetTheme);
+    try {
+      localStorage.setItem('driverhub_theme', targetTheme);
+    } catch {}
+
+    if (window.electronAPI?.setWindowTheme) {
+      window.electronAPI.setWindowTheme(isDark ? 'dark' : 'light');
+    }
+  };
+
+  useEffect(() => {
+    const initTheme = async () => {
+      try {
+        if (window.electronAPI?.getSettings) {
+          const s = await window.electronAPI.getSettings();
+          if (s && s.theme) {
+            applyTheme(s.theme);
+            return;
+          }
+        }
+      } catch {}
+      const saved = localStorage.getItem('driverhub_theme') || 'light';
+      applyTheme(saved);
+    };
+    initTheme();
+  }, []);
+
+  useEffect(() => {
+    if (theme !== 'system') return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyTheme('system');
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, [theme]);
 
   // Individual driver scan states (legacy dashboard)
   const [driverStates, setDriverStates] = useState({
@@ -390,28 +451,28 @@ function App() {
   const isAnyDeviceConnected = deviceStatus.connected;
 
   return (
-    <div className="flex flex-col h-screen w-full bg-slate-50/80 text-slate-800 overflow-hidden font-sans relative">
+    <div className="flex flex-col h-screen w-full bg-slate-50/80 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 overflow-hidden font-sans relative transition-colors duration-200">
       {/* Responsive Ambient Green/Emerald Glow (12-14% on compact screens, 15-17% on large screens) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {/* Top-Left Soft Emerald Glow */}
-        <div className="absolute -top-[12%] -left-[6%] w-[320px] h-[320px] xl:w-[440px] xl:h-[440px] rounded-full bg-emerald-400/[0.12] xl:bg-emerald-400/[0.17] blur-[80px] xl:blur-[100px]" />
+        <div className="absolute -top-[12%] -left-[6%] w-[320px] h-[320px] xl:w-[440px] xl:h-[440px] rounded-full bg-emerald-400/[0.12] dark:bg-emerald-500/[0.08] xl:bg-emerald-400/[0.17] dark:xl:bg-emerald-500/[0.11] blur-[80px] xl:blur-[100px]" />
         {/* Top-Right Soft Teal Glow */}
-        <div className="absolute top-[8%] -right-[8%] w-[300px] h-[300px] xl:w-[420px] xl:h-[420px] rounded-full bg-teal-300/[0.10] xl:bg-teal-300/[0.15] blur-[80px] xl:blur-[100px]" />
+        <div className="absolute top-[8%] -right-[8%] w-[300px] h-[300px] xl:w-[420px] xl:h-[420px] rounded-full bg-teal-300/[0.10] dark:bg-teal-500/[0.07] xl:bg-teal-300/[0.15] dark:xl:bg-teal-500/[0.10] blur-[80px] xl:blur-[100px]" />
         {/* Center-Right Ambient Flow (Only on large screens to prevent small-screen glow concentration) */}
-        <div className="hidden xl:block absolute top-[45%] right-[10%] w-[440px] h-[440px] rounded-full bg-emerald-400/[0.15] blur-[120px]" />
+        <div className="hidden xl:block absolute top-[45%] right-[10%] w-[440px] h-[440px] rounded-full bg-emerald-400/[0.15] dark:bg-emerald-500/[0.08] blur-[120px]" />
         {/* Bottom-Right Soft Mint Glow */}
-        <div className="absolute -bottom-[12%] -right-[6%] w-[340px] h-[340px] xl:w-[480px] xl:h-[480px] rounded-full bg-emerald-300/[0.13] xl:bg-emerald-300/[0.17] blur-[90px] xl:blur-[110px]" />
+        <div className="absolute -bottom-[12%] -right-[6%] w-[340px] h-[340px] xl:w-[480px] xl:h-[480px] rounded-full bg-emerald-300/[0.13] dark:bg-emerald-500/[0.08] xl:bg-emerald-300/[0.17] dark:xl:bg-emerald-500/[0.11] blur-[90px] xl:blur-[110px]" />
       </div>
 
       {/* 1. TOP UNIFIED TITLE BAR (Full window width, frosted translucent glass) */}
-      <header className="h-[38px] w-full bg-white/85 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40">
+      <header className="h-[38px] w-full bg-white/85 dark:bg-[#0b1222]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between px-4 select-none drag-region shrink-0 z-40 transition-colors">
         <div className="flex items-center gap-2 no-drag-region">
-          <MonitorSmartphone className="w-4 h-4 text-green-600 shrink-0" />
+          <MonitorSmartphone className="w-4 h-4 text-green-600 dark:text-emerald-400 shrink-0" />
           <div className="flex items-baseline gap-2">
-            <span className="font-bold text-[13px] tracking-tight uppercase leading-none text-slate-900">
-              <span className="text-green-600">DRIVER</span> HUB
+            <span className="font-bold text-[13px] tracking-tight uppercase leading-none text-slate-900 dark:text-white">
+              <span className="text-green-600 dark:text-emerald-400">DRIVER</span> HUB
             </span>
-            <span className="text-[11.5px] text-slate-400 font-normal leading-none">
+            <span className="text-[11.5px] text-slate-400 dark:text-slate-500 font-normal leading-none">
               All-in-one Android driver installer
             </span>
           </div>
@@ -423,7 +484,7 @@ function App() {
       {/* 2. BODY CONTAINER BELOW TITLE BAR */}
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-38px)] w-full relative z-10">
         {/* LEFT SIDEBAR (Frosted Acrylic) */}
-        <div className="w-[220px] bg-white/85 backdrop-blur-md border-r border-slate-200/80 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0">
+        <div className="w-[220px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
           <nav className="flex flex-col gap-1">
             <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
             <NavItem icon={Download} label="Drivers" active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
@@ -433,8 +494,8 @@ function App() {
           </nav>
 
           <div>
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed">
-              <div className="font-semibold text-slate-700 mb-0.5">Windows 10 / 11</div>
+            <div className="bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed transition-colors">
+              <div className="font-semibold text-slate-700 dark:text-slate-300 mb-0.5">Windows 10 / 11</div>
               Run as Administrator to install drivers.
             </div>
           </div>
@@ -479,6 +540,12 @@ function App() {
             onNavigateToDeviceMonitor={() => setActiveTab('Device Monitor')}
             addLog={addLog}
           />
+        ) : activeTab === 'Settings' ? (
+          <SettingsPage 
+            theme={theme}
+            onThemeChange={applyTheme}
+            addLog={addLog}
+          />
         ) : (
           <>
             {/* MAIN CONTENT AREA */}
@@ -489,14 +556,14 @@ function App() {
           <div className="flex items-center justify-between gap-4 pb-0.5">
             <div className="min-w-0">
               <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
-                <h2 className="text-[22px] font-bold tracking-tight text-slate-900 leading-tight">
+                <h2 className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
                   Every Android driver.
                 </h2>
-                <span className="text-[22px] font-bold tracking-tight text-green-600 leading-tight">
+                <span className="text-[22px] font-bold tracking-tight text-green-600 dark:text-emerald-400 leading-tight">
                   One installer.
                 </span>
               </div>
-              <p className="text-slate-500 text-[13px] mt-1 font-normal">
+              <p className="text-slate-500 dark:text-slate-400 text-[13px] mt-1 font-normal">
                 Pick what you need, then install in a single click.
               </p>
             </div>
@@ -505,13 +572,13 @@ function App() {
               <button 
                 onClick={handleScan}
                 disabled={isScanning || isInstalling}
-                className="h-10 px-4 bg-white/90 hover:bg-white active:scale-[0.98] backdrop-blur-sm border border-slate-200/90 text-slate-700 font-semibold rounded-xl shadow-xs transition-all duration-150 text-[13px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                className="h-10 px-4 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 active:scale-[0.98] backdrop-blur-sm border border-slate-200/90 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 font-semibold rounded-xl shadow-xs transition-all duration-150 text-[13px] whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                 title="Scan PC for installed drivers"
               >
                 {isScanning ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-green-600" />
+                  <Loader2 className="w-4 h-4 animate-spin text-green-600 dark:text-emerald-400" />
                 ) : (
-                  <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                  <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 )}
                 <span>{isScanning ? 'Scanning PC...' : 'Scan PC'}</span>
               </button>
@@ -519,7 +586,7 @@ function App() {
               <button 
                 onClick={handleInstall}
                 disabled={isInstalling || isScanning || selectedCount === 0}
-                className="h-10 px-5 bg-green-600 hover:bg-green-700 active:scale-[0.98] text-white font-semibold rounded-xl shadow-sm shadow-green-700/20 transition-all duration-150 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2"
+                className="h-10 px-5 bg-green-600 dark:bg-emerald-600 hover:bg-green-700 dark:hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold rounded-xl shadow-sm shadow-green-700/20 transition-all duration-150 text-[13px] whitespace-nowrap cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2"
                 title={selectedCount === 0 ? "Select at least one driver to install" : "Install selected drivers"}
               >
                 {isInstalling ? (
@@ -542,7 +609,7 @@ function App() {
             
             {/* 1. ADB Card */}
             <DriverCard 
-              icon={<ChevronRight className="w-4 h-4 text-green-600" />}
+              icon={<ChevronRight className="w-4 h-4 text-green-600 dark:text-emerald-400" />}
               title="ADB Platform-Tools"
               desc="adb + fastboot binaries, added to PATH automatically"
               tags={['adb', 'fastboot', 'PATH setup']}
@@ -560,21 +627,21 @@ function App() {
               }
               statusColor={
                 driverStates.adb.scanning || (isInstalling && selectedDrivers.adb)
-                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60'
                   : driverStates.adb.scanned
-                    ? (driverStates.adb.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
-                    : 'text-slate-500 bg-slate-100'
+                    ? (driverStates.adb.installed ? 'text-green-700 dark:text-emerald-400 bg-green-50 dark:bg-emerald-950/60 border border-green-200 dark:border-emerald-800/60' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60')
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
               }
               checkboxLabel={driverStates.adb.installed ? 'Reinstall' : 'Selected'}
               checked={selectedDrivers.adb}
               onToggle={() => setSelectedDrivers(prev => ({ ...prev, adb: !prev.adb }))}
-              borderColor={driverStates.adb.installed ? 'border-green-200' : 'border-slate-200'}
+              borderColor={driverStates.adb.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
               onExplore={driverStates.adb.installed && driverStates.adb.path ? () => window.electronAPI.openFolder(driverStates.adb.path) : null}
             />
 
             {/* 2. Google USB Card */}
             <DriverCard 
-              icon={<Download className="w-4 h-4 text-amber-500" />}
+              icon={<Download className="w-4 h-4 text-amber-500 dark:text-amber-400" />}
               title="Google USB & Bootloader"
               desc="Detects your phone in ADB and Fastboot mode"
               tags={['android_winusb', 'Fastboot']}
@@ -592,20 +659,20 @@ function App() {
               }
               statusColor={
                 driverStates.google.scanning || (isInstalling && selectedDrivers.google)
-                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60'
                   : driverStates.google.scanned
-                    ? (driverStates.google.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
-                    : 'text-slate-500 bg-slate-100'
+                    ? (driverStates.google.installed ? 'text-green-700 dark:text-emerald-400 bg-green-50 dark:bg-emerald-950/60 border border-green-200 dark:border-emerald-800/60' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60')
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
               }
               checkboxLabel={driverStates.google.installed ? 'Reinstall' : 'Selected'}
               checked={selectedDrivers.google}
               onToggle={() => setSelectedDrivers(prev => ({ ...prev, google: !prev.google }))}
-              borderColor={driverStates.google.installed ? 'border-green-200' : 'border-slate-200'}
+              borderColor={driverStates.google.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
             />
 
             {/* 3. MediaTek MTK Card */}
             <DriverCard 
-              icon={<Database className="w-4 h-4 text-blue-500" />}
+              icon={<Database className="w-4 h-4 text-blue-500 dark:text-blue-400" />}
               title="MediaTek (MTK) Drivers"
               desc="For flashing and unbricking MTK devices"
               tags={['BROM mode', 'Preloader mode', 'VCOM']}
@@ -623,34 +690,34 @@ function App() {
               }
               statusColor={
                 driverStates.mtk.scanning || (isInstalling && selectedDrivers.mtk)
-                  ? 'text-blue-600 bg-blue-50 border border-blue-200'
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60'
                   : driverStates.mtk.scanned
-                    ? (driverStates.mtk.installed ? 'text-green-700 bg-green-50 border border-green-200' : 'text-amber-700 bg-amber-50 border border-amber-200')
-                    : 'text-slate-500 bg-slate-100'
+                    ? (driverStates.mtk.installed ? 'text-green-700 dark:text-emerald-400 bg-green-50 dark:bg-emerald-950/60 border border-green-200 dark:border-emerald-800/60' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60')
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
               }
               checkboxLabel={driverStates.mtk.installed ? 'Reinstall' : 'Selected'}
               checked={selectedDrivers.mtk}
               onToggle={() => setSelectedDrivers(prev => ({ ...prev, mtk: !prev.mtk }))}
-              borderColor={driverStates.mtk.installed ? 'border-green-200' : 'border-slate-200'}
+              borderColor={driverStates.mtk.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
             />
 
           </div>
 
           {/* Terminal / Install Log */}
-          <div className="bg-white/92 backdrop-blur-sm border border-slate-200/85 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 overflow-y-auto mt-1 shadow-xs shrink-0 flex flex-col justify-between">
+          <div className="bg-white/92 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 dark:text-slate-300 overflow-y-auto mt-1 shadow-xs shrink-0 flex flex-col justify-between transition-colors">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-slate-800 font-sans text-[10px] uppercase tracking-wider">Install Log</h4>
-                <span className="text-[10px] text-slate-400 font-sans">Live Console</span>
+                <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">Install Log</h4>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
               </div>
               <div className="flex flex-col gap-1">
                 {logs.map((log, index) => (
                   <p key={index} className="leading-relaxed">
-                    {log.type === 'success' && <span className="text-green-600 font-bold mr-1.5">[ok]</span>}
-                    {log.type === 'pending' && <span className="text-blue-500 font-bold mr-1.5">[..]</span>}
-                    {log.type === 'warning' && <span className="text-amber-500 font-bold mr-1.5">[!]</span>}
-                    {log.type === 'error' && <span className="text-rose-500 font-bold mr-1.5">[err]</span>}
-                    {log.type === 'info' && <span className="text-slate-400 font-bold mr-1.5">[--]</span>}
+                    {log.type === 'success' && <span className="text-green-600 dark:text-emerald-400 font-bold mr-1.5">[ok]</span>}
+                    {log.type === 'pending' && <span className="text-blue-500 dark:text-blue-400 font-bold mr-1.5">[..]</span>}
+                    {log.type === 'warning' && <span className="text-amber-500 dark:text-amber-400 font-bold mr-1.5">[!]</span>}
+                    {log.type === 'error' && <span className="text-rose-500 dark:text-rose-400 font-bold mr-1.5">[err]</span>}
+                    {log.type === 'info' && <span className="text-slate-400 dark:text-slate-500 font-bold mr-1.5">[--]</span>}
                     <span>{log.text}</span>
                   </p>
                 ))}
@@ -662,12 +729,12 @@ function App() {
       </div>
 
       {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) */}
-      <div className="w-[250px] bg-white/85 backdrop-blur-md border-l border-slate-200/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0">
+      <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-slate-800 text-[11px] uppercase tracking-wider">Device Monitor</h4>
+          <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">Device Monitor</h4>
           <span className="flex h-2 w-2 relative">
-            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-emerald-400" : "bg-slate-300")} />
-            <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-emerald-500" : "bg-slate-400")} />
+            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-emerald-400" : "bg-slate-300 dark:bg-slate-600")} />
+            <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-emerald-500" : "bg-slate-400 dark:bg-slate-500")} />
           </span>
         </div>
         
@@ -687,8 +754,8 @@ function App() {
               <div className={cn(
                 "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border mb-1",
                 deviceStatus.driverError 
-                  ? "bg-amber-50 text-amber-700 border-amber-300"
-                  : "bg-emerald-50 text-emerald-700 border-emerald-200/70"
+                  ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/70"
+                  : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/70 dark:border-emerald-800/70"
               )}>
                 <span className={cn(
                   "w-1.5 h-1.5 rounded-full",
@@ -696,16 +763,16 @@ function App() {
                 )} />
                 <span>{deviceStatus.driverError ? "Driver Missing ⚠️" : "Connected"}</span>
               </div>
-              <h5 className="text-[13px] font-semibold text-slate-800 leading-tight truncate max-w-full">
+              <h5 className="text-[13px] font-semibold text-slate-800 dark:text-white leading-tight truncate max-w-full">
                 {deviceStatus.model || 'Android Phone'}
               </h5>
-              <p className="text-[11px] text-slate-400 font-normal mt-0.5 truncate max-w-full">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate max-w-full">
                 {deviceStatus.rawModel && deviceStatus.model !== deviceStatus.rawModel ? `${deviceStatus.rawModel} • ` : ''}
                 {deviceStatus.mode || 'USB Mode'}
               </p>
             </div>
           ) : (
-            <p className="text-[11px] text-slate-400 leading-relaxed font-normal">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed font-normal">
               Connect your phone via USB.<br />The mode is detected live.
             </p>
           )}
@@ -749,11 +816,11 @@ function NavItem({ icon: Icon, label, active, onClick }) {
       className={cn(
         "group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
         active 
-          ? "bg-green-50 text-green-800 font-semibold border-green-200/90 shadow-2xs" 
-          : "border-transparent text-slate-600 font-medium hover:bg-slate-100 hover:text-slate-900 hover:border-slate-200/70 hover:shadow-2xs"
+          ? "bg-green-50 dark:bg-emerald-950/60 text-green-800 dark:text-emerald-300 font-semibold border-green-200/90 dark:border-emerald-800/70 shadow-2xs" 
+          : "border-transparent text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-200/70 dark:hover:border-slate-700/60 hover:shadow-2xs"
       )}
     >
-      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600" : "text-slate-400 group-hover:text-slate-700")} />
+      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300")} />
       {label}
     </button>
   );
@@ -779,22 +846,22 @@ function DriverCard({
 
   return (
     <div className={cn(
-      "bg-white/94 backdrop-blur-sm border rounded-2xl p-4.5 relative overflow-hidden transition-all duration-300 shadow-xs hover:bg-white hover:border-emerald-300/80 hover:shadow-sm",
+      "bg-white/94 dark:bg-slate-900/90 backdrop-blur-sm border rounded-2xl p-4.5 relative overflow-hidden transition-all duration-300 shadow-xs hover:bg-white dark:hover:bg-slate-900 hover:border-emerald-300/80 dark:hover:border-emerald-700/80 hover:shadow-sm",
       borderColor
     )}>
       <div className="flex gap-3">
-        <div className="w-10 h-10 rounded-xl bg-slate-50/90 border border-slate-100 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-slate-50/90 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 flex items-center justify-center shrink-0">
           {icon}
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-slate-800 text-[14px] truncate">{title}</h3>
-          <p className="text-slate-500 text-[12px] mt-0.5 truncate">{desc}</p>
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-[14px] truncate">{title}</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-[12px] mt-0.5 truncate">{desc}</p>
           
           {tags && tags.length > 0 && (
             <div className="flex gap-1.5 mt-2.5 flex-wrap">
               {tags.map(tag => (
-                <span key={tag} className="px-2 py-0.5 bg-slate-100/80 text-slate-600 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap">
+                <span key={tag} className="px-2 py-0.5 bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-transparent dark:border-slate-700/60 rounded text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap">
                   {tag}
                 </span>
               ))}
@@ -812,12 +879,12 @@ function DriverCard({
           >
             <div className="overflow-hidden min-h-0">
               <div className="flex justify-between items-center text-[11px] mb-1.5">
-                <span className="text-slate-600 font-medium truncate max-w-[80%]">
+                <span className="text-slate-600 dark:text-slate-300 font-medium truncate max-w-[80%]">
                   {progressMessage || 'Installing...'}
                 </span>
-                <span className="text-emerald-700 font-bold tabular-nums text-[12px] shrink-0">{progress}%</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold tabular-nums text-[12px] shrink-0">{progress}%</span>
               </div>
-              <div className="w-full h-2 bg-slate-100 border border-slate-200/70 rounded-full overflow-hidden p-0.5 shadow-inner">
+              <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700/60 rounded-full overflow-hidden p-0.5 shadow-inner">
                 <div 
                   className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 rounded-full transition-all duration-500 ease-out shadow-xs relative"
                   style={{ width: `${progress}%` }}
@@ -835,8 +902,8 @@ function DriverCard({
               <button 
                 onClick={onExplore}
                 title="Open folder in File Explorer"
-                className="text-[10px] font-bold text-slate-600 hover:text-green-600 uppercase tracking-wide underline decoration-slate-300 underline-offset-2 transition-colors flex items-center gap-1 cursor-pointer active:scale-95">
-                <FolderOpen className="w-3 h-3 text-slate-400" />
+                className="text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-emerald-400 uppercase tracking-wide underline decoration-slate-300 dark:decoration-slate-600 underline-offset-2 transition-colors flex items-center gap-1 cursor-pointer active:scale-95">
+                <FolderOpen className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                 Explore
               </button>
             )}
@@ -851,9 +918,9 @@ function DriverCard({
               type="checkbox" 
               checked={checked} 
               onChange={onToggle} 
-              className="w-3.5 h-3.5 text-green-600 rounded border-slate-300 accent-green-600 cursor-pointer" 
+              className="w-3.5 h-3.5 text-green-600 dark:text-emerald-500 rounded border-slate-300 dark:border-slate-600 accent-green-600 cursor-pointer" 
             />
-            <span className="text-[12px] font-medium text-slate-700">{checkboxLabel}</span>
+            <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{checkboxLabel}</span>
           </label>
         </div>
       </div>
@@ -868,10 +935,10 @@ function MonitorStatus({ label, connected, hasError }) {
     <div className={cn(
       "flex items-center justify-between px-3 py-2 rounded-lg border transition-all duration-300 shadow-2xs",
       connected 
-        ? "bg-emerald-50/50 border-emerald-200/80 text-emerald-950" 
+        ? "bg-emerald-50/50 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-200" 
         : isMissingDriver
-          ? "bg-amber-50/60 border-amber-300/80 text-amber-950"
-          : "bg-white border-slate-200/70 text-slate-600"
+          ? "bg-amber-50/60 dark:bg-amber-950/40 border-amber-300/80 dark:border-amber-800/60 text-amber-950 dark:text-amber-200"
+          : "bg-white dark:bg-slate-800/80 border-slate-200/70 dark:border-slate-700/60 text-slate-600 dark:text-slate-300"
     )}>
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <span className={cn(
@@ -880,17 +947,17 @@ function MonitorStatus({ label, connected, hasError }) {
             ? "bg-emerald-500 shadow-2xs shadow-emerald-400 animate-pulse" 
             : isMissingDriver 
               ? "bg-amber-500 shadow-2xs shadow-amber-400 animate-pulse" 
-              : "bg-slate-300"
+              : "bg-slate-300 dark:bg-slate-600"
         )} />
         <span className="text-[12px] font-medium truncate">{label}</span>
       </div>
       <span className={cn(
         "text-[10px] font-medium tracking-wide uppercase shrink-0 px-2 py-0.5 rounded-md transition-colors",
         connected 
-          ? "text-emerald-700 bg-white border border-emerald-200/60 shadow-2xs" 
+          ? "text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-900 border border-emerald-200/60 dark:border-emerald-800/60 shadow-2xs" 
           : isMissingDriver
-            ? "text-amber-800 bg-amber-100/80 border border-amber-300 shadow-2xs"
-            : "text-slate-400 bg-slate-50"
+            ? "text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700 shadow-2xs"
+            : "text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-900/60 border border-transparent dark:border-slate-700/40"
       )}>
         {connected ? 'CONNECTED' : isMissingDriver ? 'DRIVER MISSING' : 'WAITING'}
       </span>
@@ -901,11 +968,11 @@ function MonitorStatus({ label, connected, hasError }) {
 function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
   if (!connected) {
     return (
-      <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 bg-white">
+      <div className="rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900/90">
         <svg viewBox="0 0 160 160" className="w-full h-full max-w-[170px] relative z-10">
           {/* Symmetrical Theme Guide Rings */}
-          <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="1.5" />
-          <circle cx="80" cy="80" r="44" fill="none" stroke="#E2E8F0" strokeWidth="1.2" strokeDasharray="3 3" />
+          <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="1.5" />
+          <circle cx="80" cy="80" r="44" fill="none" stroke="#E2E8F0" className="stroke-slate-200 dark:stroke-slate-700" strokeWidth="1.2" strokeDasharray="3 3" />
 
           {/* Gentle Expanding Signal Ring */}
           <circle cx="80" cy="80" r="32" fill="none" stroke="#10B981" strokeWidth="1">
@@ -924,10 +991,10 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             />
 
             {/* Phone Chassis (White Body + Emerald Outline, Dead Center) */}
-            <rect x="67.5" y="55" width="25" height="44" rx="5.5" fill="#FFFFFF" stroke="#10B981" strokeWidth="1.5" />
+            <rect x="67.5" y="55" width="25" height="44" rx="5.5" fill="#FFFFFF" className="fill-white dark:fill-slate-800" stroke="#10B981" strokeWidth="1.5" />
 
             {/* Screen (Light Slate Interior) */}
-            <rect x="70" y="57.5" width="20" height="39" rx="3.5" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="0.8" />
+            <rect x="70" y="57.5" width="20" height="39" rx="3.5" fill="#F8FAFC" stroke="#E2E8F0" className="fill-slate-50 dark:fill-slate-950 stroke-slate-200 dark:stroke-slate-700" strokeWidth="0.8" />
 
             {/* Speaker Notch */}
             <rect x="76" y="56.5" width="8" height="1" rx="0.5" fill="#94A3B8" />
@@ -945,10 +1012,10 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             </g>
 
             {/* Gesture Bar */}
-            <rect x="76" y="93.5" width="8" height="0.7" rx="0.35" fill="#E2E8F0" />
+            <rect x="76" y="93.5" width="8" height="0.7" rx="0.35" fill="#E2E8F0" className="fill-slate-200 dark:fill-slate-700" />
 
             {/* USB Port Cutout */}
-            <rect x="77" y="98" width="6" height="1" rx="0.5" fill="#E2E8F0" />
+            <rect x="77" y="98" width="6" height="1" rx="0.5" fill="#E2E8F0" className="fill-slate-200 dark:fill-slate-700" />
 
             {/* Waiting USB Cable & Plug (Dead Center) */}
             <line x1="80" y1="99" x2="80" y2="106.5" stroke="#10B981" strokeWidth="1.3" strokeDasharray="1.8 1.8">
@@ -956,7 +1023,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             </line>
 
             {/* Plug Collar */}
-            <rect x="77.5" y="106.5" width="5" height="5.5" rx="1.1" fill="#FFFFFF" stroke="#10B981" strokeWidth="1" />
+            <rect x="77.5" y="106.5" width="5" height="5.5" rx="1.1" fill="#FFFFFF" className="fill-white dark:fill-slate-800" stroke="#10B981" strokeWidth="1" />
             <line x1="79" y1="108.5" x2="81" y2="108.5" stroke="#10B981" strokeWidth="0.7" />
 
             {/* Cable Cord Tip */}
@@ -971,13 +1038,13 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
     <div className={cn(
       "rounded-2xl aspect-square w-full flex items-center justify-center relative mb-3.5 transition-all duration-500 overflow-hidden shadow-xs",
       hasError 
-        ? "border border-amber-300 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/30"
-        : "border border-emerald-200/90 bg-gradient-to-b from-emerald-50/50 via-white to-emerald-50/30"
+        ? "border border-amber-300 dark:border-amber-700/80 bg-gradient-to-b from-amber-50/60 dark:from-amber-950/40 via-white dark:via-slate-900 to-amber-50/30 dark:to-amber-950/20"
+        : "border border-emerald-200/90 dark:border-emerald-800/70 bg-gradient-to-b from-emerald-50/50 dark:from-emerald-950/40 via-white dark:via-slate-900 to-emerald-50/30 dark:to-emerald-950/20"
     )}>
       {/* Ambient Radial Halo */}
       <div className={cn(
         "absolute w-28 h-28 rounded-full blur-xl pointer-events-none animate-pulse",
-        hasError ? "bg-amber-400/20" : "bg-emerald-400/20"
+        hasError ? "bg-amber-400/20 dark:bg-amber-500/15" : "bg-emerald-400/20 dark:bg-emerald-500/15"
       )} />
 
       {/* 100% Mathematically Symmetrical Vector Display */}

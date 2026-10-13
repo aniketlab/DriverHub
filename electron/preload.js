@@ -27,4 +27,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   reinstallPlatformTools: () => ipcRenderer.invoke('platform-tools:reinstall'),
   controlAdbServer: (action) => ipcRenderer.invoke('platform-tools:server-action', action),
   runTerminalCommand: (command) => ipcRenderer.invoke('platform-tools:run-command', command),
+
+  // Settings & About APIs
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
+  resetSettings: () => ipcRenderer.invoke('settings:reset'),
+  changeDownloadFolder: () => ipcRenderer.invoke('settings:change-download-folder'),
+  openLogsFolder: () => ipcRenderer.invoke('settings:open-logs'),
+  openExternalUrl: (url) => ipcRenderer.invoke('settings:open-external', url),
+  setWindowTheme: (theme) => ipcRenderer.invoke('settings:set-theme', theme),
 });
