@@ -40,4 +40,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Windows UAC Elevation APIs
   checkAdmin: () => ipcRenderer.invoke('app:check-admin'),
   relaunchAsAdmin: () => ipcRenderer.invoke('app:relaunch-admin'),
+
+  // GitHub Releases OTA Update APIs
+  checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  downloadUpdate: (payload) => ipcRenderer.invoke('app:download-update', payload),
+  installUpdate: (filePath) => ipcRenderer.invoke('app:install-update', filePath),
+  onUpdateDownloadProgress: (callback) => ipcRenderer.on('update:download-progress', (_e, v) => callback(v)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (_e, v) => callback(v)),
+  removeUpdateListeners: () => {
+    ipcRenderer.removeAllListeners('update:download-progress');
+    ipcRenderer.removeAllListeners('update:downloaded');
+  }
 });

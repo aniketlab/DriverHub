@@ -16,7 +16,11 @@ import {
   RotateCcw, 
   Smartphone, 
   Loader2,
-  X
+  X,
+  Sparkles,
+  Download,
+  ArrowDownToLine,
+  Rocket
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -34,6 +38,14 @@ function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
 export function SettingsPage({
   theme,
   onThemeChange,
@@ -48,6 +60,34 @@ export function SettingsPage({
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [lastCheckedTime, setLastCheckedTime] = useState('Today, 10:40 AM');
   const [showChangelogModal, setShowChangelogModal] = useState(false);
+
+  // GitHub Releases OTA Update State
+  const [updateStatus, setUpdateStatus] = useState('idle'); // 'idle' | 'checking' | 'up_to_date' | 'update_available' | 'downloading' | 'downloaded' | 'error'
+  const [updateInfo, setUpdateInfo] = useState(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadSpeed, setDownloadSpeed] = useState(0);
+  const [downloadedFilePath, setDownloadedFilePath] = useState(null);
+  const [updateError, setUpdateError] = useState(null);
+
+  useEffect(() => {
+    if (window.electronAPI?.onUpdateDownloadProgress) {
+      window.electronAPI.onUpdateDownloadProgress((progress) => {
+        setDownloadProgress(progress.percent || 0);
+        if (progress.speed) setDownloadSpeed(progress.speed);
+      });
+    }
+    if (window.electronAPI?.onUpdateDownloaded) {
+      window.electronAPI.onUpdateDownloaded((data) => {
+        setDownloadedFilePath(data.filePath);
+        setUpdateStatus('downloaded');
+      });
+    }
+    return () => {
+      if (window.electronAPI?.removeUpdateListeners) {
+        window.electronAPI.removeUpdateListeners();
+      }
+    };
+  }, []);
 
   // Settings State
   const [settings, setSettings] = useState({
@@ -177,16 +217,90 @@ export function SettingsPage({
     }
   };
 
-  // Check for updates button
+  // Real GitHub Releases Update Checker
   const handleCheckForUpdates = async () => {
-    if (checkingUpdate) return;
+    if (checkingUpdate || updateStatus === 'downloading') return;
     setCheckingUpdate(true);
+    setUpdateError(null);
+    addLog('info', 'Checking for updates on GitHub (aniketlab/DriverHub)...');
+
     try {
-      await new Promise(r => setTimeout(r, 800));
-      const now = new Date();
-      setLastCheckedTime(`Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+      if (window.electronAPI?.checkForUpdates) {
+        const res = await window.electronAPI.checkForUpdates();
+        const now = new Date();
+        setLastCheckedTime(`Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+
+        if (res.updateAvailable) {
+          setUpdateStatus('update_available');
+          setUpdateInfo(res);
+          addLog('success', `New update found on GitHub: ${res.latestVersion}!`);
+        } else {
+          setUpdateStatus('up_to_date');
+          setUpdateInfo(res);
+          addLog('info', res.message || 'Driver Hub is up to date.');
+        }
+      } else {
+        // Fallback for non-electron environment
+        await new Promise(r => setTimeout(r, 800));
+        const now = new Date();
+        setLastCheckedTime(`Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+        setUpdateStatus('up_to_date');
+      }
+    } catch (err) {
+      console.error('Update check failed:', err);
+      setUpdateError(err.message || 'Failed to check GitHub releases');
+      setUpdateStatus('error');
+      addLog('error', `Update check failed: ${err.message}`);
     } finally {
       setCheckingUpdate(false);
+    }
+  };
+
+  // Download Over-The-Air Update Installer
+  const handleDownloadUpdate = async () => {
+    if (!updateInfo) return;
+    
+    if (!updateInfo.downloadUrl || !updateInfo.hasInstaller) {
+      if (updateInfo.htmlUrl) {
+        handleOpenUrl(updateInfo.htmlUrl);
+      }
+      return;
+    }
+
+    setUpdateStatus('downloading');
+    setDownloadProgress(0);
+    setDownloadSpeed(0);
+    addLog('info', `Starting OTA download: ${updateInfo.assetName}...`);
+
+    try {
+      if (window.electronAPI?.downloadUpdate) {
+        const res = await window.electronAPI.downloadUpdate({
+          downloadUrl: updateInfo.downloadUrl,
+          assetName: updateInfo.assetName
+        });
+        if (res && res.filePath) {
+          setDownloadedFilePath(res.filePath);
+          setUpdateStatus('downloaded');
+          addLog('success', 'Update downloaded successfully. Ready to install!');
+        }
+      }
+    } catch (err) {
+      setUpdateStatus('error');
+      setUpdateError(err.message || 'Failed to download update');
+      addLog('error', `OTA download failed: ${err.message}`);
+    }
+  };
+
+  // Launch Installer and Restart Driver Hub
+  const handleInstallUpdate = async () => {
+    if (!downloadedFilePath) return;
+    addLog('warning', 'Launching installer with Administrator permissions...');
+    try {
+      if (window.electronAPI?.installUpdate) {
+        await window.electronAPI.installUpdate(downloadedFilePath);
+      }
+    } catch (err) {
+      addLog('error', `Installer launch failed: ${err.message}`);
     }
   };
 
@@ -596,27 +710,136 @@ export function SettingsPage({
               {/* Right Update Card (Cols 9-12) */}
               <div className="col-span-12 lg:col-span-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 transition-colors">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                      <Check className="w-3 h-3" strokeWidth={3} />
+                  {updateStatus === 'update_available' ? (
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <Sparkles className="w-3 h-3" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          Update {updateInfo?.latestVersion} Available!
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">
+                        {updateInfo?.assetSize ? formatBytes(updateInfo.assetSize) : 'New Release'} · GitHub OTA
+                      </span>
+                      {updateInfo?.releaseNotes && (
+                        <div className="mt-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl text-[10.5px] text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                          {updateInfo.releaseNotes}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
-                      You are up to date
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">
-                    Last checked {lastCheckedTime}
-                  </span>
+                  ) : updateStatus === 'downloading' ? (
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 text-emerald-500 animate-spin shrink-0" />
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          Downloading OTA Update...
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mt-2.5 overflow-hidden">
+                        <div 
+                          className="bg-emerald-500 h-full rounded-full transition-all duration-150"
+                          style={{ width: `${downloadProgress}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                        <span>{downloadProgress}%</span>
+                        {downloadSpeed > 0 && <span>{formatBytes(downloadSpeed)}/s</span>}
+                      </div>
+                    </div>
+                  ) : updateStatus === 'downloaded' ? (
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                          <Check className="w-3 h-3" strokeWidth={3} />
+                        </div>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          Ready to Install!
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">
+                        Package downloaded. Click below to restart & update.
+                      </span>
+                    </div>
+                  ) : updateStatus === 'error' ? (
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                          <AlertCircle className="w-3 h-3" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          Check Failed
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 block font-medium truncate" title={updateError}>
+                        {updateError || 'Could not connect to GitHub'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                          <Check className="w-3 h-3" strokeWidth={3} />
+                        </div>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                          You are up to date
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">
+                        {updateInfo?.status === 'no_releases'
+                          ? 'GitHub repo active · Last checked ' + lastCheckedTime
+                          : 'Last checked ' + lastCheckedTime}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <button
-                  onClick={handleCheckForUpdates}
-                  disabled={checkingUpdate}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  <RefreshCw className={cn("w-3.5 h-3.5", checkingUpdate && "animate-spin")} />
-                  <span>{checkingUpdate ? 'Checking...' : 'Check for updates'}</span>
-                </button>
+                {/* Bottom Action Button */}
+                {updateStatus === 'update_available' ? (
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={handleDownloadUpdate}
+                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <ArrowDownToLine className="w-3.5 h-3.5" />
+                      <span>Download OTA Update</span>
+                    </button>
+                    {updateInfo?.htmlUrl && (
+                      <button
+                        onClick={() => handleOpenUrl(updateInfo.htmlUrl)}
+                        className="w-full py-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white text-[11px] font-medium flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>View Release Notes</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ) : updateStatus === 'downloading' ? (
+                  <button
+                    disabled
+                    className="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
+                  >
+                    <span>Downloading in background...</span>
+                  </button>
+                ) : updateStatus === 'downloaded' ? (
+                  <button
+                    onClick={handleInstallUpdate}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <Rocket className="w-3.5 h-3.5" />
+                    <span>Restart & Install Now ⚡</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCheckForUpdates}
+                    disabled={checkingUpdate}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    <RefreshCw className={cn("w-3.5 h-3.5", checkingUpdate && "animate-spin")} />
+                    <span>{checkingUpdate ? 'Checking GitHub...' : 'Check for updates'}</span>
+                  </button>
+                )}
               </div>
 
             </div>
@@ -768,6 +991,17 @@ export function SettingsPage({
             </div>
 
             <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5 max-h-[60vh] overflow-y-auto leading-relaxed">
+              {updateInfo?.releaseNotes && updateInfo.latestVersion && (
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 rounded-xl">
+                  <span className="font-bold text-indigo-800 dark:text-indigo-300 block mb-1">
+                    🚀 Latest Release on GitHub: {updateInfo.latestVersion}
+                  </span>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                    {updateInfo.releaseNotes}
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 rounded-xl">
                 <span className="font-bold text-emerald-800 dark:text-emerald-300 block mb-1">
                   🎉 Driver Hub v1.0.0 Official Launch

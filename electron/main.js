@@ -25,6 +25,11 @@ import {
   relaunchAsAdminProcess,
   showConnectionNotification 
 } from './services/settingsService.js';
+import { 
+  checkForAppUpdates, 
+  downloadUpdateFile, 
+  installDownloadedUpdate 
+} from './services/updateService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -313,6 +318,20 @@ function setupIpc() {
 
   ipcMain.handle('app:relaunch-admin', async () => {
     return await relaunchAsAdminProcess();
+  });
+
+  // GitHub Releases OTA Update APIs
+  ipcMain.handle('app:check-updates', async () => {
+    return await checkForAppUpdates();
+  });
+
+  ipcMain.handle('app:download-update', async (event, payload) => {
+    const { downloadUrl, assetName } = payload || {};
+    return await downloadUpdateFile(downloadUrl, assetName, event.sender);
+  });
+
+  ipcMain.handle('app:install-update', async (event, filePath) => {
+    return await installDownloadedUpdate(filePath);
   });
 
   // 1-Click Driver & Tools Installer with System Restore Support

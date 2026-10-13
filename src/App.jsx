@@ -112,6 +112,23 @@ function App() {
     checkAdminStatus();
   }, []);
 
+  // Background check for newer Driver Hub release on launch (if enabled in settings)
+  useEffect(() => {
+    const autoCheckRelease = async () => {
+      try {
+        const s = await window.electronAPI?.getSettings?.();
+        if (s?.checkForDriverUpdates && window.electronAPI?.checkForUpdates) {
+          const res = await window.electronAPI.checkForUpdates();
+          if (res?.updateAvailable) {
+            addLog('info', `🚀 Driver Hub update ${res.latestVersion} available! Visit Settings > About to download OTA.`);
+          }
+        }
+      } catch {}
+    };
+    const timer = setTimeout(autoCheckRelease, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Individual driver scan states (legacy dashboard)
   const [driverStates, setDriverStates] = useState({
     adb: { scanning: false, scanned: false, installed: false, path: null },

@@ -15,6 +15,13 @@
   "build": {
     "appId": "com.driverhub.app",
     "productName": "Driver Hub",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "aniketlab",
+        "repo": "DriverHub"
+      }
+    ],
     "directories": {
       "output": "dist-electron"
     },
