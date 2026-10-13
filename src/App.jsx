@@ -1069,6 +1069,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           cy="80" 
           r="44" 
           fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
+          className={hasError ? "fill-amber-50 dark:fill-amber-950/40 stroke-amber-200 dark:stroke-amber-800/60" : "fill-emerald-50 dark:fill-emerald-950/40 stroke-emerald-100 dark:stroke-emerald-800/60"}
           fillOpacity="0.75" 
           stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
           strokeWidth="1.2" 
@@ -1096,6 +1097,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             height="54" 
             rx="5" 
             fill="#FFFFFF" 
+            className="fill-white dark:fill-slate-800"
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.5" 
           />
@@ -1108,6 +1110,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             height="49.4" 
             rx="3.6" 
             fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
+            className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-slate-900 stroke-slate-200 dark:stroke-slate-700/80"}
             stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
             strokeWidth="0.8" 
           />
@@ -1188,6 +1191,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             height="5.5" 
             rx="1.2" 
             fill="#FFFFFF" 
+            className="fill-white dark:fill-slate-800"
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.1" 
           />

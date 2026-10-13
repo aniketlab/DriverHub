@@ -92,10 +92,10 @@ export function DeviceMonitorPage({
         {/* TOP HEADER */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
               Device Monitor
             </h2>
-            <p className="text-[13px] text-slate-500 mt-0.5">
+            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">
               Live USB detection · {isConnected ? '1 device connected' : 'no device connected'}
             </p>
           </div>
@@ -103,12 +103,12 @@ export function DeviceMonitorPage({
           <div className="flex items-center gap-2.5">
             {/* Status Pill Badge */}
             {isConnected ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Connected</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200/80">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-ping opacity-75" />
                 <span>Scanning USB ports</span>
               </div>
@@ -118,9 +118,9 @@ export function DeviceMonitorPage({
             <button
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+              className="px-3.5 py-1.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
-              <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
+              <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
               <span>Refresh</span>
             </button>
           </div>
@@ -207,22 +207,22 @@ export function DeviceMonitorPage({
                 </div>
 
                 {/* Waiting Headline & Subtext */}
-                <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">
                   Waiting for your phone
                 </h3>
-                <p className="text-xs text-slate-500 max-w-md leading-relaxed mb-7">
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md leading-relaxed mb-7">
                   Plug in a USB cable. Driver Hub detects ADB, Fastboot and MTK modes automatically.
                 </p>
 
                 {/* 3 Troubleshooting Hint Chips */}
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-colors">
                     Use a data cable
                   </span>
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-colors">
                     Try another USB port
                   </span>
-                  <span className="bg-slate-100/80 hover:bg-slate-100 text-slate-600 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 transition-colors">
+                  <span className="bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-medium px-3.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-colors">
                     Unlock the screen
                   </span>
                 </div>
@@ -263,6 +263,7 @@ export function DeviceMonitorPage({
                         cy="80" 
                         r="50" 
                         fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
+                        className={hasError ? "fill-amber-50 dark:fill-amber-950/40 stroke-amber-200 dark:stroke-amber-800/60" : "fill-emerald-50 dark:fill-emerald-950/40 stroke-emerald-100 dark:stroke-emerald-800/60"}
                         fillOpacity="0.75" 
                         stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
                         strokeWidth="1.2" 
@@ -290,6 +291,7 @@ export function DeviceMonitorPage({
                           height="60" 
                           rx="5.5" 
                           fill="#FFFFFF" 
+                          className="fill-white dark:fill-slate-800"
                           stroke={hasError ? "#F59E0B" : "#10B981"} 
                           strokeWidth="1.5" 
                         />
@@ -302,6 +304,7 @@ export function DeviceMonitorPage({
                           height="55" 
                           rx="4" 
                           fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
+                          className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-slate-900 stroke-slate-200 dark:stroke-slate-700/80"}
                           stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
                           strokeWidth="0.8" 
                         />
@@ -382,6 +385,7 @@ export function DeviceMonitorPage({
                           height="5.5" 
                           rx="1.2" 
                           fill="#FFFFFF" 
+                          className="fill-white dark:fill-slate-800"
                           stroke={hasError ? "#F59E0B" : "#10B981"} 
                           strokeWidth="1.1" 
                         />
@@ -420,33 +424,33 @@ export function DeviceMonitorPage({
 
                   {/* Device Info & Status Badges */}
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 tracking-wider uppercase mb-1">
                       Connected Device
                     </span>
-                    <h3 className="text-2xl font-bold text-slate-900 tracking-tight truncate leading-tight mb-1">
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate leading-tight mb-1">
                       {deviceStatus?.model || 'Android Phone'}
                     </h3>
-                    <p className="text-xs font-mono text-slate-400 mb-3 truncate">
+                    <p className="text-xs font-mono text-slate-400 dark:text-slate-400 mb-3 truncate">
                       {deviceStatus?.rawModel && deviceStatus.rawModel !== deviceStatus.model ? `${deviceStatus.rawModel} • ` : ''}
                       {deviceStatus?.serial ? `Serial ${deviceStatus.serial}` : (deviceStatus?.mode || 'USB Mode')}
                     </p>
 
                     {/* Mode & Health Pills */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         {deviceStatus?.adb ? 'ADB mode' : deviceStatus?.fastboot ? 'Fastboot mode' : deviceStatus?.mtk ? 'MTK BROM mode' : 'MTP mode'}
                       </span>
 
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                         {deviceStatus?.adb ? 'Authorized' : deviceStatus?.driverError ? 'Attention Required' : 'Connected'}
                       </span>
 
                       <span className={cn(
-                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border",
+                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border shadow-2xs",
                         deviceStatus?.driverError
-                          ? "bg-amber-50 text-amber-700 border-amber-300"
-                          : "bg-slate-100 text-slate-600 border-slate-200"
+                          ? "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                       )}>
                         {deviceStatus?.driverError ? 'Driver Missing ⚠️' : 'Driver OK'}
                       </span>
@@ -455,30 +459,30 @@ export function DeviceMonitorPage({
                 </div>
 
                 {/* --- OPTION A: KINETIC HARDWARE DATA-BUS (PC-TO-PHONE INTERCONNECT) --- */}
-                <div className="w-full bg-slate-50/70 hover:bg-slate-50/95 border border-slate-200/80 rounded-xl p-2.5 sm:p-3 transition-colors">
+                <div className="w-full bg-slate-50/70 dark:bg-slate-800/50 hover:bg-slate-50/95 dark:hover:bg-slate-800/75 border border-slate-200/80 dark:border-slate-700/70 rounded-xl p-2.5 sm:p-3 transition-colors shadow-2xs">
                   <div className="flex items-center justify-between gap-2 mb-2">
                     {/* Left: Host Workstation Node */}
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-slate-600">
+                      <div className="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs flex items-center justify-center text-slate-600 dark:text-slate-300">
                         <Laptop className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold tracking-wider text-slate-700 uppercase leading-none">
+                        <span className="text-[10px] font-bold tracking-wider text-slate-700 dark:text-slate-200 uppercase leading-none">
                           Host PC
                         </span>
-                        <span className="text-[9px] font-mono text-slate-400 leading-tight">
+                        <span className="text-[9px] font-mono text-slate-400 dark:text-slate-400 leading-tight">
                           USB Root Hub
                         </span>
                       </div>
                     </div>
 
                     {/* Center: Live Protocol & Speed Telemetry Badge */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-slate-200/90 shadow-2xs shrink-0">
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs shrink-0">
                       <span className={cn(
                         "w-1.5 h-1.5 rounded-full",
                         hasError ? "bg-amber-500 animate-ping" : isFastboot ? "bg-amber-500 animate-pulse" : "bg-emerald-500 animate-pulse"
                       )} />
-                      <span className="text-[10px] font-semibold text-slate-700 tracking-tight">
+                      <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-200 tracking-tight">
                         {hasError 
                           ? "Link Blocked • Driver Missing" 
                           : isFastboot 
@@ -492,12 +496,12 @@ export function DeviceMonitorPage({
                     {/* Right: Connected Device Node */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-bold tracking-wider text-slate-700 uppercase leading-none truncate max-w-[120px]">
+                        <span className="text-[10px] font-bold tracking-wider text-slate-700 dark:text-slate-200 uppercase leading-none truncate max-w-[120px]">
                           {deviceStatus?.model || 'Device'}
                         </span>
                         <span className={cn(
                           "text-[9px] font-mono leading-tight",
-                          hasError ? "text-amber-600 font-semibold" : "text-emerald-600 font-medium"
+                          hasError ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-emerald-600 dark:text-emerald-400 font-medium"
                         )}>
                           {hasError ? "Link Blocked" : "Active Bus"}
                         </span>
@@ -505,8 +509,8 @@ export function DeviceMonitorPage({
                       <div className={cn(
                         "w-6 h-6 rounded-lg border shadow-2xs flex items-center justify-center",
                         hasError 
-                          ? "bg-amber-50 border-amber-200 text-amber-600" 
-                          : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                          ? "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400" 
+                          : "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
                       )}>
                         <Smartphone className="w-3.5 h-3.5" />
                       </div>
@@ -544,6 +548,7 @@ export function DeviceMonitorPage({
                         x2="392"
                         y2="6"
                         stroke="#E2E8F0"
+                        className="stroke-slate-200 dark:stroke-slate-700"
                         strokeWidth="2.2"
                         strokeLinecap="round"
                       />
@@ -631,11 +636,11 @@ export function DeviceMonitorPage({
                 {/* Middle Section: Specs Grid (6 Cards, 3 cols x 2 rows) */}
                 <div className="grid grid-cols-3 gap-3 my-2">
                   {/* 1. Android OS / Mode */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">
+                  <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">
                       {isMtp ? 'Connection Mode' : (isFastboot ? 'Fastboot Mode' : 'Android')}
                     </span>
-                    <span className="text-[13px] font-bold text-slate-800 mt-1 truncate">
+                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 mt-1 truncate">
                       {isMtp 
                         ? 'MTP (File Transfer)' 
                         : (isFastboot ? (deviceStatus?.androidVersion || 'Fastboot Bootloader') : (deviceStatus?.androidVersion || (isAdb ? 'Android 14' : deviceStatus?.mode || 'Android')))}
@@ -643,31 +648,31 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 2. Battery / Power */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">
                         {isMtp ? 'Power Supply' : 'Battery'}
                       </span>
                       {isMtp && (
-                        <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 flex items-center gap-1">
+                        <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/60 flex items-center gap-1 shadow-2xs">
                           <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                           Charging
                         </span>
                       )}
                     </div>
                     <div className="mt-1">
-                      <span className="text-[13px] font-bold text-slate-800 block truncate" title={getBatteryLabel()}>
+                      <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 block truncate" title={getBatteryLabel()}>
                         {getBatteryLabel()}
                       </span>
                       {getBatteryPercent() ? (
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
                           <div 
                             className="bg-emerald-500 h-full rounded-full transition-all duration-300" 
                             style={{ width: `${getBatteryPercent()}%` }} 
                           />
                         </div>
                       ) : (
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden relative">
+                        <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden relative">
                           <div className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 h-full rounded-full w-2/3 animate-pulse" />
                         </div>
                       )}
@@ -675,61 +680,61 @@ export function DeviceMonitorPage({
                   </div>
 
                   {/* 3. USB Speed */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">USB speed</span>
-                    <span className="text-[13px] font-bold text-slate-800 mt-1">
+                  <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">USB speed</span>
+                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 mt-1">
                       {deviceStatus?.usbSpeed || 'USB 3.0'}
                     </span>
                   </div>
 
                   {/* 4. Driver */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
-                    <span className="text-[10px] text-slate-400 font-medium">Driver</span>
-                    <span className="text-[13px] font-bold text-slate-800 mt-1 truncate" title={deviceStatus?.driverName}>
+                  <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Driver</span>
+                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 mt-1 truncate" title={deviceStatus?.driverName}>
                       {deviceStatus?.driverName || (isFastboot ? 'Android Bootloader Interface' : isAdb ? 'Google USB Driver' : 'MTP USB Device')}
                     </span>
                   </div>
 
                   {/* 5. Context Card: Storage Access (in MTP) vs Bootloader (in ADB/Fastboot) */}
                   {isMtp ? (
-                    <div className="bg-slate-50/70 border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/20 rounded-xl p-3 flex flex-col justify-between transition-all group">
+                    <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 hover:border-emerald-200 dark:hover:border-emerald-700 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/20 rounded-xl p-3 flex flex-col justify-between transition-all group shadow-2xs">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400 font-medium">Storage Access</span>
-                        <span className="text-[9px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/50">MTP</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Storage Access</span>
+                        <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1 py-0.2 rounded border border-emerald-200/50 dark:border-emerald-800/50">MTP</span>
                       </div>
                       <button
                         onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
-                        className="mt-1 inline-flex items-center justify-between text-[12px] font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
+                        className="mt-1 inline-flex items-center justify-between text-[12px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 cursor-pointer"
                         title="Click to open phone storage in Windows File Explorer"
                       >
                         <span className="truncate">Open Explorer</span>
-                        <FolderOpen className="w-3.5 h-3.5 text-emerald-600 shrink-0 ml-1 group-hover:scale-110 transition-transform" />
+                        <FolderOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 ml-1 group-hover:scale-110 transition-transform" />
                       </button>
                     </div>
                   ) : (
-                    <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
-                      <span className="text-[10px] text-slate-400 font-medium">Bootloader</span>
-                      <span className="text-[13px] font-bold text-slate-800 mt-1">
+                    <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Bootloader</span>
+                      <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 mt-1">
                         {deviceStatus?.bootloaderState || (isFastboot ? 'Unlocked 🟢' : 'Locked')}
                       </span>
                     </div>
                   )}
 
                   {/* 6. Storage */}
-                  <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                  <div className="bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 rounded-xl p-3 flex flex-col justify-between shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 font-medium">Storage</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Storage</span>
                       {storageFree && (
-                        <span className="text-[10px] font-medium text-emerald-600">
+                        <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                           {storageFree} free
                         </span>
                       )}
                     </div>
                     <div className="mt-1">
-                      <span className="text-[13px] font-bold text-slate-800 truncate block">
+                      <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate block">
                         {getStorageDisplay()}
                       </span>
-                      <div className="w-full bg-slate-200 h-1 rounded-full mt-1.5 overflow-hidden">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 h-1 rounded-full mt-1.5 overflow-hidden">
                         <div 
                           className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
                           style={{ width: `${storagePct}%` }} 
@@ -742,7 +747,7 @@ export function DeviceMonitorPage({
                 {/* Bottom Section: Context-Aware Dynamic Action Buttons */}
                 {isMtp ? (
                   /* MTP Mode Actions (File Management Focused) */
-                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80 dark:border-slate-800">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
                       className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
@@ -754,26 +759,26 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={() => setShowUsbGuide(true)}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Learn how to turn on USB debugging to enable ADB bootloader actions"
                     >
-                      <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                      <Terminal className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Enable USB Debugging</span>
                     </button>
 
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-600 dark:text-slate-300 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                       title="Refresh hardware status"
                     >
-                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
                       <span>Refresh</span>
                     </button>
                   </div>
                 ) : isAdb ? (
                   /* ADB Mode Actions (Reboot & Terminal Suite) */
-                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80 dark:border-slate-800">
                     <button
                       onClick={onRebootBootloader}
                       className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
@@ -785,34 +790,34 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot recovery"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Reboot Recovery</span>
                     </button>
 
                     <button
                       onClick={onOpenShell}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Open interactive cmd.exe adb shell terminal"
                     >
-                      <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                      <Terminal className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>ADB Shell</span>
                     </button>
 
                     <button
                       onClick={onRebootSystem}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: adb reboot"
                     >
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                      <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Reboot System</span>
                     </button>
                   </div>
                 ) : isFastboot ? (
                   /* Fastboot Mode Actions */
-                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80 dark:border-slate-800">
                     <button
                       onClick={onRebootSystem}
                       className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
@@ -824,35 +829,35 @@ export function DeviceMonitorPage({
 
                     <button
                       onClick={onRebootBootloader}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot-bootloader"
                     >
-                      <ArrowDownToLine className="w-3.5 h-3.5 text-slate-500" />
+                      <ArrowDownToLine className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Reboot Bootloader</span>
                     </button>
 
                     <button
                       onClick={onRebootRecovery}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                       title="Execute: fastboot reboot recovery"
                     >
-                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                       <span>Reboot Recovery</span>
                     </button>
 
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-600 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-600 dark:text-slate-300 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                       title="Refresh hardware status"
                     >
-                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
                       <span>Refresh</span>
                     </button>
                   </div>
                 ) : (
                   /* Default Fallback Actions */
-                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80">
+                  <div className="flex flex-wrap items-center gap-2.5 mt-7 pt-5 border-t border-slate-200/80 dark:border-slate-800">
                     <button
                       onClick={() => onOpenPhoneStorage?.(storageObj?.path)}
                       className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
@@ -863,9 +868,9 @@ export function DeviceMonitorPage({
                     <button
                       onClick={onRefresh}
                       disabled={isRefreshing}
-                      className="px-3.5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98] text-slate-700 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
+                      className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
                     >
-                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500", isRefreshing && "animate-spin")} />
+                      <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
                       <span>Refresh Status</span>
                     </button>
                   </div>
@@ -883,7 +888,7 @@ export function DeviceMonitorPage({
             
             {/* Header Tag */}
             <div className="min-w-0">
-              <h4 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase mb-3">
+              <h4 className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase mb-3">
                 {isConnected ? 'DETECTED MODE' : 'DETECTABLE MODES'}
               </h4>
 
@@ -892,8 +897,8 @@ export function DeviceMonitorPage({
                 
                 {/* 1. MTP Card */}
                 <ModeCard
-                  icon={<FolderOpen className="w-4 h-4 text-emerald-600" />}
-                  iconBg="bg-emerald-50"
+                  icon={<FolderOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                  iconBg="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/60 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 dark:shadow-[0_0_10px_rgba(16,185,129,0.18)]"
                   title="File Transfer (MTP)"
                   subtitle="Browse internal shared storage"
                   active={deviceStatus?.mtp}
@@ -903,8 +908,8 @@ export function DeviceMonitorPage({
 
                 {/* 2. ADB Card */}
                 <ModeCard
-                  icon={<Terminal className="w-4 h-4 text-emerald-600" />}
-                  iconBg="bg-emerald-50"
+                  icon={<Terminal className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                  iconBg="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/60 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 dark:shadow-[0_0_10px_rgba(16,185,129,0.18)]"
                   title="ADB"
                   subtitle="Turn on USB debugging"
                   active={deviceStatus?.adb}
@@ -914,8 +919,8 @@ export function DeviceMonitorPage({
 
                 {/* 3. Fastboot Card */}
                 <ModeCard
-                  icon={<ArrowDownToLine className="w-4 h-4 text-amber-600" />}
-                  iconBg="bg-amber-50"
+                  icon={<ArrowDownToLine className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+                  iconBg="bg-amber-50 dark:bg-amber-500/15 border border-amber-200/60 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 dark:shadow-[0_0_10px_rgba(245,158,11,0.18)]"
                   title="Fastboot"
                   subtitle="Reboot to bootloader"
                   active={deviceStatus?.fastboot}
@@ -925,8 +930,8 @@ export function DeviceMonitorPage({
 
                 {/* 4. MTK BROM Card */}
                 <ModeCard
-                  icon={<Cpu className="w-4 h-4 text-blue-600" />}
-                  iconBg="bg-blue-50"
+                  icon={<Cpu className="w-4 h-4 text-blue-600 dark:text-sky-400" />}
+                  iconBg="bg-blue-50 dark:bg-sky-500/15 border border-blue-200/60 dark:border-sky-500/30 text-blue-600 dark:text-sky-400 dark:shadow-[0_0_10px_rgba(14,165,233,0.18)]"
                   title="MTK BROM / Preloader"
                   subtitle="Power off, then plug in"
                   active={deviceStatus?.mtk}
@@ -1000,55 +1005,55 @@ export function DeviceMonitorPage({
 
       {/* HOW TO ENABLE USB DEBUGGING MODAL DIALOG */}
       {showUsbGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fadeIn">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-scaleUp">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-slate-950/70 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-scaleUp">
             <button 
               onClick={() => setShowUsbGuide(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                 <Terminal className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-[15px] font-bold text-slate-900 leading-tight">Enable USB Debugging</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Unlocks Fastboot, Recovery & Terminal controls</p>
+                <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight">Enable USB Debugging</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Unlocks Fastboot, Recovery & Terminal controls</p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2.5 my-4 text-xs text-slate-600">
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-[11px]">1</span>
+            <div className="flex flex-col gap-2.5 my-4 text-xs text-slate-600 dark:text-slate-300">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[11px]">1</span>
                 <div>
-                  <span className="font-semibold text-slate-800">Open Settings</span>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Go to your phone's <strong>Settings &gt; About Phone</strong>.</p>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">Open Settings</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Go to your phone's <strong>Settings &gt; About Phone</strong>.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-[11px]">2</span>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[11px]">2</span>
                 <div>
-                  <span className="font-semibold text-slate-800">Tap Build Number 7 Times</span>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Tap <strong>Build Number</strong> repeatedly until you see <em>"You are now a developer!"</em>.</p>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">Tap Build Number 7 Times</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Tap <strong>Build Number</strong> repeatedly until you see <em>"You are now a developer!"</em>.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-[11px]">3</span>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[11px]">3</span>
                 <div>
-                  <span className="font-semibold text-slate-800">Open Developer Options</span>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Go to <strong>System / Additional Settings &gt; Developer Options</strong>.</p>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">Open Developer Options</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Go to <strong>System / Additional Settings &gt; Developer Options</strong>.</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 border border-slate-100">
-                <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center shrink-0 text-[11px]">4</span>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[11px]">4</span>
                 <div>
-                  <span className="font-semibold text-slate-800">Turn ON USB Debugging</span>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Toggle <strong>USB Debugging</strong> ON and tap <strong>Allow</strong> on your phone screen.</p>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">Turn ON USB Debugging</span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">Toggle <strong>USB Debugging</strong> ON and tap <strong>Allow</strong> on your phone screen.</p>
                 </div>
               </div>
             </div>

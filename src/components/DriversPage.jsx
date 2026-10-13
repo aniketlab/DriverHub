@@ -29,9 +29,9 @@ export const DRIVER_DEFS = [
     title: 'ADB Platform-Tools',
     desc: 'adb and fastboot binaries, PATH set up automatically',
     modeTag: 'ADB',
-    modeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+    modeColor: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/80',
     iconType: 'terminal',
-    iconBg: 'bg-emerald-50 text-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/60 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 dark:shadow-[0_0_12px_rgba(16,185,129,0.2)]',
   },
   {
     id: 'google_usb',
@@ -39,9 +39,9 @@ export const DRIVER_DEFS = [
     title: 'Google USB Driver',
     desc: 'Detects your phone in ADB mode',
     modeTag: 'ADB',
-    modeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+    modeColor: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/80',
     iconType: 'download',
-    iconBg: 'bg-amber-50 text-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-500/15 border border-amber-200/60 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.2)]',
   },
   {
     id: 'google_bootloader',
@@ -49,9 +49,9 @@ export const DRIVER_DEFS = [
     title: 'Google Bootloader Interface',
     desc: 'Detects your phone in Fastboot mode',
     modeTag: 'Fastboot',
-    modeColor: 'bg-amber-50 text-amber-700 border-amber-200/60',
+    modeColor: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/80',
     iconType: 'download',
-    iconBg: 'bg-amber-50 text-amber-600',
+    iconBg: 'bg-amber-50 dark:bg-amber-500/15 border border-amber-200/60 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 dark:shadow-[0_0_12px_rgba(245,158,11,0.2)]',
   },
   {
     id: 'mtk_vcom',
@@ -59,9 +59,9 @@ export const DRIVER_DEFS = [
     title: 'MTK VCOM Preloader',
     desc: 'Preloader mode for flashing MTK phones',
     modeTag: 'Preloader',
-    modeColor: 'bg-blue-50 text-blue-700 border-blue-200/60',
+    modeColor: 'bg-blue-50 dark:bg-sky-950/60 text-blue-700 dark:text-sky-300 border-blue-200/60 dark:border-sky-800/80',
     iconType: 'chip',
-    iconBg: 'bg-blue-50 text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-sky-500/15 border border-blue-200/60 dark:border-sky-500/30 text-blue-600 dark:text-sky-400 dark:shadow-[0_0_12px_rgba(14,165,233,0.2)]',
   },
   {
     id: 'mtk_brom',
@@ -69,9 +69,9 @@ export const DRIVER_DEFS = [
     title: 'MTK BROM Driver',
     desc: 'BROM mode for unbricking MTK phones',
     modeTag: 'BROM',
-    modeColor: 'bg-blue-50 text-blue-700 border-blue-200/60',
+    modeColor: 'bg-blue-50 dark:bg-sky-950/60 text-blue-700 dark:text-sky-300 border-blue-200/60 dark:border-sky-800/80',
     iconType: 'chip',
-    iconBg: 'bg-blue-50 text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-sky-500/15 border border-blue-200/60 dark:border-sky-500/30 text-blue-600 dark:text-sky-400 dark:shadow-[0_0_12px_rgba(14,165,233,0.2)]',
   }
 ];
 
@@ -297,12 +297,12 @@ export function DriversPage({
   const renderIcon = (type) => {
     switch (type) {
       case 'terminal':
-        return <Terminal className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />;
+        return <Terminal className="w-5 h-5 stroke-[2.2] transition-transform duration-200 group-hover:scale-110" />;
       case 'chip':
-        return <Cpu className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />;
+        return <Cpu className="w-5 h-5 stroke-[2.2] transition-transform duration-200 group-hover:scale-110" />;
       case 'download':
       default:
-        return <Download className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />;
+        return <Download className="w-5 h-5 stroke-[2.2] transition-transform duration-200 group-hover:scale-110" />;
     }
   };
 
@@ -442,10 +442,10 @@ export function DriversPage({
         {/* ========================================================= */}
         <div className="flex flex-col gap-5 flex-1 pb-16">
           {groupedCategories.length === 0 ? (
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-2 shadow-2xs my-4 animate-card-in">
-              <AlertCircle className="w-7 h-7 text-slate-400" />
-              <h4 className="text-sm font-semibold text-slate-700">No matching driver packages found</h4>
-              <p className="text-xs text-slate-400 max-w-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-2 shadow-2xs my-4 animate-card-in">
+              <AlertCircle className="w-7 h-7 text-slate-400 dark:text-slate-500" />
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">No matching driver packages found</h4>
+              <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm">
                 Try adjusting your search query or switching the filter tab.
               </p>
             </div>
@@ -453,7 +453,7 @@ export function DriversPage({
             groupedCategories.map(([category, items], catIdx) => (
               <div key={category} className="flex flex-col gap-2.5">
                 {/* Category Header */}
-                <h3 className="text-[11px] font-bold tracking-wider text-slate-500 uppercase px-1 transition-opacity duration-300">
+                <h3 className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-1 transition-opacity duration-300">
                   {category}
                 </h3>
 
