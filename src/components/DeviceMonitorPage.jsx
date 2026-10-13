@@ -473,20 +473,65 @@ export function DeviceMonitorPage({
                     </div>
 
                     {/* Center: Live Protocol & Speed Telemetry Badge */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-slate-200/90 shadow-2xs shrink-0">
-                      <span className={cn(
-                        "w-1.5 h-1.5 rounded-full",
-                        hasError ? "bg-amber-500 animate-ping" : isFastboot ? "bg-amber-500 animate-pulse" : "bg-emerald-500 animate-pulse"
-                      )} />
-                      <span className="text-[10px] font-semibold text-slate-700 tracking-tight">
-                        {hasError 
-                          ? "Link Blocked • Driver Missing" 
-                          : isFastboot 
-                          ? "Fastboot 2.0 • Bootloader Bus" 
-                          : isAdb 
-                          ? `USB ${isUsb3 ? '3.0' : '2.0'} • ADB Debug Tunnel` 
-                          : `USB ${isUsb3 ? '3.0 (5 Gbps)' : '2.0 (480 Mbps)'} • MTP Link`}
+                    <div className={cn(
+                      "flex items-center gap-2 px-3 py-1 rounded-full shadow-2xs border transition-all shrink-0",
+                      hasError 
+                        ? "bg-amber-50/90 border-amber-300 text-amber-900" 
+                        : isFastboot
+                        ? "bg-amber-50/70 border-amber-300/80 text-amber-900"
+                        : "bg-white/95 border-slate-200/90 hover:border-emerald-300"
+                    )}>
+                      {/* Heartbeat Status Radar */}
+                      <span className="relative flex h-2 w-2 shrink-0">
+                        <span className={cn(
+                          "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                          hasError ? "bg-amber-400" : isFastboot ? "bg-amber-400" : "bg-emerald-400"
+                        )} />
+                        <span className={cn(
+                          "relative inline-flex rounded-full h-2 w-2",
+                          hasError ? "bg-amber-500" : isFastboot ? "bg-amber-500" : "bg-emerald-500"
+                        )} />
                       </span>
+
+                      {/* Hardware Bus Generation Chip */}
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold tracking-tight border shadow-2xs",
+                        hasError
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : isFastboot
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : "bg-emerald-50 text-emerald-800 border-emerald-200/70"
+                      )}>
+                        <Usb className="w-2.5 h-2.5 shrink-0" />
+                        <span>{hasError ? 'USB BUS' : isUsb3 ? 'USB 3.0' : 'USB 2.0'}</span>
+                      </span>
+
+                      <span className="text-slate-300 text-[10px] select-none shrink-0">•</span>
+
+                      {/* Active Connection & Bandwidth Telemetry */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[11px] font-semibold text-slate-800 tracking-tight">
+                          {hasError 
+                            ? 'Driver Required' 
+                            : isFastboot 
+                            ? 'Fastboot Bootloader' 
+                            : isAdb 
+                            ? 'ADB Debug Bridge' 
+                            : isMtk 
+                            ? 'MTK Flash Mode'
+                            : 'File Transfer (MTP)'}
+                        </span>
+                        {!hasError && (
+                          <span className={cn(
+                            "text-[9.5px] font-mono font-medium px-1.5 py-0.2 rounded border shadow-2xs",
+                            isFastboot 
+                              ? "bg-amber-50 text-amber-700 border-amber-200/60" 
+                              : "bg-slate-100 text-slate-600 border-slate-200/60"
+                          )}>
+                            {isUsb3 ? '5 Gbps SuperSpeed' : '480 Mbps'}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Right: Connected Device Node */}
