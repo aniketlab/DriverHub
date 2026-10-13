@@ -389,16 +389,16 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-slate-50/80 text-slate-800 overflow-hidden font-sans relative">
-      {/* Light Ambient Green/Emerald Glow (15-17% Opacity - Soft & Subtle in Corners & Center) */}
+      {/* Responsive Ambient Green/Emerald Glow (12-14% on compact screens, 15-17% on large screens) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {/* Top-Left Soft Emerald Glow */}
-        <div className="absolute -top-[12%] -left-[6%] w-[440px] h-[440px] rounded-full bg-emerald-400/[0.17] blur-[100px]" />
+        <div className="absolute -top-[12%] -left-[6%] w-[320px] h-[320px] xl:w-[440px] xl:h-[440px] rounded-full bg-emerald-400/[0.12] xl:bg-emerald-400/[0.17] blur-[80px] xl:blur-[100px]" />
         {/* Top-Right Soft Teal Glow */}
-        <div className="absolute top-[8%] -right-[8%] w-[420px] h-[420px] rounded-full bg-teal-300/[0.15] blur-[100px]" />
-        {/* Center-Right Ambient Flow */}
-        <div className="absolute top-[45%] right-[10%] w-[440px] h-[440px] rounded-full bg-emerald-400/[0.15] blur-[120px]" />
+        <div className="absolute top-[8%] -right-[8%] w-[300px] h-[300px] xl:w-[420px] xl:h-[420px] rounded-full bg-teal-300/[0.10] xl:bg-teal-300/[0.15] blur-[80px] xl:blur-[100px]" />
+        {/* Center-Right Ambient Flow (Only on large screens to prevent small-screen glow concentration) */}
+        <div className="hidden xl:block absolute top-[45%] right-[10%] w-[440px] h-[440px] rounded-full bg-emerald-400/[0.15] blur-[120px]" />
         {/* Bottom-Right Soft Mint Glow */}
-        <div className="absolute -bottom-[12%] -right-[6%] w-[480px] h-[480px] rounded-full bg-emerald-300/[0.17] blur-[110px]" />
+        <div className="absolute -bottom-[12%] -right-[6%] w-[340px] h-[340px] xl:w-[480px] xl:h-[480px] rounded-full bg-emerald-300/[0.13] xl:bg-emerald-300/[0.17] blur-[90px] xl:blur-[110px]" />
       </div>
 
       {/* 1. TOP UNIFIED TITLE BAR (Full window width, frosted translucent glass) */}
