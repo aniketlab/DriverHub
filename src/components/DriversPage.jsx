@@ -637,21 +637,21 @@ export function DriversPage({
         <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-3.5 px-5 shadow-lg flex items-center justify-between gap-4">
           
           {/* Left: Spring Toggle Switch for Restore Point */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 select-none">
             <button
               type="button"
               role="switch"
               aria-checked={createRestorePoint}
               onClick={handleToggleRestorePoint}
               className={cn(
-                "w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer focus:outline-none shrink-0 active:scale-[0.96] shadow-inner",
+                "w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer focus:outline-none shrink-0 p-0.5 shadow-inner flex items-center active:scale-[0.96]",
                 createRestorePoint ? "bg-emerald-600" : "bg-slate-300"
               )}
             >
               <span
                 className={cn(
-                  "w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-xs transition-transform duration-200 ease-out",
-                  createRestorePoint ? "translate-x-5" : "translate-x-0.5"
+                  "w-5 h-5 bg-white rounded-full shadow-xs transition-transform duration-200 ease-out pointer-events-none",
+                  createRestorePoint ? "translate-x-5" : "translate-x-0"
                 )}
               />
             </button>
