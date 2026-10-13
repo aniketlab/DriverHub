@@ -473,42 +473,19 @@ export function DeviceMonitorPage({
                     </div>
 
                     {/* Center: Live Protocol & Speed Telemetry Badge */}
-                    <div className={cn(
-                      "flex items-center gap-2 px-3.5 py-1 rounded-full shadow-2xs border transition-all shrink-0",
-                      hasError 
-                        ? "bg-amber-50/90 border-amber-300 text-amber-900" 
-                        : isFastboot
-                        ? "bg-amber-50/70 border-amber-300/80 text-amber-900"
-                        : "bg-white/95 hover:bg-slate-50 border-slate-200/90 hover:border-emerald-300/60"
-                    )}>
-                      {/* Connection Pulse Dot */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-slate-200/90 shadow-2xs shrink-0">
                       <span className={cn(
-                        "w-2 h-2 rounded-full shrink-0",
+                        "w-1.5 h-1.5 rounded-full",
                         hasError ? "bg-amber-500 animate-ping" : isFastboot ? "bg-amber-500 animate-pulse" : "bg-emerald-500 animate-pulse"
                       )} />
-
-                      {/* USB Bus Label */}
-                      <span className="text-xs font-bold text-slate-800 tracking-tight">
-                        {hasError ? 'USB Connection' : isUsb3 ? 'USB 3.0 SuperSpeed' : 'USB 2.0 High-Speed'}
-                      </span>
-
-                      {/* Subtle Separator */}
-                      <span className="text-slate-300 text-xs font-light select-none">·</span>
-
-                      {/* Active Protocol State */}
-                      <span className={cn(
-                        "text-xs font-semibold tracking-tight",
-                        hasError ? "text-amber-600" : isFastboot ? "text-amber-600" : "text-emerald-600"
-                      )}>
+                      <span className="text-[10px] font-semibold text-slate-700 tracking-tight">
                         {hasError 
-                          ? 'Driver Missing' 
+                          ? "Link Blocked • Driver Missing" 
                           : isFastboot 
-                          ? 'Fastboot Mode' 
+                          ? "Fastboot 2.0 • Bootloader Bus" 
                           : isAdb 
-                          ? 'ADB Active' 
-                          : isMtk 
-                          ? 'MTK Mode' 
-                          : 'File Transfer (MTP)'}
+                          ? `USB ${isUsb3 ? '3.0' : '2.0'} • ADB Debug Tunnel` 
+                          : `USB ${isUsb3 ? '3.0 (5 Gbps)' : '2.0 (480 Mbps)'} • MTP Link`}
                       </span>
                     </div>
 
