@@ -9,12 +9,14 @@ import {
   Loader2, 
   FolderOpen,
   Smartphone,
-  RefreshCw
+  RefreshCw,
+  Terminal
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { DeviceMonitorPage } from './components/DeviceMonitorPage';
 import { DriversPage } from './components/DriversPage';
+import { PlatformToolsPage } from './components/PlatformToolsPage';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -425,7 +427,7 @@ function App() {
           <nav className="flex flex-col gap-1">
             <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
             <NavItem icon={Download} label="Drivers" active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
-            <NavItem icon={ChevronRight} label="Platform Tools" active={activeTab === 'Platform Tools'} onClick={() => setActiveTab('Platform Tools')} />
+            <NavItem icon={Terminal} label="Platform Tools" active={activeTab === 'Platform Tools'} onClick={() => setActiveTab('Platform Tools')} />
             <NavItem icon={MonitorSmartphone} label="Device Monitor" active={activeTab === 'Device Monitor'} onClick={() => setActiveTab('Device Monitor')} />
             <NavItem icon={Settings} label="Settings" active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
           </nav>
@@ -464,6 +466,11 @@ function App() {
             installProgress={installProgress}
             onScan={handleScan}
             onInstallDrivers={handleInstallDrivers}
+          />
+        ) : activeTab === 'Platform Tools' ? (
+          <PlatformToolsPage 
+            onNavigateToDashboard={() => setActiveTab('Dashboard')}
+            addLog={addLog}
           />
         ) : (
           <>

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
@@ -6,6 +6,14 @@ import { checkConnectedDevices } from './services/monitorService.js';
 import { installAdb, installGoogleDriver, installMtkDriver, createSystemRestorePoint } from './services/installerService.js';
 import { syncDeviceDatabase } from './services/deviceSyncService.js';
 import { rebootDevice, openAdbShell, openPhoneStorage } from './services/deviceActionService.js';
+import { 
+  getPlatformToolsDetails, 
+  toggleSystemPath, 
+  toggleAutoUpdate, 
+  setPlatformToolsDir, 
+  handleAdbServerAction, 
+  executeTerminalCommand 
+} from './services/platformToolsService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -132,6 +140,45 @@ function setupIpc() {
   ipcMain.handle('run-command', async (event, command) => {
     console.log('Running command:', command);
     return `Executed: ${command}`;
+  });
+
+  // Platform Tools Hub IPC Handlers
+  ipcMain.handle('platform-tools:get-status', async () => {
+    return await getPlatformToolsDetails();
+  });
+
+  ipcMain.handle('platform-tools:toggle-path', async (event, enable) => {
+    return await toggleSystemPath(enable);
+  });
+
+  ipcMain.handle('platform-tools:toggle-auto-update', async (event, enable) => {
+    return toggleAutoUpdate(enable);
+  });
+
+  ipcMain.handle('platform-tools:change-location', async () => {
+    if (!mainWindow) return { success: false };
+    const res = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Android Platform-Tools Directory',
+      properties: ['openDirectory'],
+      buttonLabel: 'Select Folder'
+    });
+    if (!res.canceled && res.filePaths.length > 0) {
+      return setPlatformToolsDir(res.filePaths[0]);
+    }
+    return { canceled: true };
+  });
+
+  ipcMain.handle('platform-tools:reinstall', async (event) => {
+    const sender = event.sender;
+    return await installAdb(sender);
+  });
+
+  ipcMain.handle('platform-tools:server-action', async (event, action) => {
+    return await handleAdbServerAction(action);
+  });
+
+  ipcMain.handle('platform-tools:run-command', async (event, command) => {
+    return await executeTerminalCommand(command);
   });
 
   // 1-Click Driver & Tools Installer with System Restore Support
