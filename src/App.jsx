@@ -469,7 +469,14 @@ function App() {
           />
         ) : activeTab === 'Platform Tools' ? (
           <PlatformToolsPage 
+            deviceStatus={deviceStatus}
+            isInstalling={isInstalling}
+            installingTarget={installingTarget}
+            installProgress={installProgress}
+            onInstallDrivers={handleInstallDrivers}
+            onScan={handleScan}
             onNavigateToDashboard={() => setActiveTab('Dashboard')}
+            onNavigateToDeviceMonitor={() => setActiveTab('Device Monitor')}
             addLog={addLog}
           />
         ) : (

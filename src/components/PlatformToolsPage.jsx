@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Check, 
   RefreshCw, 
@@ -10,7 +10,9 @@ import {
   ExternalLink,
   ChevronRight,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Smartphone,
+  Cpu
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -20,13 +22,19 @@ function cn(...inputs) {
 }
 
 export function PlatformToolsPage({
+  deviceStatus,
+  isInstalling = false,
+  installingTarget = null,
+  installProgress = {},
+  onInstallDrivers,
+  onScan,
   onNavigateToDashboard,
+  onNavigateToDeviceMonitor,
   addLog = () => {}
 }) {
   const [loading, setLoading] = useState(true);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [serverBusy, setServerBusy] = useState(false);
-  const [reinstalling, setReinstalling] = useState(false);
   const [terminalRunning, setTerminalRunning] = useState(false);
 
   // Core Platform-Tools Status State
@@ -47,11 +55,17 @@ export function PlatformToolsPage({
     ]
   });
 
-  // Terminal state
-  const [command, setCommand] = useState('adb devices');
-  const [terminalOutput, setTerminalOutput] = useState(
-    'List of devices attached\n2A4F1B9C03E7    device'
+  // Global Install Tracker for ADB Platform-Tools
+  const isInstallingAdb = isInstalling && (
+    installingTarget === 'adb' || 
+    (Array.isArray(installingTarget) && installingTarget.includes('adb'))
   );
+  const adbProgress = installProgress?.adb || { percent: 0, message: '' };
+
+  // Terminal state - NO FAKE MOCKUP! Initial state is clean loading prompt
+  const [command, setCommand] = useState('adb devices');
+  const [terminalOutput, setTerminalOutput] = useState('Scanning attached USB devices...');
+  const prevDeviceRef = useRef(deviceStatus?.serial || null);
 
   // Load real status from Electron backend on mount
   const loadStatus = async () => {
@@ -69,8 +83,29 @@ export function PlatformToolsPage({
     }
   };
 
+  // Run real command
+  const handleRunCommand = async (cmdToRun = command, silent = false) => {
+    const finalCmd = cmdToRun || command;
+    if (!finalCmd) return;
+    if (!silent) setTerminalRunning(true);
+    try {
+      if (window.electronAPI?.runTerminalCommand) {
+        const res = await window.electronAPI.runTerminalCommand(finalCmd);
+        setTerminalOutput(res.output || 'Command completed with no output.');
+      } else {
+        setTerminalOutput(`Simulated: ${finalCmd}\nOutput returned successfully.`);
+      }
+    } catch (err) {
+      setTerminalOutput(`Error: ${err.message}`);
+    } finally {
+      if (!silent) setTerminalRunning(false);
+    }
+  };
+
+  // On mount: fetch status AND auto-run REAL adb devices (no mockup!)
   useEffect(() => {
     loadStatus();
+    handleRunCommand('adb devices', true);
 
     // Auto-refresh server status every 4 seconds
     const interval = setInterval(async () => {
@@ -93,6 +128,21 @@ export function PlatformToolsPage({
 
     return () => clearInterval(interval);
   }, []);
+
+  // When device connection changes: automatically refresh terminal output with real adb devices
+  useEffect(() => {
+    if (prevDeviceRef.current !== deviceStatus?.serial) {
+      prevDeviceRef.current = deviceStatus?.serial;
+      handleRunCommand('adb devices', true);
+    }
+  }, [deviceStatus?.serial, deviceStatus?.connected]);
+
+  // When global installation finishes, refresh local status
+  useEffect(() => {
+    if (!isInstalling) {
+      loadStatus();
+    }
+  }, [isInstalling]);
 
   // 1. Toggle PATH
   const handleTogglePath = async () => {
@@ -150,19 +200,18 @@ export function PlatformToolsPage({
     }
   };
 
-  // 5. Reinstall Platform-Tools
+  // 5. Global Unified Reinstall: triggers real download with full progress streaming across all tabs
   const handleReinstall = async () => {
-    if (reinstalling) return;
-    setReinstalling(true);
-    try {
-      if (window.electronAPI?.reinstallPlatformTools) {
+    if (isInstallingAdb) return;
+    if (onInstallDrivers) {
+      onInstallDrivers(['adb'], { createRestorePoint: false });
+    } else if (window.electronAPI?.reinstallPlatformTools) {
+      try {
         await window.electronAPI.reinstallPlatformTools();
         await loadStatus();
+      } catch (err) {
+        console.error('Reinstall error:', err);
       }
-    } catch (err) {
-      console.error('Reinstall error:', err);
-    } finally {
-      setReinstalling(false);
     }
   };
 
@@ -171,6 +220,7 @@ export function PlatformToolsPage({
     if (checkingUpdates) return;
     setCheckingUpdates(true);
     try {
+      if (onScan) onScan();
       await new Promise(r => setTimeout(r, 700));
       await loadStatus();
     } finally {
@@ -187,31 +237,16 @@ export function PlatformToolsPage({
         const res = await window.electronAPI.controlAdbServer(action);
         if (res && typeof res.running === 'boolean') {
           setStatus(prev => ({ ...prev, serverRunning: res.running }));
+          // If server restarted/started, auto-refresh terminal
+          if (res.running) {
+            setTimeout(() => handleRunCommand('adb devices', true), 600);
+          }
         }
       }
     } catch (err) {
       console.error(`ADB server ${action} error:`, err);
     } finally {
       setServerBusy(false);
-    }
-  };
-
-  // 8. Execute Terminal Command
-  const handleRunCommand = async (cmdToRun = command) => {
-    const finalCmd = cmdToRun || command;
-    if (!finalCmd || terminalRunning) return;
-    setTerminalRunning(true);
-    try {
-      if (window.electronAPI?.runTerminalCommand) {
-        const res = await window.electronAPI.runTerminalCommand(finalCmd);
-        setTerminalOutput(res.output || 'Command completed with no output.');
-      } else {
-        setTerminalOutput(`Simulated: ${finalCmd}\nOutput returned successfully.`);
-      }
-    } catch (err) {
-      setTerminalOutput(`Error: ${err.message}`);
-    } finally {
-      setTerminalRunning(false);
     }
   };
 
@@ -241,7 +276,7 @@ export function PlatformToolsPage({
 
           <button
             onClick={handleCheckUpdates}
-            disabled={checkingUpdates}
+            disabled={checkingUpdates || isInstallingAdb}
             className="px-4 py-2 bg-white/95 hover:bg-white active:scale-[0.98] border border-slate-200 hover:border-slate-300 text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
             title="Check Google repository for Platform-Tools updates"
           >
@@ -278,6 +313,27 @@ export function PlatformToolsPage({
             <div className="w-full bg-slate-50/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 font-mono text-xs text-slate-700 select-all truncate shadow-inner">
               {status.path}
             </div>
+
+            {/* Real Download / Reinstall Progress Bar (Synchronized with Drivers & Dashboard tabs) */}
+            {isInstallingAdb && (
+              <div className="w-full bg-emerald-50/80 border border-emerald-200/90 rounded-xl p-3 flex flex-col gap-1.5 transition-all">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-emerald-900 flex items-center gap-1.5 truncate max-w-[80%]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 shrink-0" />
+                    <span>{adbProgress?.message || 'Deploying Platform-Tools...'}</span>
+                  </span>
+                  <span className="font-mono font-bold text-emerald-700 shrink-0">
+                    {adbProgress?.percent || 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-emerald-200/50 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-emerald-600 h-full rounded-full transition-all duration-300"
+                    style={{ width: `${adbProgress?.percent || 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* 2 Switch Toggles: Add to system PATH & Auto-update on launch */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-7">
@@ -349,27 +405,34 @@ export function PlatformToolsPage({
 
               <button
                 onClick={handleReinstall}
-                disabled={reinstalling}
+                disabled={isInstallingAdb}
                 className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] text-slate-700 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-60"
                 title="Re-extract and verify official platform-tools binaries"
               >
-                {reinstalling ? (
+                {isInstallingAdb ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
                 ) : null}
-                <span>{reinstalling ? 'Reinstalling...' : 'Reinstall'}</span>
+                <span>{isInstallingAdb ? 'Reinstalling...' : 'Reinstall'}</span>
               </button>
             </div>
 
           </div>
 
           {/* RIGHT CARD: ADB SERVER (Cols 9-12) */}
-          <div className="col-span-12 lg:col-span-4 xl:col-span-4 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[190px] min-w-0">
+          <div className="col-span-12 lg:col-span-4 xl:col-span-4 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[200px] min-w-0">
             
-            {/* Top Label */}
+            {/* Top Label & Server State */}
             <div>
-              <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase block">
-                ADB SERVER
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase block">
+                  ADB SERVER
+                </span>
+                {status.serverRunning && (
+                  <span className="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                    tcp:{status.serverPort || 5037}
+                  </span>
+                )}
+              </div>
 
               {/* Status Header */}
               <div className="flex items-center gap-2 mt-2">
@@ -382,9 +445,34 @@ export function PlatformToolsPage({
                 </h4>
               </div>
 
-              <p className="text-xs text-slate-500 font-mono mt-1.5">
-                {status.serverRunning ? `Listening on tcp:${status.serverPort || 5037}` : 'Server offline'}
-              </p>
+              {/* Live Connected Device Awareness inside ADB Server card */}
+              {deviceStatus?.connected ? (
+                <div 
+                  onClick={onNavigateToDeviceMonitor}
+                  className="mt-3.5 p-2.5 rounded-xl bg-slate-50/90 hover:bg-emerald-50/40 border border-slate-200/80 hover:border-emerald-200 transition-all cursor-pointer flex items-center justify-between gap-2 group"
+                  title="Click to view full hardware telemetry in Device Monitor"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                      <Smartphone className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-800 truncate leading-tight group-hover:text-emerald-950">
+                        {deviceStatus.model || 'Android Phone'}
+                      </span>
+                      <span className="text-[10px] font-mono text-emerald-700 leading-none mt-0.5">
+                        {deviceStatus.serial ? `${deviceStatus.serial} · ${deviceStatus.adb ? 'Authorized' : 'Connected'}` : 'ADB Link Active'}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                </div>
+              ) : (
+                <div className="mt-3.5 p-2 rounded-xl bg-slate-50/60 border border-slate-200/60 flex items-center gap-2 text-slate-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
+                  <span className="text-[11px] font-mono truncate">No devices attached</span>
+                </div>
+              )}
             </div>
 
             {/* Bottom 2 Buttons: Restart & Stop */}
@@ -461,32 +549,50 @@ export function PlatformToolsPage({
         {/* ========================================================= */}
         <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3.5">
           
-          {/* Header Row: Label + Preset Chips */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mr-1">
-              QUICK TERMINAL
-            </span>
+          {/* Header Row: Label + Live Device Badge + Preset Chips */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase mr-1">
+                QUICK TERMINAL
+              </span>
 
-            {presetChips.map((chip) => {
-              const isSelected = command === chip;
-              return (
-                <button
-                  key={chip}
-                  onClick={() => {
-                    setCommand(chip);
-                    handleRunCommand(chip);
-                  }}
-                  className={cn(
-                    "px-3 py-1 rounded-full font-mono text-xs font-medium border transition-all cursor-pointer shadow-2xs",
-                    isSelected
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/80"
-                  )}
-                >
-                  {chip}
-                </button>
-              );
-            })}
+              {/* Real Live Hardware Telemetry Pill */}
+              {deviceStatus?.connected ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/90 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{deviceStatus.model || 'Device'} Online ({deviceStatus.serial || 'ADB'})</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  <span>Waiting for USB device</span>
+                </span>
+              )}
+            </div>
+
+            {/* Quick Command Chips */}
+            <div className="flex flex-wrap items-center gap-2">
+              {presetChips.map((chip) => {
+                const isSelected = command === chip;
+                return (
+                  <button
+                    key={chip}
+                    onClick={() => {
+                      setCommand(chip);
+                      handleRunCommand(chip);
+                    }}
+                    className={cn(
+                      "px-3 py-1 rounded-full font-mono text-xs font-medium border transition-all cursor-pointer shadow-2xs",
+                      isSelected
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200/80"
+                    )}
+                  >
+                    {chip}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Interactive Command Input Box */}
