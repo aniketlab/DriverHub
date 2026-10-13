@@ -250,6 +250,7 @@ export function DeviceMonitorPage({
                         r="60" 
                         fill="none" 
                         stroke={hasError ? "#FCD34D" : "#A7F3D0"} 
+                        className={hasError ? "stroke-amber-400 dark:stroke-amber-500/30" : "stroke-emerald-400 dark:stroke-emerald-500/25"}
                         strokeWidth="1.2" 
                         strokeDasharray="3 3" 
                         opacity="0.6"
@@ -263,9 +264,7 @@ export function DeviceMonitorPage({
                         cy="80" 
                         r="50" 
                         fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
-                        className={hasError ? "fill-amber-50 dark:fill-amber-950/40 stroke-amber-200 dark:stroke-amber-800/60" : "fill-emerald-50 dark:fill-emerald-950/40 stroke-emerald-100 dark:stroke-emerald-800/60"}
-                        fillOpacity="0.75" 
-                        stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
+                        className={hasError ? "fill-amber-50/80 dark:fill-amber-500/10 stroke-amber-200/80 dark:stroke-amber-500/20" : "fill-emerald-50/80 dark:fill-emerald-500/10 stroke-emerald-200/80 dark:stroke-emerald-500/20"}
                         strokeWidth="1.2" 
                       />
 
@@ -291,7 +290,7 @@ export function DeviceMonitorPage({
                           height="60" 
                           rx="5.5" 
                           fill="#FFFFFF" 
-                          className="fill-white dark:fill-slate-800"
+                          className="fill-white dark:fill-slate-900"
                           stroke={hasError ? "#F59E0B" : "#10B981"} 
                           strokeWidth="1.5" 
                         />
@@ -304,7 +303,7 @@ export function DeviceMonitorPage({
                           height="55" 
                           rx="4" 
                           fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
-                          className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-slate-900 stroke-slate-200 dark:stroke-slate-700/80"}
+                          className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-[#0b1329] stroke-slate-200 dark:stroke-slate-800"}
                           stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
                           strokeWidth="0.8" 
                         />
@@ -317,20 +316,20 @@ export function DeviceMonitorPage({
                         {/* Soft Aura Ring */}
                         <circle 
                           cx="80" 
-                          cy="71" 
-                          r="9.5" 
+                          cy="74" 
+                          r="10.5" 
                           fill={hasError ? "#F59E0B" : "#10B981"} 
                           fillOpacity="0.12"
                         >
-                          <animate attributeName="r" values="8.5; 11.5; 8.5" dur="2.4s" repeatCount="indefinite" />
+                          <animate attributeName="r" values="9.5; 12.5; 9.5" dur="2.4s" repeatCount="indefinite" />
                           <animate attributeName="fillOpacity" values="0.16; 0.05; 0.16" dur="2.4s" repeatCount="indefinite" />
                         </circle>
 
                         {/* Badge Body */}
                         <circle 
                           cx="80" 
-                          cy="71" 
-                          r="7.5" 
+                          cy="74" 
+                          r="8" 
                           fill={hasError ? "#F59E0B" : "#10B981"} 
                           stroke={hasError ? "#D97706" : "#059669"} 
                           strokeWidth="0.5" 
@@ -339,12 +338,12 @@ export function DeviceMonitorPage({
                         {/* Badge Icon: Verified Checkmark or Alert */}
                         {hasError ? (
                           <g>
-                            <line x1="80" y1="68" x2="80" y2="71.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
-                            <circle cx="80" cy="73.8" r="0.7" fill="#FFFFFF" />
+                            <line x1="80" y1="71" x2="80" y2="74.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
+                            <circle cx="80" cy="76.8" r="0.7" fill="#FFFFFF" />
                           </g>
                         ) : (
                           <path 
-                            d="M 76.8 71 L 79 73.2 L 83.5 68.7" 
+                            d="M 76.5 74 L 79 76.5 L 83.5 71.5" 
                             fill="none" 
                             stroke="#FFFFFF" 
                             strokeWidth="1.6" 
@@ -353,25 +352,11 @@ export function DeviceMonitorPage({
                           />
                         )}
 
-                        {/* Active Link Data Wave / Pulse Line */}
-                        <line 
-                          x1="73" 
-                          y1="83" 
-                          x2="87" 
-                          y2="83" 
-                          stroke={hasError ? "#FDE68A" : "#A7F3D0"} 
-                          strokeWidth="1" 
-                          strokeLinecap="round" 
-                        />
-                        <circle cx="80" cy="83" r="1.2" fill={hasError ? "#F59E0B" : "#10B981"}>
-                          <animate attributeName="cx" values="74; 86; 74" dur="2s" repeatCount="indefinite" />
-                        </circle>
-
                         {/* Bottom Gesture Bar */}
-                        <rect x="74" y="102" width="12" height="0.8" rx="0.4" fill="#CBD5E1" />
+                        <rect x="74" y="102" width="12" height="0.8" rx="0.4" fill="#CBD5E1" className="fill-slate-300 dark:fill-slate-700" />
 
                         {/* Phone USB Port Cutout */}
-                        <rect x="76.5" y="109.2" width="7" height="1" rx="0.5" fill="#E2E8F0" />
+                        <rect x="76.5" y="109.2" width="7" height="1" rx="0.5" fill="#E2E8F0" className="fill-slate-200 dark:fill-slate-800" />
 
                         {/* Plugged-in USB-C Connector Assembly */}
                         {/* Connection Contact Bead (Energy Indicator) */}
@@ -581,45 +566,59 @@ export function DeviceMonitorPage({
                           />
                         </g>
                       ) : (
-                        /* High-Tech Laser Photon Rail */
+                        /* High-Tech Laser Photon Rail (Right to Left Kinetic Telemetry Stream: 392 -> 8) */
                         <g>
-                          {/* Active Bus Underlay */}
+                          {/* Active Bus Underlay (Subtle in light, sleek in dark) */}
                           <line
                             x1="8"
                             y1="6"
                             x2="392"
                             y2="6"
-                            stroke={isFastboot ? "#FDE68A" : "#D1FAE5"}
+                            stroke={isFastboot ? "#FDE68A" : "#A7F3D0"}
+                            className={isFastboot ? "stroke-amber-300 dark:stroke-amber-950/50" : "stroke-emerald-200 dark:stroke-emerald-950/50"}
                             strokeWidth="2"
+                            strokeOpacity="0.45"
                             strokeLinecap="round"
                           />
 
-                          {/* Dynamic Moving Laser Pulse Stream */}
+                          {/* Dynamic Moving Laser Pulse Stream (Right to Left: 392 -> 8) */}
                           <line
-                            x1="8"
+                            x1="392"
                             y1="6"
-                            x2="392"
+                            x2="8"
                             y2="6"
                             stroke={isFastboot ? "#F59E0B" : "#10B981"}
-                            strokeWidth="2"
-                            strokeDasharray="10 16"
+                            className={isFastboot ? "stroke-amber-500 dark:stroke-amber-400" : "stroke-emerald-500 dark:stroke-emerald-400"}
+                            strokeWidth="2.4"
+                            strokeDasharray="14 18"
                             strokeLinecap="round"
                             filter="url(#busGlow)"
                           >
                             <animate
                               attributeName="strokeDashoffset"
-                              values="0; -52"
-                              dur={isUsb3 ? "0.9s" : "1.6s"}
+                              values="0; -64"
+                              dur={isUsb3 ? "0.9s" : "1.5s"}
                               repeatCount="indefinite"
                             />
                           </line>
 
-                          {/* Leading High-Intensity Photon Bead */}
-                          <circle cy="6" r="2.2" fill="#FFFFFF" stroke={isFastboot ? "#D97706" : "#059669"} strokeWidth="1">
+                          {/* Primary High-Intensity Photon Bead (Right to Left: 392 -> 8) */}
+                          <circle cy="6" r="2.8" fill="#FFFFFF" stroke={isFastboot ? "#D97706" : "#059669"} strokeWidth="1.2" filter="url(#busGlow)">
                             <animate
                               attributeName="cx"
-                              values="8; 392"
-                              dur={isUsb3 ? "1.4s" : "2.4s"}
+                              values="392; 8"
+                              dur={isUsb3 ? "1.2s" : "2.0s"}
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+
+                          {/* Secondary Trailing Energy Particle (Right to Left: 392 -> 8) */}
+                          <circle cy="6" r="1.8" fill={isFastboot ? "#FDE68A" : "#6EE7B7"}>
+                            <animate
+                              attributeName="cx"
+                              values="392; 8"
+                              dur={isUsb3 ? "1.2s" : "2.0s"}
+                              begin="0.6s"
                               repeatCount="indefinite"
                             />
                           </circle>

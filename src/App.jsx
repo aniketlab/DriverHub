@@ -1056,6 +1056,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           r="52" 
           fill="none" 
           stroke={hasError ? "#FCD34D" : "#A7F3D0"} 
+          className={hasError ? "stroke-amber-400 dark:stroke-amber-500/30" : "stroke-emerald-400 dark:stroke-emerald-500/25"}
           strokeWidth="1.2" 
           strokeDasharray="3 3" 
           opacity="0.6"
@@ -1069,9 +1070,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           cy="80" 
           r="44" 
           fill={hasError ? "#FFFBEB" : "#ECFDF5"} 
-          className={hasError ? "fill-amber-50 dark:fill-amber-950/40 stroke-amber-200 dark:stroke-amber-800/60" : "fill-emerald-50 dark:fill-emerald-950/40 stroke-emerald-100 dark:stroke-emerald-800/60"}
-          fillOpacity="0.75" 
-          stroke={hasError ? "#FDE68A" : "#D1FAE5"} 
+          className={hasError ? "fill-amber-50/80 dark:fill-amber-500/10 stroke-amber-200/80 dark:stroke-amber-500/20" : "fill-emerald-50/80 dark:fill-emerald-500/10 stroke-emerald-200/80 dark:stroke-emerald-500/20"}
           strokeWidth="1.2" 
         />
 
@@ -1097,7 +1096,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             height="54" 
             rx="5" 
             fill="#FFFFFF" 
-            className="fill-white dark:fill-slate-800"
+            className="fill-white dark:fill-slate-900"
             stroke={hasError ? "#F59E0B" : "#10B981"} 
             strokeWidth="1.5" 
           />
@@ -1110,7 +1109,7 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             height="49.4" 
             rx="3.6" 
             fill={hasError ? "#FFFBEB" : "#F8FAFC"} 
-            className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-slate-900 stroke-slate-200 dark:stroke-slate-700/80"}
+            className={hasError ? "fill-amber-50 dark:fill-amber-950/70 stroke-amber-200 dark:stroke-amber-800/60" : "fill-slate-50 dark:fill-[#0b1329] stroke-slate-200 dark:stroke-slate-800"}
             stroke={hasError ? "#FEF3C7" : "#E2E8F0"} 
             strokeWidth="0.8" 
           />
@@ -1123,20 +1122,20 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           {/* Soft Aura Ring */}
           <circle 
             cx="80" 
-            cy="72" 
-            r="8.5" 
+            cy="74" 
+            r="9.5" 
             fill={hasError ? "#F59E0B" : "#10B981"} 
             fillOpacity="0.12"
           >
-            <animate attributeName="r" values="7.5; 10; 7.5" dur="2.4s" repeatCount="indefinite" />
+            <animate attributeName="r" values="8.5; 11.5; 8.5" dur="2.4s" repeatCount="indefinite" />
             <animate attributeName="fillOpacity" values="0.16; 0.05; 0.16" dur="2.4s" repeatCount="indefinite" />
           </circle>
 
           {/* Badge Body */}
           <circle 
             cx="80" 
-            cy="72" 
-            r="6.8" 
+            cy="74" 
+            r="7.5" 
             fill={hasError ? "#F59E0B" : "#10B981"} 
             stroke={hasError ? "#D97706" : "#059669"} 
             strokeWidth="0.5" 
@@ -1145,12 +1144,12 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
           {/* Badge Icon */}
           {hasError ? (
             <g>
-              <line x1="80" y1="69.5" x2="80" y2="72.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
-              <circle cx="80" cy="74.5" r="0.7" fill="#FFFFFF" />
+              <line x1="80" y1="71" x2="80" y2="74.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" />
+              <circle cx="80" cy="76.8" r="0.7" fill="#FFFFFF" />
             </g>
           ) : (
             <path 
-              d="M 77 72 L 79 74 L 83.2 69.8" 
+              d="M 76.8 74 L 79 76.2 L 83.2 72" 
               fill="none" 
               stroke="#FFFFFF" 
               strokeWidth="1.5" 
@@ -1159,25 +1158,11 @@ function DeviceMonitorVisual({ connected, mode, brand, model, hasError }) {
             />
           )}
 
-          {/* Active Link Data Wave / Pulse Line */}
-          <line 
-            x1="74" 
-            y1="82.5" 
-            x2="86" 
-            y2="82.5" 
-            stroke={hasError ? "#FDE68A" : "#A7F3D0"} 
-            strokeWidth="0.9" 
-            strokeLinecap="round" 
-          />
-          <circle cx="80" cy="82.5" r="1.1" fill={hasError ? "#F59E0B" : "#10B981"}>
-            <animate attributeName="cx" values="75; 85; 75" dur="2s" repeatCount="indefinite" />
-          </circle>
-
           {/* Bottom Gesture Bar */}
-          <rect x="75" y="99.5" width="10" height="0.7" rx="0.35" fill="#CBD5E1" />
+          <rect x="75" y="99.5" width="10" height="0.7" rx="0.35" fill="#CBD5E1" className="fill-slate-300 dark:fill-slate-700" />
 
           {/* Phone USB Port Cutout */}
-          <rect x="77" y="106.2" width="6" height="1" rx="0.5" fill="#E2E8F0" />
+          <rect x="77" y="106.2" width="6" height="1" rx="0.5" fill="#E2E8F0" className="fill-slate-200 dark:fill-slate-800" />
 
           {/* Plugged-in USB-C Connector Assembly */}
           {/* Connection Contact Bead (Energy Indicator) */}
