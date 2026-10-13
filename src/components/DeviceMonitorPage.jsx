@@ -11,6 +11,7 @@ import {
   HardDrive,
   Sparkles,
   Smartphone,
+  Laptop,
   FolderOpen,
   X,
   ExternalLink
@@ -42,6 +43,9 @@ export function DeviceMonitorPage({
   const isFastboot = Boolean(deviceStatus?.fastboot);
   const isMtk = Boolean(deviceStatus?.mtk);
   const isMtp = Boolean(deviceStatus?.mtp) && !isAdb && !isFastboot && !isMtk;
+
+  const rawSpeed = deviceStatus?.usbSpeed || 'USB 3.0';
+  const isUsb3 = /3\.|superspeed/i.test(rawSpeed);
 
   // Real Storage parsing (object from PowerShell or string)
   const storageObj = typeof deviceStatus?.storage === 'object' && deviceStatus?.storage !== null ? deviceStatus.storage : null;
@@ -226,7 +230,7 @@ export function DeviceMonitorPage({
               </div>
             ) : (
               /* --- CONNECTED HERO STATE --- */
-              <div className="flex flex-col gap-6 flex-1 justify-between">
+              <div className="flex flex-col gap-4 sm:gap-5 flex-1 justify-between">
                 
                 {/* Top Section: Connected Device Identity */}
                 <div className="flex items-center gap-6">
@@ -447,6 +451,180 @@ export function DeviceMonitorPage({
                         {deviceStatus?.driverError ? 'Driver Missing ⚠️' : 'Driver OK'}
                       </span>
                     </div>
+                  </div>
+                </div>
+
+                {/* --- OPTION A: KINETIC HARDWARE DATA-BUS (PC-TO-PHONE INTERCONNECT) --- */}
+                <div className="w-full bg-slate-50/70 hover:bg-slate-50/95 border border-slate-200/80 rounded-xl p-2.5 sm:p-3 transition-colors">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    {/* Left: Host Workstation Node */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-slate-600">
+                        <Laptop className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold tracking-wider text-slate-700 uppercase leading-none">
+                          Host PC
+                        </span>
+                        <span className="text-[9px] font-mono text-slate-400 leading-tight">
+                          USB Root Hub
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Center: Live Protocol & Speed Telemetry Badge */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-slate-200/90 shadow-2xs shrink-0">
+                      <span className={cn(
+                        "w-1.5 h-1.5 rounded-full",
+                        hasError ? "bg-amber-500 animate-ping" : isFastboot ? "bg-amber-500 animate-pulse" : "bg-emerald-500 animate-pulse"
+                      )} />
+                      <span className="text-[10px] font-semibold text-slate-700 tracking-tight">
+                        {hasError 
+                          ? "Link Blocked • Driver Missing" 
+                          : isFastboot 
+                          ? "Fastboot 2.0 • Bootloader Bus" 
+                          : isAdb 
+                          ? `USB ${isUsb3 ? '3.0' : '2.0'} • ADB Debug Tunnel` 
+                          : `USB ${isUsb3 ? '3.0 (5 Gbps)' : '2.0 (480 Mbps)'} • MTP Link`}
+                      </span>
+                    </div>
+
+                    {/* Right: Connected Device Node */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-bold tracking-wider text-slate-700 uppercase leading-none truncate max-w-[120px]">
+                          {deviceStatus?.model || 'Device'}
+                        </span>
+                        <span className={cn(
+                          "text-[9px] font-mono leading-tight",
+                          hasError ? "text-amber-600 font-semibold" : "text-emerald-600 font-medium"
+                        )}>
+                          {hasError ? "Link Blocked" : "Active Bus"}
+                        </span>
+                      </div>
+                      <div className={cn(
+                        "w-6 h-6 rounded-lg border shadow-2xs flex items-center justify-center",
+                        hasError 
+                          ? "bg-amber-50 border-amber-200 text-amber-600" 
+                          : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                      )}>
+                        <Smartphone className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physical Fiber Laser Rail (SVG) */}
+                  <div className="relative w-full h-3 flex items-center mt-1">
+                    <svg className="w-full h-3 overflow-visible" preserveAspectRatio="none" viewBox="0 0 400 12">
+                      <defs>
+                        <linearGradient id="busGradientNormal" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#94A3B8" stopOpacity="0.4" />
+                          <stop offset="15%" stopColor={isFastboot ? "#F59E0B" : "#10B981"} stopOpacity="0.8" />
+                          <stop offset="85%" stopColor={isFastboot ? "#F59E0B" : "#10B981"} stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="#94A3B8" stopOpacity="0.4" />
+                        </linearGradient>
+
+                        <linearGradient id="busGradientError" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#94A3B8" />
+                          <stop offset="45%" stopColor="#F59E0B" />
+                          <stop offset="55%" stopColor="#EF4444" />
+                          <stop offset="100%" stopColor="#94A3B8" />
+                        </linearGradient>
+
+                        <filter id="busGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="1" result="blur" />
+                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                      </defs>
+
+                      {/* Base Physical Bus Track */}
+                      <line
+                        x1="8"
+                        y1="6"
+                        x2="392"
+                        y2="6"
+                        stroke="#E2E8F0"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                      />
+
+                      {hasError ? (
+                        /* Broken / Warning Interrupted Trace */
+                        <g>
+                          <line
+                            x1="8"
+                            y1="6"
+                            x2="180"
+                            y2="6"
+                            stroke="url(#busGradientError)"
+                            strokeWidth="2"
+                            strokeDasharray="4 3"
+                            strokeLinecap="round"
+                          />
+                          <circle cx="190" cy="6" r="3" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1">
+                            <animate attributeName="opacity" values="1; 0.25; 1" dur="0.8s" repeatCount="indefinite" />
+                          </circle>
+                          <line
+                            x1="200"
+                            y1="6"
+                            x2="392"
+                            y2="6"
+                            stroke="url(#busGradientError)"
+                            strokeWidth="2"
+                            strokeDasharray="4 3"
+                            strokeLinecap="round"
+                          />
+                        </g>
+                      ) : (
+                        /* High-Tech Laser Photon Rail */
+                        <g>
+                          {/* Active Bus Underlay */}
+                          <line
+                            x1="8"
+                            y1="6"
+                            x2="392"
+                            y2="6"
+                            stroke={isFastboot ? "#FDE68A" : "#D1FAE5"}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+
+                          {/* Dynamic Moving Laser Pulse Stream */}
+                          <line
+                            x1="8"
+                            y1="6"
+                            x2="392"
+                            y2="6"
+                            stroke={isFastboot ? "#F59E0B" : "#10B981"}
+                            strokeWidth="2"
+                            strokeDasharray="10 16"
+                            strokeLinecap="round"
+                            filter="url(#busGlow)"
+                          >
+                            <animate
+                              attributeName="strokeDashoffset"
+                              values="0; -52"
+                              dur={isUsb3 ? "0.9s" : "1.6s"}
+                              repeatCount="indefinite"
+                            />
+                          </line>
+
+                          {/* Leading High-Intensity Photon Bead */}
+                          <circle cy="6" r="2.2" fill="#FFFFFF" stroke={isFastboot ? "#D97706" : "#059669"} strokeWidth="1">
+                            <animate
+                              attributeName="cx"
+                              values="8; 392"
+                              dur={isUsb3 ? "1.4s" : "2.4s"}
+                              repeatCount="indefinite"
+                            />
+                          </circle>
+                        </g>
+                      )}
+
+                      {/* Terminal End Connector Pins */}
+                      <circle cx="8" cy="6" r="2.5" fill="#64748B" />
+                      <circle cx="392" cy="6" r="2.5" fill={hasError ? "#F59E0B" : isFastboot ? "#F59E0B" : "#10B981"} />
+                    </svg>
                   </div>
                 </div>
 
