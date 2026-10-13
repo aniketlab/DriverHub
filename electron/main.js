@@ -22,6 +22,7 @@ import {
   selectDownloadFolder, 
   openLogsFolderInExplorer, 
   isUserAdmin,
+  relaunchAsAdminProcess,
   showConnectionNotification 
 } from './services/settingsService.js';
 
@@ -303,6 +304,15 @@ function setupIpc() {
       } catch {}
     }
     return { success: true };
+  });
+
+  // Windows UAC Elevation APIs
+  ipcMain.handle('app:check-admin', () => {
+    return isUserAdmin();
+  });
+
+  ipcMain.handle('app:relaunch-admin', async () => {
+    return await relaunchAsAdminProcess();
   });
 
   // 1-Click Driver & Tools Installer with System Restore Support

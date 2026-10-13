@@ -131,7 +131,45 @@ export async function openLogsFolderInExplorer() {
   }
 }
 
+export async function relaunchAsAdminProcess() {
+  if (process.platform !== 'win32') {
+    return { success: false, message: 'Administrator elevation is only supported on Windows.' };
+  }
+
+  try {
+    const exePath = process.execPath;
+    const cwd = process.cwd();
+    const args = process.argv.slice(1);
+
+    const argList = args.length > 0 
+      ? `-ArgumentList @(${args.map(a => `'${a.replace(/'/g, "''")}'`).join(', ')})` 
+      : '';
+
+    const psScript = `Start-Process -FilePath '${exePath.replace(/'/g, "''")}' ${argList} -WorkingDirectory '${cwd.replace(/'/g, "''")}' -Verb RunAs`;
+    const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
+
+    return new Promise((resolve) => {
+      exec(`powershell.exe -NoProfile -WindowStyle Hidden -EncodedCommand ${encoded}`, (error) => {
+        if (error) {
+          console.warn('UAC elevation was cancelled or failed:', error.message);
+          resolve({ success: false, error: error.message });
+        } else {
+          console.log('Elevated process launched successfully, closing standard instance...');
+          setTimeout(() => {
+            app.exit(0);
+          }, 800);
+          resolve({ success: true });
+        }
+      });
+    });
+  } catch (err) {
+    console.error('Failed to elevate process:', err);
+    return { success: false, error: err.message };
+  }
+}
+
 export function showConnectionNotification(deviceModel, isConnected) {
+
   const settings = loadSettings();
   if (!settings.connectionNotifications) return;
 
@@ -150,3 +188,5 @@ export function showConnectionNotification(deviceModel, isConnected) {
     console.warn('Could not show notification:', err.message);
   }
 }
+
+

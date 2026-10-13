@@ -10,7 +10,9 @@ import {
   FolderOpen,
   Smartphone,
   RefreshCw,
-  Terminal
+  Terminal,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -27,6 +29,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
   const [installingTarget, setInstallingTarget] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isElevating, setIsElevating] = useState(false);
 
   // Theme Management (Light / Dark / System)
   const [theme, setTheme] = useState(() => {
@@ -87,6 +91,26 @@ function App() {
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, [theme]);
+
+  // Initial and reactive check for Windows Administrator elevation
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        if (window.electronAPI?.checkAdmin) {
+          const elevated = await window.electronAPI.checkAdmin();
+          setIsAdmin(Boolean(elevated));
+        } else if (window.electronAPI?.getSettings) {
+          const s = await window.electronAPI.getSettings();
+          if (s && typeof s.isAdmin === 'boolean') {
+            setIsAdmin(s.isAdmin);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not check admin status:', err);
+      }
+    };
+    checkAdminStatus();
+  }, []);
 
   // Individual driver scan states (legacy dashboard)
   const [driverStates, setDriverStates] = useState({
@@ -446,6 +470,35 @@ function App() {
     }
   };
 
+  const handleElevateAdmin = async () => {
+    if (isAdmin) {
+      addLog('info', 'Driver Hub is already running with full Administrator privileges 🛡️');
+      return;
+    }
+
+    setIsElevating(true);
+    addLog('warning', 'Requesting Administrator permissions via Windows UAC prompt...');
+
+    try {
+      if (window.electronAPI?.relaunchAsAdmin) {
+        const res = await window.electronAPI.relaunchAsAdmin();
+        if (!res || !res.success) {
+          setIsElevating(false);
+          addLog('warning', 'Administrator relaunch was cancelled or denied by user.');
+        }
+      } else {
+        setTimeout(() => {
+          setIsElevating(false);
+          setIsAdmin(true);
+          addLog('success', 'Driver Hub elevated to Administrator mode (Simulated).');
+        }, 1200);
+      }
+    } catch (err) {
+      setIsElevating(false);
+      addLog('error', `Elevation error: ${err.message || 'Unknown error'}`);
+    }
+  };
+
   const selectedCount = Object.values(selectedDrivers).filter(Boolean).length;
 
   const isAnyDeviceConnected = deviceStatus.connected;
@@ -493,11 +546,55 @@ function App() {
             <NavItem icon={Settings} label="Settings" active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
           </nav>
 
-          <div>
-            <div className="bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed transition-colors">
-              <div className="font-semibold text-slate-700 dark:text-slate-300 mb-0.5">Windows 10 / 11</div>
-              Run as Administrator to install drivers.
-            </div>
+          <div className="pt-2">
+            {isAdmin ? (
+              <div 
+                className="w-full bg-emerald-500/10 dark:bg-emerald-950/25 border border-emerald-500/30 dark:border-emerald-600/35 rounded-xl p-3 text-[11px] shadow-2xs relative overflow-hidden transition-all duration-300"
+                title="Driver Hub is running with Administrator privileges"
+              >
+                <div className="flex items-center justify-between gap-1.5 mb-1">
+                  <div className="flex items-center gap-1.5 font-semibold text-emerald-900 dark:text-emerald-300">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Windows 10 / 11</span>
+                  </div>
+                  <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Admin
+                  </span>
+                </div>
+                <div className="text-emerald-700/90 dark:text-emerald-400/90 text-[10.5px] leading-snug">
+                  Active · Full DriverStore write access granted.
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleElevateAdmin}
+                disabled={isElevating}
+                className="w-full text-left group bg-slate-50 hover:bg-amber-500/10 dark:bg-slate-900/90 dark:hover:bg-amber-500/15 border border-slate-200/90 hover:border-amber-400/80 dark:border-slate-800 dark:hover:border-amber-500/60 rounded-xl p-3 text-[11px] transition-all duration-200 cursor-pointer shadow-2xs relative overflow-hidden active:scale-[0.98] disabled:opacity-70"
+                title="Click to relaunch Driver Hub as Administrator"
+              >
+                <div className="flex items-center justify-between gap-1.5 mb-1">
+                  <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300 group-hover:text-amber-800 dark:group-hover:text-amber-400 transition-colors">
+                    <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>Windows 10 / 11</span>
+                  </div>
+                  <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25 group-hover:bg-amber-500 group-hover:text-white transition-all shrink-0">
+                    {isElevating ? (
+                      <>
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        <span>Relaunching</span>
+                      </>
+                    ) : (
+                      <span>Elevate ⚡</span>
+                    )}
+                  </span>
+                </div>
+                <div className="text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 text-[10.5px] leading-snug transition-colors">
+                  {isElevating ? 'Accept Windows UAC prompt to continue...' : 'Click to run as Administrator for full driver access.'}
+                </div>
+              </button>
+            )}
           </div>
         </div>
 
@@ -544,6 +641,8 @@ function App() {
           <SettingsPage 
             theme={theme}
             onThemeChange={applyTheme}
+            isAdmin={isAdmin}
+            onElevateAdmin={handleElevateAdmin}
             addLog={addLog}
           />
         ) : (

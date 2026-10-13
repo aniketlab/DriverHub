@@ -36,4 +36,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openLogsFolder: () => ipcRenderer.invoke('settings:open-logs'),
   openExternalUrl: (url) => ipcRenderer.invoke('settings:open-external', url),
   setWindowTheme: (theme) => ipcRenderer.invoke('settings:set-theme', theme),
+
+  // Windows UAC Elevation APIs
+  checkAdmin: () => ipcRenderer.invoke('app:check-admin'),
+  relaunchAsAdmin: () => ipcRenderer.invoke('app:relaunch-admin'),
 });

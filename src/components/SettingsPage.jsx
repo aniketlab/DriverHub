@@ -4,6 +4,8 @@ import {
   RefreshCw, 
   FolderOpen, 
   ShieldCheck, 
+  ShieldAlert,
+  CheckCircle2,
   AlertCircle, 
   ExternalLink, 
   ChevronRight, 
@@ -35,11 +37,14 @@ function cn(...inputs) {
 export function SettingsPage({
   theme,
   onThemeChange,
+  isAdmin: propIsAdmin,
+  onElevateAdmin,
   addLog = () => {}
 }) {
   const [currentView, setCurrentView] = useState('settings'); // 'settings' | 'about'
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isElevating, setIsElevating] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [lastCheckedTime, setLastCheckedTime] = useState('Today, 10:40 AM');
   const [showChangelogModal, setShowChangelogModal] = useState(false);
@@ -55,10 +60,30 @@ export function SettingsPage({
     createRestorePoint: true,
     checkForDriverUpdates: true,
     downloadFolder: 'C:\\Android\\drivers',
-    isAdmin: true,
+    isAdmin: false,
     version: '1.0.0',
     platform: 'Windows 10 / 11, 64-bit'
   });
+
+  const handleElevate = async () => {
+    if (onElevateAdmin) {
+      return onElevateAdmin();
+    }
+    setIsElevating(true);
+    addLog('warning', 'Requesting Administrator permissions via Windows UAC prompt...');
+    try {
+      if (window.electronAPI?.relaunchAsAdmin) {
+        const res = await window.electronAPI.relaunchAsAdmin();
+        if (!res?.success) {
+          setIsElevating(false);
+          addLog('warning', 'Administrator elevation was cancelled or denied by user.');
+        }
+      }
+    } catch (err) {
+      setIsElevating(false);
+      addLog('error', `Elevation error: ${err.message || 'Unknown error'}`);
+    }
+  };
 
   // Load real settings from backend on mount
   useEffect(() => {
@@ -382,11 +407,32 @@ export function SettingsPage({
                         Needed to install drivers on Windows
                       </span>
                     </div>
-                    <Switch
-                      checked={Boolean(settings.isAdmin)}
-                      onChange={() => {}}
-                      disabled={true}
-                    />
+                    {Boolean(propIsAdmin ?? settings.isAdmin) ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 rounded-xl shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        Active (Elevated)
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleElevate}
+                        disabled={isElevating}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 rounded-xl transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-60"
+                        title="Click to relaunch Driver Hub as Administrator"
+                      >
+                        {isElevating ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />
+                            <span>Requesting...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            <span>Restart as Admin</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
