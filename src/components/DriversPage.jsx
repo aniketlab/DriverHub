@@ -449,7 +449,7 @@ export function DriversPage({
               >
                 <span>{tab.label}</span>
                 <span className={cn(
-                  "text-[10px] px-1.5 py-0.2 rounded-full font-mono transition-colors",
+                  "text-[10px] min-w-[18px] h-4.5 px-1 inline-flex items-center justify-center rounded-full font-mono transition-colors",
                   isActive
                     ? "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold"
                     : "text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300"
@@ -722,7 +722,14 @@ export function DriversPage({
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 relative z-10" />
                 </>
               ) : (
-                <span>{t('dashboard.installSelected')} ({selectedIds.size})</span>
+                <div className="flex items-center gap-1.5">
+                  <span>{t('dashboard.installSelected')}</span>
+                  {selectedIds.size > 0 && (
+                    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-white/25 border border-white/20 rounded-full text-[11px] font-bold text-white tabular-nums leading-none shadow-2xs">
+                      {selectedIds.size}
+                    </span>
+                  )}
+                </div>
               )}
             </button>
           </div>

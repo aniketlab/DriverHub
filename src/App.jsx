@@ -892,7 +892,7 @@ function App() {
                 )}
                 <span>{isInstalling ? t('dashboard.installing') : t('dashboard.installSelected')}</span>
                 {selectedCount > 0 && !isInstalling && (
-                  <span className="ml-0.5 px-2 py-0.5 bg-white/20 rounded-full text-[11px] font-bold text-white leading-none">
+                  <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-white/25 border border-white/20 rounded-full text-[11px] font-bold text-white tabular-nums leading-none shadow-2xs ml-0.5">
                     {selectedCount}
                   </span>
                 )}
