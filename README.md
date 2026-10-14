@@ -277,8 +277,8 @@ DriverHub/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/       # Interactive bug report & feature request forms
 │   ├── workflows/            # GitHub Actions CI/CD release & build pipeline
-│   ├── dependabot.yml        # Automated dependency & security update schedule
-│   └── PULL_REQUEST_TEMPLATE # Standardized contributor PR checklist
+│   ├── CONTRIBUTING.md       # Developer contribution guidelines
+│   └── PULL_REQUEST_TEMPLATE # Contributor PR checklist
 ├── assets/
 │   ├── logo/                 # Brand SVG vectors, high-res PNG icons, and logos
 │   └── screenshots/          # 4K crisp visual tour and interface previews
@@ -302,12 +302,9 @@ DriverHub/
 │   ├── data/                 # Driver metadata, changelogs, and translations
 │   ├── App.jsx               # Primary application state, navigation, and theme orchestrator
 │   └── index.css             # Tailwind CSS v4 styling, custom scrollbars & glassmorphism
-├── CONTRIBUTING.md           # Guidelines for community developers & contributors
-├── CODE_OF_CONDUCT.md        # Contributor Covenant Code of Conduct v2.1
 ├── LICENSE                   # Open-source MIT License
 ├── package.json              # Project dependencies, scripts, and build metadata
-├── README.md                 # Primary documentation and repository showcase
-└── SECURITY.md               # Vulnerability reporting and security policy
+└── README.md                 # Primary documentation and repository showcase
 ```
 
 <br />
@@ -318,21 +315,11 @@ DriverHub/
 
 Contributions make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**!
 
-Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests.
-
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'feat: Add AmazingFeature'`)
 4. Push to the Branch (`git push origin feat/AmazingFeature`)
 5. Open a Pull Request
-
-<br />
-
----
-
-## 🛡️ Security
-
-Driver Hub executes low-level Windows driver installation tasks and requires Administrator privileges. We treat system safety with paramount importance. Please review our [Security Policy](SECURITY.md) for vulnerability reporting.
 
 <br />
 
