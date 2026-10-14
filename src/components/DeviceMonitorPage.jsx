@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useLanguage } from '../utils/i18n.jsx';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -35,6 +36,7 @@ export function DeviceMonitorPage({
   activityLogs = [],
   isRefreshing = false
 }) {
+  const { t } = useLanguage();
   const [showUsbGuide, setShowUsbGuide] = useState(false);
   const isConnected = deviceStatus?.connected;
   const hasError = Boolean(deviceStatus?.driverError);
@@ -93,10 +95,10 @@ export function DeviceMonitorPage({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Device Monitor
+              {t('monitor.title')}
             </h2>
             <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Live USB detection · {isConnected ? '1 device connected' : 'no device connected'}
+              {t('monitor.subtitle')}
             </p>
           </div>
 
@@ -105,12 +107,12 @@ export function DeviceMonitorPage({
             {isConnected ? (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Connected</span>
+                <span>{t('monitor.deviceConnected')}</span>
               </div>
             ) : (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-ping opacity-75" />
-                <span>Scanning USB ports</span>
+                <span>{t('dashboard.status.scanning')}</span>
               </div>
             )}
 
@@ -121,7 +123,7 @@ export function DeviceMonitorPage({
               className="px-3.5 py-1.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
-              <span>Refresh</span>
+              <span>{t('monitor.refresh')}</span>
             </button>
           </div>
         </div>
@@ -208,10 +210,10 @@ export function DeviceMonitorPage({
 
                 {/* Waiting Headline & Subtext */}
                 <h3 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight mb-2">
-                  Waiting for your phone
+                  {t('monitor.noDeviceTitle')}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md leading-relaxed mb-7">
-                  Plug in a USB cable. Driver Hub detects ADB, Fastboot and MTK modes automatically.
+                  {t('monitor.noDeviceSubtitle')}
                 </p>
 
                 {/* 3 Troubleshooting Hint Chips */}
@@ -784,7 +786,7 @@ export function DeviceMonitorPage({
                       title="Execute: adb reboot bootloader"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />
-                      <span>Reboot Bootloader</span>
+                      <span>{t('monitor.rebootBootloader')}</span>
                     </button>
 
                     <button
@@ -793,7 +795,7 @@ export function DeviceMonitorPage({
                       title="Execute: adb reboot recovery"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>Reboot Recovery</span>
+                      <span>{t('monitor.rebootRecovery')}</span>
                     </button>
 
                     <button
@@ -802,7 +804,7 @@ export function DeviceMonitorPage({
                       title="Open interactive cmd.exe adb shell terminal"
                     >
                       <Terminal className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>ADB Shell</span>
+                      <span>{t('monitor.openShell')}</span>
                     </button>
 
                     <button
@@ -811,7 +813,7 @@ export function DeviceMonitorPage({
                       title="Execute: adb reboot"
                     >
                       <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>Reboot System</span>
+                      <span>{t('monitor.rebootSystem')}</span>
                     </button>
                   </div>
                 ) : isFastboot ? (
@@ -823,7 +825,7 @@ export function DeviceMonitorPage({
                       title="Execute: fastboot reboot"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Fastboot Reboot</span>
+                      <span>{t('monitor.rebootSystem')}</span>
                     </button>
 
                     <button
@@ -832,7 +834,7 @@ export function DeviceMonitorPage({
                       title="Execute: fastboot reboot-bootloader"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>Reboot Bootloader</span>
+                      <span>{t('monitor.rebootBootloader')}</span>
                     </button>
 
                     <button
@@ -841,7 +843,7 @@ export function DeviceMonitorPage({
                       title="Execute: fastboot reboot recovery"
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>Reboot Recovery</span>
+                      <span>{t('monitor.rebootRecovery')}</span>
                     </button>
 
                     <button
@@ -851,7 +853,7 @@ export function DeviceMonitorPage({
                       title="Refresh hardware status"
                     >
                       <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
-                      <span>Refresh</span>
+                      <span>{t('monitor.refresh')}</span>
                     </button>
                   </div>
                 ) : (
@@ -862,7 +864,7 @@ export function DeviceMonitorPage({
                       className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
-                      <span>Browse Phone</span>
+                      <span>{t('monitor.openStorage')}</span>
                     </button>
                     <button
                       onClick={onRefresh}
@@ -870,7 +872,7 @@ export function DeviceMonitorPage({
                       className="px-3.5 py-2.5 bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs shadow-2xs transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
                     >
                       <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", isRefreshing && "animate-spin")} />
-                      <span>Refresh Status</span>
+                      <span>{t('monitor.refresh')}</span>
                     </button>
                   </div>
                 )}
@@ -947,7 +949,7 @@ export function DeviceMonitorPage({
                 onClick={onNavigateToDrivers}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium py-3 px-4 rounded-xl shadow-xs text-sm transition-all cursor-pointer mt-1"
               >
-                Install missing drivers
+                {t('drivers.install')}
               </button>
             )}
 

@@ -17,6 +17,7 @@ import {
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { haptic } from '../utils/soundEffects';
+import { useLanguage } from '../utils/i18n.jsx';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -84,6 +85,7 @@ export function DriversPage({
   onScan,
   onInstallDrivers,
 }) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'installed' | 'updates' | 'not_installed'
   const [soundEnabled, setSoundEnabled] = useState(() => haptic.isEnabled());
@@ -142,17 +144,17 @@ export function DriversPage({
       const updateAvailable = Boolean(state.updateAvailable);
 
       let status = 'not_installed';
-      let statusLabel = 'Not installed';
-      let actionLabel = 'Install';
+      let statusLabel = t('dashboard.status.missing');
+      let actionLabel = t('drivers.install');
 
       if (updateAvailable) {
         status = 'updates';
-        statusLabel = 'Update available';
-        actionLabel = 'Update';
+        statusLabel = t('dashboard.status.update');
+        actionLabel = t('drivers.update');
       } else if (installed) {
         status = 'installed';
-        statusLabel = 'Installed';
-        actionLabel = 'Reinstall';
+        statusLabel = t('dashboard.status.installed');
+        actionLabel = t('drivers.reinstall');
       }
 
       return {
@@ -169,7 +171,7 @@ export function DriversPage({
         isThisInstalling: isInstalling && (installingTarget === def.id || (Array.isArray(installingTarget) && installingTarget.includes(def.id)))
       };
     });
-  }, [packageStates, isInstalling, installingTarget, installProgress]);
+  }, [packageStates, isInstalling, installingTarget, installProgress, t]);
 
   // Initial selection: auto-select drivers needing attention (updates or not installed)
   const [selectedIds, setSelectedIds] = useState(() => {
@@ -316,7 +318,7 @@ export function DriversPage({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Drivers
+              {t('drivers.title')}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium transition-all duration-300">
               {counts.all} packages · {counts.installed} installed · {counts.needAttention} need attention
@@ -329,7 +331,7 @@ export function DriversPage({
               <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 group-focus-within:text-emerald-600 dark:group-focus-within:text-emerald-400" />
               <input
                 type="text"
-                placeholder="Search drivers"
+                placeholder={t('drivers.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-8 pr-7 py-2 bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/90 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 focus:border-emerald-500 shadow-2xs transition-all duration-200"
@@ -402,10 +404,10 @@ export function DriversPage({
           />
 
           {[
-            { id: 'all', label: 'All', count: counts.all },
-            { id: 'installed', label: 'Installed', count: counts.installed },
-            { id: 'updates', label: 'Updates', count: counts.updates },
-            { id: 'not_installed', label: 'Not installed', count: counts.not_installed }
+            { id: 'all', label: t('drivers.filterAll'), count: counts.all },
+            { id: 'installed', label: t('drivers.filterInstalled'), count: counts.installed },
+            { id: 'updates', label: t('drivers.filterUpdates'), count: counts.updates },
+            { id: 'not_installed', label: t('drivers.filterMissing'), count: counts.not_installed }
           ].map(tab => {
             const isActive = activeFilter === tab.id;
             return (
@@ -444,7 +446,7 @@ export function DriversPage({
           {groupedCategories.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-2 shadow-2xs my-4 animate-card-in">
               <AlertCircle className="w-7 h-7 text-slate-400 dark:text-slate-500" />
-              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">No matching driver packages found</h4>
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{t('drivers.noDrivers')}</h4>
               <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm">
                 Try adjusting your search query or switching the filter tab.
               </p>
@@ -657,10 +659,10 @@ export function DriversPage({
             </button>
             <div className="flex flex-col">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">
-                Create a restore point first
+                {t('settings.restorePoint')}
               </span>
               <span className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight">
-                You can roll back if a driver causes trouble
+                {t('settings.restorePointDesc')}
               </span>
             </div>
           </div>
@@ -698,7 +700,7 @@ export function DriversPage({
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400 relative z-10" />
                 </>
               ) : (
-                <span>Install selected ({selectedIds.size})</span>
+                <span>{t('dashboard.installSelected')} ({selectedIds.size})</span>
               )}
             </button>
           </div>

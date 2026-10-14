@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useLanguage } from '../utils/i18n.jsx';
 
 function GithubIcon(props) {
   return (
@@ -53,6 +54,7 @@ export function SettingsPage({
   onElevateAdmin,
   addLog = () => {}
 }) {
+  const { language, setLanguage, t, supportedLanguages } = useLanguage();
   const [currentView, setCurrentView] = useState('settings'); // 'settings' | 'about'
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -335,10 +337,10 @@ export function SettingsPage({
             {/* Header */}
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-                Settings
+                {t('settings.title')}
               </h2>
               <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
-                Appearance, detection and install behavior
+                {t('settings.subtitle')}
               </p>
             </div>
 
@@ -348,7 +350,7 @@ export function SettingsPage({
               {/* 1. GENERAL CARD (Cols 1-6) */}
               <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  GENERAL
+                  {t('settings.general')}
                 </span>
 
                 <div className="flex flex-col gap-4">
@@ -356,10 +358,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Theme
+                        {t('settings.theme')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Choose how Driver Hub looks
+                        {t('settings.themeDesc')}
                       </span>
                     </div>
 
@@ -377,7 +379,7 @@ export function SettingsPage({
                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                             )}
                           >
-                            {m}
+                            {m === 'light' ? t('settings.themeLight') : m === 'dark' ? t('settings.themeDark') : t('settings.themeSystem')}
                           </button>
                         );
                       })}
@@ -388,23 +390,28 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Language
+                        {t('settings.language')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Interface language
+                        {t('settings.languageDesc')}
                       </span>
                     </div>
 
                     <div className="relative">
                       <select
-                        value={settings.language}
-                        onChange={(e) => updateSetting('language', e.target.value)}
+                        value={language}
+                        onChange={(e) => {
+                          const newLang = e.target.value;
+                          setLanguage(newLang);
+                          updateSetting('language', newLang);
+                        }}
                         className="appearance-none bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl pl-3 pr-8 py-1.5 shadow-2xs focus:outline-none focus:border-emerald-500 cursor-pointer"
                       >
-                        <option value="English">English</option>
-                        <option value="Hindi">हिन्दी (Hindi)</option>
-                        <option value="Spanish">Español</option>
-                        <option value="German">Deutsch</option>
+                        {supportedLanguages.map(l => (
+                          <option key={l.code} value={l.code}>
+                            {l.native} ({l.label})
+                          </option>
+                        ))}
                       </select>
                       <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
@@ -414,10 +421,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Start with Windows
+                        {t('settings.startWithWindows')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Launch quietly in the system tray
+                        {t('settings.startWithWindowsDesc')}
                       </span>
                     </div>
                     <Switch
@@ -430,10 +437,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Minimize to tray
+                        {t('settings.minimizeToTray')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Keep running when the window is closed
+                        {t('settings.minimizeToTrayDesc')}
                       </span>
                     </div>
                     <Switch
@@ -447,7 +454,7 @@ export function SettingsPage({
               {/* 2. INSTALLATION CARD (Cols 7-12) */}
               <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  INSTALLATION
+                  {t('settings.installation')}
                 </span>
 
                 <div className="flex flex-col gap-4">
@@ -455,10 +462,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Create restore point
+                        {t('settings.restorePoint')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Before every driver install
+                        {t('settings.restorePointDesc')}
                       </span>
                     </div>
                     <Switch
@@ -471,10 +478,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Check for driver updates
+                        {t('settings.checkUpdates')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Look for newer versions on launch
+                        {t('settings.checkUpdatesDesc')}
                       </span>
                     </div>
                     <Switch
@@ -487,12 +494,12 @@ export function SettingsPage({
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Download folder
+                        {t('settings.downloadFolder')}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug shrink-0">
-                        Where driver packages are saved
+                        {t('settings.downloadFolderDesc')}
                       </span>
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span 
@@ -505,7 +512,7 @@ export function SettingsPage({
                           onClick={handleChangeDownloadFolder}
                           className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg shadow-2xs transition-all cursor-pointer"
                         >
-                          Change
+                          {t('settings.change')}
                         </button>
                       </div>
                     </div>
@@ -515,16 +522,16 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Run as Administrator
+                        {t('settings.runAsAdmin')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Needed to install drivers on Windows
+                        {t('settings.runAsAdminDesc')}
                       </span>
                     </div>
                     {Boolean(propIsAdmin ?? settings.isAdmin) ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 rounded-xl shadow-2xs">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        Active (Elevated)
+                        {t('settings.adminElevated')}
                       </span>
                     ) : (
                       <button
@@ -542,7 +549,7 @@ export function SettingsPage({
                         ) : (
                           <>
                             <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                            <span>Restart as Admin</span>
+                            <span>{t('settings.restartAsAdmin')}</span>
                           </>
                         )}
                       </button>
@@ -559,7 +566,7 @@ export function SettingsPage({
               {/* 3. DEVICE DETECTION (Cols 1-6) */}
               <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  DEVICE DETECTION
+                  {t('settings.deviceDetection')}
                 </span>
 
                 <div className="flex flex-col gap-4">
@@ -567,10 +574,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Auto-detect devices
+                        {t('settings.autoDetect')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Watch USB ports for ADB, Fastboot and MTK modes
+                        {t('settings.autoDetectDesc')}
                       </span>
                     </div>
                     <Switch
@@ -583,10 +590,10 @@ export function SettingsPage({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                        Connection notifications
+                        {t('settings.notifications')}
                       </span>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
-                        Show a popup when a phone connects or disconnects
+                        {t('settings.notificationsDesc')}
                       </span>
                     </div>
                     <Switch
@@ -619,7 +626,7 @@ export function SettingsPage({
                       Driver Hub
                     </h4>
                     <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Version 1.0.0 · Up to date
+                      Version 1.0.0 · {t('about.upToDate')}
                     </span>
                   </div>
                 </div>
@@ -628,7 +635,7 @@ export function SettingsPage({
                   onClick={() => setCurrentView('about')}
                   className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer shrink-0"
                 >
-                  About & updates
+                  {t('settings.aboutUpdates')}
                 </button>
               </div>
 
@@ -637,14 +644,14 @@ export function SettingsPage({
             {/* Footer Row: Changes saved automatically & Reset to defaults */}
             <div className="flex items-center justify-between pt-2">
               <span className="text-xs text-slate-400 dark:text-slate-500">
-                Changes are saved automatically
+                {t('settings.savedAuto')}
               </span>
 
               <button
                 onClick={handleResetToDefaults}
                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
               >
-                Reset to defaults
+                {t('settings.resetDefaults')}
               </button>
             </div>
           </>
@@ -660,13 +667,13 @@ export function SettingsPage({
                 className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors w-fit cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Settings</span>
+                <span>{t('nav.settings')}</span>
                 <span className="text-slate-400">/</span>
-                <span className="text-slate-700 dark:text-slate-200 font-semibold">About & updates</span>
+                <span className="text-slate-700 dark:text-slate-200 font-semibold">{t('settings.aboutUpdates')}</span>
               </button>
 
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight mt-1">
-                About
+                {t('about.title')}
               </h2>
             </div>
 
@@ -693,7 +700,7 @@ export function SettingsPage({
                     Driver Hub
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                    All-in-one Android driver installer for Windows
+                    {t('about.subtitle')}
                   </p>
                   
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -717,7 +724,7 @@ export function SettingsPage({
                           <Sparkles className="w-3 h-3" />
                         </div>
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
-                          Update {updateInfo?.latestVersion} Available!
+                          {t('about.updateAvailable')} ({updateInfo?.latestVersion})
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">
@@ -755,7 +762,7 @@ export function SettingsPage({
                           <Check className="w-3 h-3" strokeWidth={3} />
                         </div>
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
-                          Ready to Install!
+                          {t('about.restartInstall')}
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">
@@ -783,13 +790,13 @@ export function SettingsPage({
                           <Check className="w-3 h-3" strokeWidth={3} />
                         </div>
                         <span className="text-sm font-bold text-slate-900 dark:text-white">
-                          You are up to date
+                          {t('about.upToDate')}
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">
                         {updateInfo?.status === 'no_releases'
-                          ? 'GitHub repo active · Last checked ' + lastCheckedTime
-                          : 'Last checked ' + lastCheckedTime}
+                          ? 'GitHub repo active · ' + t('about.lastChecked') + ' ' + lastCheckedTime
+                          : t('about.lastChecked') + ' ' + lastCheckedTime}
                       </span>
                     </div>
                   )}
@@ -803,7 +810,7 @@ export function SettingsPage({
                       className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <ArrowDownToLine className="w-3.5 h-3.5" />
-                      <span>Download OTA Update</span>
+                      <span>{t('about.downloadOTA')}</span>
                     </button>
                     {updateInfo?.htmlUrl && (
                       <button
@@ -828,7 +835,7 @@ export function SettingsPage({
                     className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Rocket className="w-3.5 h-3.5" />
-                    <span>Restart & Install Now ⚡</span>
+                    <span>{t('about.restartInstall')}</span>
                   </button>
                 ) : (
                   <button
@@ -837,7 +844,7 @@ export function SettingsPage({
                     className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <RefreshCw className={cn("w-3.5 h-3.5", checkingUpdate && "animate-spin")} />
-                    <span>{checkingUpdate ? 'Checking GitHub...' : 'Check for updates'}</span>
+                    <span>{checkingUpdate ? t('about.checkingUpdates') : t('about.checkForUpdates')}</span>
                   </button>
                 )}
               </div>
@@ -850,27 +857,27 @@ export function SettingsPage({
               {/* APP DETAILS (Cols 1-6) */}
               <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  APP DETAILS
+                  {t('about.appDetails')}
                 </span>
 
                 <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
                   <div className="flex items-center justify-between py-2.5 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Version</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('about.version')}</span>
                     <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">1.0.0</span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Platform</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('about.platform')}</span>
                     <span className="font-medium text-slate-800 dark:text-slate-200">Windows 10 / 11, 64-bit</span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Bundled tools</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('about.bundledTools')}</span>
                     <span className="font-medium text-slate-800 dark:text-slate-200">ADB, Fastboot</span>
                   </div>
 
                   <div className="flex items-center justify-between py-2.5 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">Driver packs</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('about.driverPacks')}</span>
                     <span className="font-medium text-slate-800 dark:text-slate-200">Google USB, MediaTek</span>
                   </div>
                 </div>
@@ -879,7 +886,7 @@ export function SettingsPage({
               {/* LINKS (Cols 7-12) */}
               <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-3 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  LINKS
+                  {t('about.links')}
                 </span>
 
                 <div className="flex flex-col gap-1">
@@ -891,7 +898,7 @@ export function SettingsPage({
                     <div className="flex items-center gap-2.5">
                       <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
-                        What is new (changelog)
+                        {t('about.changelog')}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
@@ -905,7 +912,7 @@ export function SettingsPage({
                     <div className="flex items-center gap-2.5">
                       <Bug className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
-                        Report an issue
+                        {t('about.reportIssue')}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
@@ -919,7 +926,7 @@ export function SettingsPage({
                     <div className="flex items-center gap-2.5">
                       <GithubIcon className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
-                        Open source on GitHub
+                        {t('about.github')}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
@@ -933,7 +940,7 @@ export function SettingsPage({
                     <div className="flex items-center gap-2.5">
                       <FolderOpen className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 transition-colors" />
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
-                        View logs folder
+                        {t('about.logs')}
                       </span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:translate-x-0.5 transition-transform" />
@@ -947,7 +954,7 @@ export function SettingsPage({
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors">
               <div className="flex flex-col min-w-[160px]">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  MADE BY
+                  {t('about.madeBy')}
                 </span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white mt-1">
                   Aniket
@@ -962,10 +969,10 @@ export function SettingsPage({
 
               <div className="flex flex-col md:max-w-md">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  CREDITS
+                  {t('about.credits')}
                 </span>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
-                  Uses Google Android Platform-Tools and the Google USB Driver. MediaTek drivers belong to their respective owners. Driver Hub only helps you install them.
+                  {t('about.creditsDesc')}
                 </p>
               </div>
             </div>
@@ -980,7 +987,7 @@ export function SettingsPage({
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-xl flex flex-col gap-4 animate-scaleUp">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                Release Notes · v1.0.0
+                {t('changelog.title')} · v1.0.0
               </h3>
               <button
                 onClick={() => setShowChangelogModal(false)}
@@ -1004,9 +1011,9 @@ export function SettingsPage({
 
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 rounded-xl">
                 <span className="font-bold text-emerald-800 dark:text-emerald-300 block mb-1">
-                  🎉 Driver Hub v1.0.0 Official Launch
+                  🎉 {t('changelog.launchTitle')}
                 </span>
-                <span>Complete Android Driver & Platform-Tools Management Suite for Windows 10 & 11.</span>
+                <span>{t('changelog.launchDesc')}</span>
               </div>
 
               <ul className="list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
@@ -1023,7 +1030,7 @@ export function SettingsPage({
                 onClick={() => setShowChangelogModal(false)}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs cursor-pointer"
               >
-                Close
+                {t('changelog.close')}
               </button>
             </div>
           </div>

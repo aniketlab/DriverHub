@@ -20,12 +20,14 @@ import { DeviceMonitorPage } from './components/DeviceMonitorPage';
 import { DriversPage } from './components/DriversPage';
 import { PlatformToolsPage } from './components/PlatformToolsPage';
 import { SettingsPage } from './components/SettingsPage';
+import { useLanguage } from './utils/i18n.jsx';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
 function App() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isScanning, setIsScanning] = useState(false);
   const [installingTarget, setInstallingTarget] = useState(null);
@@ -543,7 +545,7 @@ function App() {
               <span className="text-green-600 dark:text-emerald-400">DRIVER</span> HUB
             </span>
             <span className="text-[11.5px] text-slate-400 dark:text-slate-500 font-normal leading-none">
-              All-in-one Android driver installer
+              {t('header.subtitle')}
             </span>
           </div>
         </div>
@@ -556,11 +558,11 @@ function App() {
         {/* LEFT SIDEBAR (Frosted Acrylic) */}
         <div className="w-[220px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
           <nav className="flex flex-col gap-1">
-            <NavItem icon={LayoutDashboard} label="Dashboard" active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
-            <NavItem icon={Download} label="Drivers" active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
-            <NavItem icon={Terminal} label="Platform Tools" active={activeTab === 'Platform Tools'} onClick={() => setActiveTab('Platform Tools')} />
-            <NavItem icon={MonitorSmartphone} label="Device Monitor" active={activeTab === 'Device Monitor'} onClick={() => setActiveTab('Device Monitor')} />
-            <NavItem icon={Settings} label="Settings" active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
+            <NavItem icon={LayoutDashboard} label={t('nav.dashboard')} active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
+            <NavItem icon={Download} label={t('nav.drivers')} active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
+            <NavItem icon={Terminal} label={t('nav.platformTools')} active={activeTab === 'Platform Tools'} onClick={() => setActiveTab('Platform Tools')} />
+            <NavItem icon={MonitorSmartphone} label={t('nav.deviceMonitor')} active={activeTab === 'Device Monitor'} onClick={() => setActiveTab('Device Monitor')} />
+            <NavItem icon={Settings} label={t('nav.settings')} active={activeTab === 'Settings'} onClick={() => setActiveTab('Settings')} />
           </nav>
 
           <div className="pt-2">
@@ -572,15 +574,15 @@ function App() {
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1.5 font-semibold text-emerald-900 dark:text-emerald-300">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Windows 10 / 11</span>
+                    <span>{t('sidebar.windows')}</span>
                   </div>
                   <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Admin
+                    {t('sidebar.admin')}
                   </span>
                 </div>
                 <div className="text-emerald-700/90 dark:text-emerald-400/90 text-[10.5px] leading-snug">
-                  Active · Full DriverStore write access granted.
+                  {t('sidebar.adminActive')}
                 </div>
               </div>
             ) : (
@@ -594,21 +596,21 @@ function App() {
                 <div className="flex items-center justify-between gap-1.5 mb-1">
                   <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300 group-hover:text-amber-800 dark:group-hover:text-amber-400 transition-colors">
                     <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                    <span>Windows 10 / 11</span>
+                    <span>{t('sidebar.windows')}</span>
                   </div>
                   <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25 group-hover:bg-amber-500 group-hover:text-white transition-all shrink-0">
                     {isElevating ? (
                       <>
                         <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                        <span>Relaunching</span>
+                        <span>{t('sidebar.relaunching')}</span>
                       </>
                     ) : (
-                      <span>Elevate ⚡</span>
+                      <span>{t('sidebar.elevate')}</span>
                     )}
                   </span>
                 </div>
                 <div className="text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 text-[10.5px] leading-snug transition-colors">
-                  {isElevating ? 'Accept Windows UAC prompt to continue...' : 'Click to run as Administrator for full driver access.'}
+                  {isElevating ? t('sidebar.uacPrompt') : t('sidebar.runAsAdmin')}
                 </div>
               </button>
             )}
@@ -673,14 +675,14 @@ function App() {
             <div className="min-w-0">
               <div className="flex items-baseline flex-wrap gap-x-2 gap-y-0.5">
                 <h2 className="text-[22px] font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-                  Every Android driver.
+                  {t('dashboard.title')}
                 </h2>
                 <span className="text-[22px] font-bold tracking-tight text-green-600 dark:text-emerald-400 leading-tight">
-                  One installer.
+                  {t('dashboard.subtitle')}
                 </span>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-[13px] mt-1 font-normal">
-                Pick what you need, then install in a single click.
+                {t('drivers.subtitle')}
               </p>
             </div>
 
@@ -696,7 +698,7 @@ function App() {
                 ) : (
                   <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 )}
-                <span>{isScanning ? 'Scanning PC...' : 'Scan PC'}</span>
+                <span>{isScanning ? t('dashboard.scanning') : t('drivers.scanAll')}</span>
               </button>
 
               <button 
@@ -710,7 +712,7 @@ function App() {
                 ) : (
                   <Download className="w-4 h-4 text-white" />
                 )}
-                <span>{isInstalling ? 'Installing...' : 'Install selected'}</span>
+                <span>{isInstalling ? t('dashboard.installing') : t('dashboard.installSelected')}</span>
                 {selectedCount > 0 && !isInstalling && (
                   <span className="ml-0.5 px-2 py-0.5 bg-white/20 rounded-full text-[11px] font-bold text-white leading-none">
                     {selectedCount}
@@ -823,7 +825,7 @@ function App() {
           <div className="bg-white/92 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 dark:text-slate-300 overflow-y-auto mt-1 shadow-xs shrink-0 flex flex-col justify-between transition-colors">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">Install Log</h4>
+                <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">{t('dashboard.terminalLogs')}</h4>
                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
               </div>
               <div className="flex flex-col gap-1">
@@ -847,7 +849,7 @@ function App() {
       {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) */}
       <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">Device Monitor</h4>
+          <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">{t('monitor.title')}</h4>
           <span className="flex h-2 w-2 relative">
             <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", isAnyDeviceConnected ? "bg-emerald-400" : "bg-slate-300 dark:bg-slate-600")} />
             <span className={cn("relative inline-flex rounded-full h-2 w-2", isAnyDeviceConnected ? "bg-emerald-500" : "bg-slate-400 dark:bg-slate-500")} />

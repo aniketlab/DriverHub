@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useLanguage } from '../utils/i18n.jsx';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,7 @@ export function PlatformToolsPage({
   onNavigateToDeviceMonitor,
   addLog = () => {}
 }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [serverBusy, setServerBusy] = useState(false);
@@ -267,10 +269,10 @@ export function PlatformToolsPage({
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Platform Tools
+              {t('tools.title')}
             </h2>
             <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 font-normal">
-              Official Android SDK Platform-Tools · adb and fastboot
+              {t('tools.subtitle')}
             </p>
           </div>
 
@@ -281,7 +283,7 @@ export function PlatformToolsPage({
             title="Check Google repository for Platform-Tools updates"
           >
             <RefreshCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", checkingUpdates && "animate-spin text-emerald-600 dark:text-emerald-400")} />
-            <span>{checkingUpdates ? 'Checking...' : 'Check for updates'}</span>
+            <span>{checkingUpdates ? t('about.checkingUpdates') : t('about.checkForUpdates')}</span>
           </button>
         </div>
 
@@ -301,10 +303,10 @@ export function PlatformToolsPage({
 
               <div className="flex items-center gap-2.5 flex-wrap min-w-0">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-                  Platform-Tools installed
+                  {t('tools.statusInstalled')}
                 </h3>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs">
-                  {status.upToDate ? 'Up to date' : 'Update available'}
+                  {status.upToDate ? t('about.upToDate') : t('about.updateAvailable')}
                 </span>
               </div>
             </div>
@@ -356,7 +358,7 @@ export function PlatformToolsPage({
                   />
                 </div>
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                  Add to system PATH
+                  {t('tools.systemPath')}
                 </span>
               </label>
 
@@ -379,7 +381,7 @@ export function PlatformToolsPage({
                   />
                 </div>
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                  Auto-update on launch
+                  {t('tools.autoUpdate')}
                 </span>
               </label>
             </div>
@@ -400,7 +402,7 @@ export function PlatformToolsPage({
                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
                 title="Select a custom platform-tools directory"
               >
-                <span>Change location</span>
+                <span>{t('tools.change')}</span>
               </button>
 
               <button
@@ -412,7 +414,7 @@ export function PlatformToolsPage({
                 {isInstallingAdb ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
                 ) : null}
-                <span>{isInstallingAdb ? 'Reinstalling...' : 'Reinstall'}</span>
+                <span>{isInstallingAdb ? 'Reinstalling...' : t('tools.reinstall')}</span>
               </button>
             </div>
 
@@ -425,7 +427,7 @@ export function PlatformToolsPage({
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
-                  ADB SERVER
+                  {t('tools.adbServer')}
                 </span>
                 {status.serverRunning && (
                   <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800/60">
@@ -484,7 +486,7 @@ export function PlatformToolsPage({
                 title="Restart ADB daemon (kill-server followed by start-server)"
               >
                 <RotateCw className={cn("w-3.5 h-3.5 text-slate-500 dark:text-slate-400", serverBusy && "animate-spin")} />
-                <span>Restart</span>
+                <span>{t('tools.restartServer')}</span>
               </button>
 
               <button
@@ -496,12 +498,12 @@ export function PlatformToolsPage({
                 {status.serverRunning ? (
                   <>
                     <Square className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                    <span>Stop</span>
+                    <span>{t('tools.killServer')}</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                    <span>Start</span>
+                    <span>{t('tools.startServer')}</span>
                   </>
                 )}
               </button>
@@ -553,7 +555,7 @@ export function PlatformToolsPage({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
               <span className="text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase mr-1">
-                QUICK TERMINAL
+                {t('tools.quickCommands')}
               </span>
 
               {/* Real Live Hardware Telemetry Pill */}
@@ -621,7 +623,7 @@ export function PlatformToolsPage({
               {terminalRunning ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
               ) : null}
-              <span>{terminalRunning ? 'Running...' : 'Run'}</span>
+              <span>{terminalRunning ? 'Running...' : t('tools.terminalRun')}</span>
             </button>
           </div>
 
