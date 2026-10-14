@@ -81,9 +81,10 @@ export async function checkForAppUpdates() {
     const tagName = data.tag_name || '';
     const hasNewer = isNewerVersion(tagName, currentVersion);
 
-    // Look for Windows installer asset (.exe)
+    // Look for Windows installer asset (.exe), prioritizing Setup installer for OTA installation
     const assets = Array.isArray(data.assets) ? data.assets : [];
-    const exeAsset = assets.find(a => a.name && a.name.toLowerCase().endsWith('.exe'));
+    const exeAsset = assets.find(a => a.name && /(?:setup|installer)/i.test(a.name) && a.name.toLowerCase().endsWith('.exe'))
+      || assets.find(a => a.name && a.name.toLowerCase().endsWith('.exe'));
 
     if (hasNewer) {
       return {
