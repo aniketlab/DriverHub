@@ -440,6 +440,7 @@ export function SettingsPage({
                         return (
                           <button
                             key={m.id}
+                            data-theme-btn={m.id}
                             onClick={(e) => {
                               haptic.tick();
                               updateSetting('theme', m.id, e);

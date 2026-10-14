@@ -319,12 +319,24 @@ body {
   mix-blend-mode: normal;
 }
 
+/* Default (Expand: Light -> Dark): New dark screen on top expanding out */
 ::view-transition-old(root) {
   z-index: 1;
 }
 
 ::view-transition-new(root) {
   z-index: 99999;
+}
+
+/* Retract Mode (Dark -> Light): Old dark screen on top shrinking back into the icon */
+html.theme-transition-retract::view-transition-old(root),
+:root.theme-transition-retract::view-transition-old(root) {
+  z-index: 99999 !important;
+}
+
+html.theme-transition-retract::view-transition-new(root),
+:root.theme-transition-retract::view-transition-new(root) {
+  z-index: 1 !important;
 }
 
 

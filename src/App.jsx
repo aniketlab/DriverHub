@@ -45,6 +45,8 @@ function App() {
     }
   });
 
+  const darkOriginRef = useRef(null);
+
   const applyTheme = (targetTheme, event = null, isInitial = false) => {
     const computeIsDark = (th) => {
       if (th === 'dark') return true;
@@ -54,9 +56,11 @@ function App() {
       return false;
     };
 
+    const isDarkBefore = document.documentElement.classList.contains('dark');
+    const isDarkAfter = computeIsDark(targetTheme);
+
     const commitThemeChange = () => {
-      const isDark = computeIsDark(targetTheme);
-      if (isDark) {
+      if (isDarkAfter) {
         document.documentElement.classList.add('dark');
       } else {
         document.documentElement.classList.remove('dark');
@@ -68,37 +72,78 @@ function App() {
       } catch {}
 
       if (window.electronAPI?.setWindowTheme) {
-        window.electronAPI.setWindowTheme(isDark ? 'dark' : 'light');
+        window.electronAPI.setWindowTheme(isDarkAfter ? 'dark' : 'light');
       }
     };
 
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
-    // Fast-path: initial boot, or unsupported view transition, or user prefers reduced motion
-    if (isInitial || !document.startViewTransition || prefersReducedMotion) {
+    // Fast-path: initial boot, or unsupported view transition, or user prefers reduced motion, or no visual theme change
+    if (isInitial || !document.startViewTransition || prefersReducedMotion || isDarkBefore === isDarkAfter) {
       commitThemeChange();
       return;
     }
 
-    // Determine circular expansion epicenter (x, y) from event or center of screen
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    // Determine direction:
+    // isRetract: Dark -> Light (the black circle shrinks back into the dark mode icon where it came from)
+    // !isRetract: Light -> Dark (the black circle expands outward from the dark mode icon across the whole screen)
+    const isRetract = isDarkBefore && !isDarkAfter;
 
-    if (event) {
-      if (typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX !== 0 || event.clientY !== 0)) {
-        x = event.clientX;
-        y = event.clientY;
-      } else if (event.target && typeof event.target.getBoundingClientRect === 'function') {
-        const rect = event.target.getBoundingClientRect();
-        x = rect.left + rect.width / 2;
-        y = rect.top + rect.height / 2;
+    // Helper to find the Dark mode icon/button position in DOM
+    const getDarkIconCenter = () => {
+      const darkBtn = document.querySelector('[data-theme-btn="dark"]');
+      if (darkBtn) {
+        const rect = darkBtn.getBoundingClientRect();
+        return {
+          x: Math.round(rect.left + rect.width / 2),
+          y: Math.round(rect.top + rect.height / 2)
+        };
+      }
+      return null;
+    };
+
+    let origin = null;
+
+    if (!isRetract) {
+      // Light -> Dark: Bloom outward from Dark icon (or click point)
+      origin = getDarkIconCenter();
+      if (!origin && event && typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX !== 0 || event.clientY !== 0)) {
+        origin = { x: event.clientX, y: event.clientY };
+      }
+      if (!origin) {
+        origin = { x: Math.round(window.innerWidth / 2), y: Math.round(window.innerHeight / 2) };
+      }
+      // Save this origin so returning to light mode shrinks right back into this spot
+      darkOriginRef.current = origin;
+    } else {
+      // Dark -> Light: The darkness that flooded out now shrinks back into where it came from
+      origin = darkOriginRef.current || getDarkIconCenter();
+      if (!origin && event && typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX !== 0 || event.clientY !== 0)) {
+        origin = { x: event.clientX, y: event.clientY };
+      }
+      if (!origin) {
+        origin = { x: Math.round(window.innerWidth / 2), y: Math.round(window.innerHeight / 2) };
       }
     }
+
+    const x = origin.x;
+    const y = origin.y;
 
     const endRadius = Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     );
+
+    // If retracting, mark html with retract class so the old dark layer stays on top while shrinking
+    if (isRetract) {
+      document.documentElement.classList.add('theme-transition-retract');
+    } else {
+      document.documentElement.classList.remove('theme-transition-retract');
+    }
+
+    const cleanup = () => {
+      document.documentElement.classList.remove('theme-transition-retract');
+    };
 
     try {
       const transition = document.startViewTransition(() => {
@@ -107,22 +152,49 @@ function App() {
         });
       });
 
+      if (transition.finished) {
+        transition.finished.finally(cleanup);
+      } else {
+        setTimeout(cleanup, 600);
+      }
+
       transition.ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${endRadius}px at ${x}px ${y}px)`
-            ]
-          },
-          {
-            duration: 460,
-            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-            pseudoElement: '::view-transition-new(root)'
-          }
-        );
-      }).catch(() => {});
+        if (isRetract) {
+          // RETRACT: The dark overlay (old state) shrinks from full screen (endRadius) down to 0px at origin
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+                `circle(0px at ${x}px ${y}px)`
+              ]
+            },
+            {
+              duration: 460,
+              easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+              pseudoElement: '::view-transition-old(root)'
+            }
+          );
+        } else {
+          // EXPAND: The dark overlay (new state) blooms outward from origin (0px) to full screen (endRadius)
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`
+              ]
+            },
+            {
+              duration: 460,
+              easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              pseudoElement: '::view-transition-new(root)'
+            }
+          );
+        }
+      }).catch(() => {
+        cleanup();
+      });
     } catch {
+      cleanup();
       commitThemeChange();
     }
   };
