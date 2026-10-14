@@ -1014,11 +1014,9 @@ function App() {
           </div>
 
         </div>
-      </div>
-      </div>
 
-      {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) */}
-      <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
+        {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) - ONLY RENDERED ON DASHBOARD */}
+        <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">{t('monitor.title')}</h4>
           <span className="flex h-2 w-2 relative">
@@ -1090,10 +1088,11 @@ function App() {
           />
         </div>
       </div>
-    </div>
-
       </div>
     </div>
+    </div>
+  </div>
+</div>
   );
 }
 
