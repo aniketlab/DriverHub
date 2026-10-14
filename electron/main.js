@@ -35,6 +35,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV !== 'production' && !app.isPackaged;
+app.setName('Driver Hub');
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.driverhub.app');
+}
 let mainWindow = null;
 let monitorInterval = null;
 let tray = null;
@@ -98,6 +102,7 @@ function createWindow() {
   const isDark = currentSettings.theme === 'dark';
 
   mainWindow = new BrowserWindow({
+    title: 'Driver Hub',
     width: 1050,
     height: 700,
     minWidth: 900,
@@ -114,6 +119,10 @@ function createWindow() {
       symbolColor: isDark ? '#f8fafc' : '#1e293b',
       height: 38
     }
+  });
+
+  mainWindow.on('page-title-updated', (event) => {
+    event.preventDefault();
   });
 
   if (isDev) {
