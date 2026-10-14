@@ -687,7 +687,7 @@ function App() {
   const isAnyDeviceConnected = deviceStatus.connected;
 
   return (
-    <div className="flex flex-col h-screen w-full bg-slate-50/80 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 overflow-hidden font-sans relative transition-colors duration-200">
+    <div className="flex flex-col h-screen w-full bg-slate-50/80 dark:bg-[#0a0f1d] text-slate-800 dark:text-slate-100 overflow-hidden font-sans relative transition-colors duration-200 select-none">
       {/* Responsive Ambient Green/Emerald Glow (12-14% on compact screens, 15-17% on large screens) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {/* Top-Left Soft Emerald Glow */}
@@ -720,7 +720,7 @@ function App() {
       {/* 2. BODY CONTAINER BELOW TITLE BAR */}
       <div className="flex flex-1 overflow-hidden h-[calc(100vh-38px)] w-full relative z-10">
         {/* LEFT SIDEBAR (Frosted Acrylic) */}
-        <div className="w-[220px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
+        <div className="w-[220px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between p-4 pt-5 pb-4 h-full relative z-10 shadow-xs no-drag-region shrink-0 transition-colors select-none">
           <nav className="flex flex-col gap-1">
             <NavItem icon={LayoutDashboard} label={t('nav.dashboard')} active={activeTab === 'Dashboard'} onClick={() => setActiveTab('Dashboard')} />
             <NavItem icon={Download} label={t('nav.drivers')} active={activeTab === 'Drivers'} onClick={() => setActiveTab('Drivers')} />
@@ -843,9 +843,9 @@ function App() {
         </div>
 
         {/* VIEW 5: Dashboard */}
-        <div className={cn("flex-1 h-full min-w-0 flex", activeTab === 'Dashboard' ? "animate-motion-tab-enter" : "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex select-none", activeTab === 'Dashboard' ? "animate-motion-tab-enter" : "hidden")}>
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 flex flex-col h-full bg-transparent relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
+            <div className="flex-1 flex flex-col h-full bg-transparent relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px] select-none">
               <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
           
           {/* Header Row */}
@@ -1023,7 +1023,7 @@ function App() {
       </div>
 
       {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) - ONLY RENDERED ON DASHBOARD */}
-        <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors">
+        <div className="w-[250px] bg-white/85 dark:bg-[#0d1527]/90 backdrop-blur-md border-l border-slate-200/80 dark:border-slate-800/80 p-5 pt-5 h-full flex flex-col relative z-10 shadow-xs no-drag-region shrink-0 transition-colors select-none">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">{t('monitor.title')}</h4>
           <span className="flex h-2 w-2 relative">
