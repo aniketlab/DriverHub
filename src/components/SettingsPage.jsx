@@ -348,7 +348,7 @@ export function SettingsPage({
             <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
               
               {/* 1. GENERAL CARD (Cols 1-6) */}
-              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-4 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
                   {t('settings.general')}
                 </span>
@@ -452,7 +452,7 @@ export function SettingsPage({
               </div>
 
               {/* 2. INSTALLATION CARD (Cols 7-12) */}
-              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-4 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
                   {t('settings.installation')}
                 </span>
@@ -564,7 +564,7 @@ export function SettingsPage({
             <div className="grid grid-cols-12 gap-5 items-stretch w-full min-w-0">
               
               {/* 3. DEVICE DETECTION (Cols 1-6) */}
-              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4.5 transition-colors">
+              <div className="col-span-12 lg:col-span-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 shadow-xs flex flex-col gap-4 transition-colors">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase block">
                   {t('settings.deviceDetection')}
                 </span>
