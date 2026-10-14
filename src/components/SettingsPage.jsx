@@ -363,7 +363,7 @@ export function SettingsPage({
     }
   };
 
-  // Switch Toggle Helper with Apple / WinUI Spring Physics & Squeeze Interaction
+  // Clean, Smooth Physics Switch Toggle (Zero external glow, pure silky GPU slide)
   const Switch = ({ checked, onChange, disabled = false }) => (
     <button
       type="button"
@@ -377,19 +377,12 @@ export function SettingsPage({
         }
       }}
       className={cn(
-        "group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full p-0.5 transition-all duration-300 ease-out focus:outline-none select-none active:scale-[0.93]",
-        checked 
-          ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.38)]" 
-          : "bg-slate-200 dark:bg-slate-700/80 hover:bg-slate-300 dark:hover:bg-slate-600/90 shadow-inner",
-        disabled && "opacity-50 cursor-not-allowed active:scale-100"
+        "clean-switch",
+        checked && "is-checked",
+        disabled && "opacity-50 cursor-not-allowed"
       )}
     >
-      <span
-        className={cn(
-          "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] ring-0 transition-transform duration-300 ease-[cubic-bezier(0.34,1.45,0.64,1)] group-active:scale-x-115",
-          checked ? "translate-x-5 origin-right" : "translate-x-0 origin-left"
-        )}
-      />
+      <span className="clean-switch-thumb" />
     </button>
   );
 
@@ -736,13 +729,11 @@ export function SettingsPage({
               <button
                 type="button"
                 onClick={navigateToSettings}
-                className="group inline-flex items-center gap-2 px-2.5 py-1.5 -ml-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 cursor-pointer active:scale-[0.95] w-fit"
+                className="group inline-flex items-center gap-2 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer w-fit"
               >
-                <div className="w-5 h-5 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-emerald-500/15 flex items-center justify-center transition-colors">
-                  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
-                </div>
+                <ArrowLeft className="w-4 h-4 shrink-0 transition-transform duration-150 group-hover:-translate-x-1 text-slate-500 dark:text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
                 <span>{t('nav.settings')}</span>
-                <span className="text-slate-300 dark:text-slate-600">/</span>
+                <span className="text-slate-300 dark:text-slate-600 font-normal">/</span>
                 <span className="text-slate-800 dark:text-slate-200 font-semibold">{t('settings.aboutUpdates')}</span>
               </button>
 

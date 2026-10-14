@@ -952,15 +952,12 @@ function NavItem({ icon: Icon, label, active, onClick }) {
         onClick();
       }}
       className={cn(
-        "group relative flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 whitespace-nowrap cursor-pointer border text-left active:scale-[0.96]",
+        "group flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 whitespace-nowrap cursor-pointer border text-left active:scale-[0.96]",
         active 
           ? "bg-green-50/90 dark:bg-emerald-950/70 text-green-800 dark:text-emerald-300 font-semibold border-green-200/90 dark:border-emerald-800/80 shadow-2xs shadow-emerald-500/10" 
           : "border-transparent text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-200/60 dark:hover:border-slate-700/50 hover:shadow-2xs"
       )}
     >
-      {active && (
-        <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-      )}
       <Icon className={cn("w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110", active ? "text-green-600 dark:text-emerald-400 scale-105" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300")} />
       <span>{label}</span>
     </button>

@@ -253,4 +253,61 @@ body {
 .stagger-3 { animation-delay: 120ms; }
 .stagger-4 { animation-delay: 160ms; }
 
+/* 6. Clean, Smooth Physics Switch Toggle (Zero Glow, Pure Silk GPU Slide) */
+.clean-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 2px;
+  background-color: #cbd5e1;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.12s ease-out;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.clean-switch:active {
+  transform: scale(0.95);
+}
+
+.dark .clean-switch {
+  background-color: #334155;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.clean-switch.is-checked {
+  background-color: #10b981;
+  border-color: #059669;
+}
+
+.dark .clean-switch.is-checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.clean-switch-thumb {
+  pointer-events: none;
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+  transform: translate3d(0px, 0, 0);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.clean-switch.is-checked .clean-switch-thumb {
+  transform: translate3d(18px, 0, 0);
+}
+
 
