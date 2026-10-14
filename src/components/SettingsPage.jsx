@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Check, 
   RefreshCw, 
@@ -167,12 +167,23 @@ export function SettingsPage({
   };
 
   // Load real settings from backend on mount
+  const pageContainerRef = useRef(null);
+
+  // Auto-reset scroll to top when switching between settings and about views
   useEffect(() => {
+    if (pageContainerRef.current) {
+      pageContainerRef.current.scrollTop = 0;
+    }
+  }, [currentView]);
+
+  // Load real settings from backend on mount only (prevents switch flipping glitch)
+  useEffect(() => {
+    let isMounted = true;
     const loadRealSettings = async () => {
       try {
         if (window.electronAPI?.getSettings) {
           const res = await window.electronAPI.getSettings();
-          if (res) {
+          if (res && isMounted) {
             setSettings(prev => {
               const merged = {
                 ...prev,
@@ -189,18 +200,29 @@ export function SettingsPage({
       } catch (err) {
         console.warn('Could not load settings:', err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     loadRealSettings();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Sync theme changes from parent without re-fetching all settings from backend
+  useEffect(() => {
+    if (theme) {
+      setSettings(prev => prev.theme === theme ? prev : { ...prev, theme });
+    }
   }, [theme]);
 
-  // Handle setting toggle or value change
+  // Handle setting toggle or value change with dual persistence (localStorage + Electron file)
   const updateSetting = async (key, val, event = null) => {
     const updated = { ...settings, [key]: val };
     setSettings(updated);
     try {
       localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(updated));
+      if (key === 'createRestorePoint') {
+        localStorage.setItem('driverhub_restore_point', String(val));
+      }
     } catch {}
 
     if (key === 'theme' && onThemeChange) {
@@ -390,7 +412,7 @@ export function SettingsPage({
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-transparent relative overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
+    <div ref={pageContainerRef} className="flex-1 flex flex-col h-full bg-transparent relative overflow-y-auto overflow-x-hidden no-drag-region p-6 pt-5 select-none min-w-0">
       <div className="max-w-5xl w-full mx-auto flex flex-col gap-5 min-w-0">
         
         {/* ========================================================= */}
@@ -1032,7 +1054,7 @@ export function SettingsPage({
                   {t('about.madeBy')}
                 </span>
                 <span className="text-sm font-bold text-slate-900 dark:text-white mt-1">
-                  Aniket
+                  Aniket Sharma
                 </span>
                 <button
                   onClick={() => handleOpenUrl('https://github.com/aniketlab')}

@@ -46,6 +46,27 @@ function App() {
   });
 
   const darkOriginRef = useRef(null);
+  const viewsContainerRef = useRef(null);
+
+  // Universal Tab Scroll Memory Reset:
+  // When switching away and returning to any section, start cleanly from the top
+  useEffect(() => {
+    const resetScroll = () => {
+      if (viewsContainerRef.current) {
+        const scrollables = viewsContainerRef.current.querySelectorAll('.overflow-y-auto');
+        scrollables.forEach(el => {
+          el.scrollTop = 0;
+        });
+      }
+    };
+    resetScroll();
+    const rafId = requestAnimationFrame(resetScroll);
+    const timerId = setTimeout(resetScroll, 35);
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timerId);
+    };
+  }, [activeTab]);
 
   const applyTheme = (targetTheme, event = null, isInitial = false) => {
     const computeIsDark = (th) => {
@@ -752,8 +773,10 @@ function App() {
           </div>
         </div>
 
-        {/* VIEW 1: Device Monitor */}
-        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Device Monitor' ? "animate-motion-tab-enter" : "hidden")}>
+        {/* CENTER CONTENT VIEWS CONTAINER WITH SCROLL RESET */}
+        <div ref={viewsContainerRef} className="flex-1 h-full min-w-0 flex overflow-hidden relative">
+          {/* VIEW 1: Device Monitor */}
+          <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Device Monitor' ? "animate-motion-tab-enter" : "hidden")}>
           <DeviceMonitorPage
             deviceStatus={deviceStatus}
             onRefresh={handleScan}
@@ -991,6 +1014,7 @@ function App() {
           </div>
 
         </div>
+      </div>
       </div>
 
       {/* RIGHT SIDEBAR: DEVICE MONITOR (Frosted Translucent) */}

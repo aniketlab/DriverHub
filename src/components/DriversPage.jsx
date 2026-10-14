@@ -92,11 +92,27 @@ export function DriversPage({
   const [createRestorePoint, setCreateRestorePoint] = useState(() => {
     try {
       const saved = localStorage.getItem('driverhub_restore_point');
-      return saved !== null ? saved === 'true' : true;
+      if (saved !== null) return saved === 'true';
+      const settingsCache = localStorage.getItem('driverhub_settings_cache');
+      if (settingsCache) {
+        const parsed = JSON.parse(settingsCache);
+        if (typeof parsed.createRestorePoint === 'boolean') return parsed.createRestorePoint;
+      }
+      return true;
     } catch {
       return true;
     }
   });
+
+  // Sync restore point setting if modified externally
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('driverhub_restore_point');
+      if (saved !== null) {
+        setCreateRestorePoint(saved === 'true');
+      }
+    } catch {}
+  }, []);
 
   // Track installation transitions for "Vault Lock" SVG checkmark & Shockwave bursts
   const prevInstallingRef = useRef(isInstalling);
@@ -128,12 +144,18 @@ export function DriversPage({
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 4, width: 60, ready: false });
 
   const handleToggleRestorePoint = () => {
-    haptic.pop(!createRestorePoint);
-    setCreateRestorePoint(prev => {
-      const next = !prev;
-      try { localStorage.setItem('driverhub_restore_point', String(next)); } catch {}
-      return next;
-    });
+    const next = !createRestorePoint;
+    haptic.pop(next);
+    setCreateRestorePoint(next);
+    try {
+      localStorage.setItem('driverhub_restore_point', String(next));
+      const settingsCache = localStorage.getItem('driverhub_settings_cache');
+      const parsed = settingsCache ? JSON.parse(settingsCache) : {};
+      localStorage.setItem('driverhub_settings_cache', JSON.stringify({ ...parsed, createRestorePoint: next }));
+      if (window.electronAPI?.saveSettings) {
+        window.electronAPI.saveSettings({ createRestorePoint: next });
+      }
+    } catch {}
   };
 
   // Derive package full state (installed, version, updateAvailable)

@@ -2,6 +2,7 @@
   "name": "driverhub",
   "private": true,
   "version": "1.0.0",
+  "author": "Aniket Sharma",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {

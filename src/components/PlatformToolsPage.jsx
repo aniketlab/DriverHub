@@ -39,22 +39,31 @@ export function PlatformToolsPage({
   const [serverBusy, setServerBusy] = useState(false);
   const [terminalRunning, setTerminalRunning] = useState(false);
 
-  // Core Platform-Tools Status State
-  const [status, setStatus] = useState({
-    installed: true,
-    path: 'C:\\Users\\sharm\\AppData\\Local\\DriverHub\\platform-tools',
-    version: '37.0.1',
-    upToDate: true,
-    inPath: false,
-    autoUpdate: false,
-    serverRunning: true,
-    serverPort: 5037,
-    tools: [
-      { name: 'adb.exe', desc: 'Talk to your phone over USB', exists: true },
-      { name: 'fastboot.exe', desc: 'Flash and unlock in bootloader mode', exists: true },
-      { name: 'mke2fs.exe', desc: 'Create ext4 filesystem images', exists: true },
-      { name: 'sqlite3.exe', desc: 'Read databases pulled from the device', exists: true }
-    ]
+  // Core Platform-Tools Status State with persistent memory
+  const [status, setStatus] = useState(() => {
+    let inPathCached = false;
+    let autoUpdateCached = false;
+    try {
+      inPathCached = localStorage.getItem('driverhub_pt_inpath') === 'true';
+      autoUpdateCached = localStorage.getItem('driverhub_pt_autoupdate') === 'true';
+    } catch {}
+
+    return {
+      installed: true,
+      path: 'C:\\Users\\sharm\\AppData\\Local\\DriverHub\\platform-tools',
+      version: '37.0.1',
+      upToDate: true,
+      inPath: inPathCached,
+      autoUpdate: autoUpdateCached,
+      serverRunning: true,
+      serverPort: 5037,
+      tools: [
+        { name: 'adb.exe', desc: 'Talk to your phone over USB', exists: true },
+        { name: 'fastboot.exe', desc: 'Flash and unlock in bootloader mode', exists: true },
+        { name: 'mke2fs.exe', desc: 'Create ext4 filesystem images', exists: true },
+        { name: 'sqlite3.exe', desc: 'Read databases pulled from the device', exists: true }
+      ]
+    };
   });
 
   // Global Install Tracker for ADB Platform-Tools
@@ -76,6 +85,10 @@ export function PlatformToolsPage({
         const res = await window.electronAPI.getPlatformToolsStatus();
         if (res) {
           setStatus(res);
+          try {
+            if (typeof res.inPath === 'boolean') localStorage.setItem('driverhub_pt_inpath', String(res.inPath));
+            if (typeof res.autoUpdate === 'boolean') localStorage.setItem('driverhub_pt_autoupdate', String(res.autoUpdate));
+          } catch {}
         }
       }
     } catch (err) {
@@ -118,11 +131,16 @@ export function PlatformToolsPage({
             setStatus(prev => ({
               ...prev,
               serverRunning: res.serverRunning,
-              inPath: res.inPath,
+              inPath: typeof res.inPath === 'boolean' ? res.inPath : prev.inPath,
+              autoUpdate: typeof res.autoUpdate === 'boolean' ? res.autoUpdate : prev.autoUpdate,
               installed: res.installed,
               path: res.path,
               tools: res.tools
             }));
+            try {
+              if (typeof res.inPath === 'boolean') localStorage.setItem('driverhub_pt_inpath', String(res.inPath));
+              if (typeof res.autoUpdate === 'boolean') localStorage.setItem('driverhub_pt_autoupdate', String(res.autoUpdate));
+            } catch {}
           }
         }
       } catch {}
@@ -151,15 +169,20 @@ export function PlatformToolsPage({
     const nextVal = !status.inPath;
     setStatus(prev => ({ ...prev, inPath: nextVal }));
     try {
+      localStorage.setItem('driverhub_pt_inpath', String(nextVal));
+    } catch {}
+    try {
       if (window.electronAPI?.toggleSystemPath) {
         const res = await window.electronAPI.toggleSystemPath(nextVal);
         if (res && typeof res.inPath === 'boolean') {
           setStatus(prev => ({ ...prev, inPath: res.inPath }));
+          try { localStorage.setItem('driverhub_pt_inpath', String(res.inPath)); } catch {}
         }
       }
     } catch (err) {
       console.error('Toggle PATH failed:', err);
       setStatus(prev => ({ ...prev, inPath: !nextVal }));
+      try { localStorage.setItem('driverhub_pt_inpath', String(!nextVal)); } catch {}
     }
   };
 
@@ -168,12 +191,16 @@ export function PlatformToolsPage({
     const nextVal = !status.autoUpdate;
     setStatus(prev => ({ ...prev, autoUpdate: nextVal }));
     try {
+      localStorage.setItem('driverhub_pt_autoupdate', String(nextVal));
+    } catch {}
+    try {
       if (window.electronAPI?.toggleAutoUpdate) {
         await window.electronAPI.toggleAutoUpdate(nextVal);
       }
     } catch (err) {
       console.error('Toggle Auto-Update failed:', err);
       setStatus(prev => ({ ...prev, autoUpdate: !nextVal }));
+      try { localStorage.setItem('driverhub_pt_autoupdate', String(!nextVal)); } catch {}
     }
   };
 
