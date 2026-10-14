@@ -1094,7 +1094,7 @@ export function SettingsPage({
               </button>
             </div>
 
-            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5 max-h-[60vh] overflow-y-auto leading-relaxed">
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5 max-h-[60vh] overflow-y-auto pr-2 leading-relaxed custom-scrollbar-slim">
               {updateInfo?.releaseNotes && updateInfo.latestVersion && (
                 <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 rounded-xl">
                   <span className="font-bold text-indigo-800 dark:text-indigo-300 block mb-1">

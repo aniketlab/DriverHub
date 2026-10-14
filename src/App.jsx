@@ -47,13 +47,21 @@ function App() {
 
   const darkOriginRef = useRef(null);
   const viewsContainerRef = useRef(null);
+  const terminalLogsRef = useRef(null);
+
+  // Auto-scroll terminal log to bottom on new log entry
+  useEffect(() => {
+    if (terminalLogsRef.current) {
+      terminalLogsRef.current.scrollTop = terminalLogsRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   // Universal Tab Scroll Memory Reset:
   // When switching away and returning to any section, start cleanly from the top
   useEffect(() => {
     const resetScroll = () => {
       if (viewsContainerRef.current) {
-        const scrollables = viewsContainerRef.current.querySelectorAll('.overflow-y-auto');
+        const scrollables = viewsContainerRef.current.querySelectorAll('.overflow-y-auto:not(.custom-scrollbar-slim)');
         scrollables.forEach(el => {
           el.scrollTop = 0;
         });
@@ -992,24 +1000,22 @@ function App() {
           </div>
 
           {/* Terminal / Install Log */}
-          <div className="bg-white/92 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 dark:text-slate-300 overflow-y-auto mt-1 shadow-xs shrink-0 flex flex-col justify-between transition-colors">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">{t('dashboard.terminalLogs')}</h4>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                {logs.map((log, index) => (
-                  <p key={index} className="leading-relaxed">
-                    {log.type === 'success' && <span className="text-green-600 dark:text-emerald-400 font-bold mr-1.5">[ok]</span>}
-                    {log.type === 'pending' && <span className="text-blue-500 dark:text-blue-400 font-bold mr-1.5">[..]</span>}
-                    {log.type === 'warning' && <span className="text-amber-500 dark:text-amber-400 font-bold mr-1.5">[!]</span>}
-                    {log.type === 'error' && <span className="text-rose-500 dark:text-rose-400 font-bold mr-1.5">[err]</span>}
-                    {log.type === 'info' && <span className="text-slate-400 dark:text-slate-500 font-bold mr-1.5">[--]</span>}
-                    <span>{log.text}</span>
-                  </p>
-                ))}
-              </div>
+          <div className="bg-white/92 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 dark:text-slate-300 mt-1 shadow-xs shrink-0 flex flex-col transition-colors">
+            <div className="flex items-center justify-between mb-2 shrink-0">
+              <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">{t('dashboard.terminalLogs')}</h4>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
+            </div>
+            <div ref={terminalLogsRef} className="flex-1 overflow-y-auto flex flex-col gap-1 pr-1.5 custom-scrollbar-slim">
+              {logs.map((log, index) => (
+                <p key={index} className="leading-relaxed">
+                  {log.type === 'success' && <span className="text-green-600 dark:text-emerald-400 font-bold mr-1.5">[ok]</span>}
+                  {log.type === 'pending' && <span className="text-blue-500 dark:text-blue-400 font-bold mr-1.5">[..]</span>}
+                  {log.type === 'warning' && <span className="text-amber-500 dark:text-amber-400 font-bold mr-1.5">[!]</span>}
+                  {log.type === 'error' && <span className="text-rose-500 dark:text-rose-400 font-bold mr-1.5">[err]</span>}
+                  {log.type === 'info' && <span className="text-slate-400 dark:text-slate-500 font-bold mr-1.5">[--]</span>}
+                  <span>{log.text}</span>
+                </p>
+              ))}
             </div>
           </div>
 

@@ -655,7 +655,7 @@ export function PlatformToolsPage({
           </div>
 
           {/* Terminal Output Screen */}
-          <div className="bg-slate-50/90 dark:bg-[#070b14] border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-800 dark:text-slate-200 leading-relaxed min-h-[92px] max-h-[190px] overflow-y-auto whitespace-pre-wrap select-text shadow-inner transition-colors">
+          <div className="bg-slate-50/90 dark:bg-[#070b14] border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4 font-mono text-xs text-slate-800 dark:text-slate-200 leading-relaxed min-h-[92px] max-h-[190px] overflow-y-auto whitespace-pre-wrap select-text shadow-inner transition-colors custom-scrollbar-slim">
             {terminalOutput ? (
               terminalOutput.split('\n').map((line, idx) => {
                 // Syntax coloring for device lines
