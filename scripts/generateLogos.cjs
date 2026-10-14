@@ -20,6 +20,7 @@ app.whenReady().then(async () => {
     win = new BrowserWindow({
       width: 2400,
       height: 750,
+      useContentSize: true,
       show: false,
       frame: false,
       transparent: true,
@@ -71,10 +72,11 @@ app.whenReady().then(async () => {
 <body>
   <div class="container">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8" />
-      <path d="M10 19v-4" />
-      <path d="M7 19h5" />
-      <rect width="6" height="10" x="16" y="12" rx="2" />
+      <rect width="13" height="10" x="2" y="4" rx="2" />
+      <path d="M8.5 14v4" />
+      <path d="M5.5 18h6" />
+      <rect width="6" height="11" x="16" y="7" rx="2" />
+      <path d="M19 15.5h.01" />
     </svg>
     <div class="brand-text">
       <span class="green">DRIVER</span><span class="slate">HUB</span>
@@ -136,10 +138,11 @@ app.whenReady().then(async () => {
 <body>
   <div class="container">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8" />
-      <path d="M10 19v-4" />
-      <path d="M7 19h5" />
-      <rect width="6" height="10" x="16" y="12" rx="2" />
+      <rect width="13" height="10" x="2" y="4" rx="2" />
+      <path d="M8.5 14v4" />
+      <path d="M5.5 18h6" />
+      <rect width="6" height="11" x="16" y="7" rx="2" />
+      <path d="M19 15.5h.01" />
     </svg>
     <div class="text-col">
       <div class="brand-text">
@@ -177,10 +180,11 @@ app.whenReady().then(async () => {
 </head>
 <body>
   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8" />
-    <path d="M10 19v-4" />
-    <path d="M7 19h5" />
-    <rect width="6" height="10" x="16" y="12" rx="2" />
+    <rect width="13" height="10" x="2" y="4" rx="2" />
+    <path d="M8.5 14v4" />
+    <path d="M5.5 18h6" />
+    <rect width="6" height="11" x="16" y="7" rx="2" />
+    <path d="M19 15.5h.01" />
   </svg>
 </body>
 </html>`
@@ -193,28 +197,29 @@ app.whenReady().then(async () => {
 <html>
 <head>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
       width: 1024px;
       height: 1024px;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: transparent;
     }
     .squircle {
-      width: 960px;
-      height: 960px;
-      border-radius: 220px;
+      width: 820px;
+      height: 820px;
+      border-radius: 190px;
       background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 40px 100px rgba(22, 163, 74, 0.4);
     }
     .icon {
-      width: 580px;
-      height: 580px;
+      width: 500px;
+      height: 500px;
       color: #ffffff;
     }
   </style>
@@ -222,10 +227,11 @@ app.whenReady().then(async () => {
 <body>
   <div class="squircle">
     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8" />
-      <path d="M10 19v-4" />
-      <path d="M7 19h5" />
-      <rect width="6" height="10" x="16" y="12" rx="2" />
+      <rect width="13" height="10" x="2" y="4" rx="2" />
+      <path d="M8.5 14v4" />
+      <path d="M5.5 18h6" />
+      <rect width="6" height="11" x="16" y="7" rx="2" />
+      <path d="M19 15.5h.01" />
     </svg>
   </div>
 </body>
@@ -251,10 +257,11 @@ app.whenReady().then(async () => {
     const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 220" fill="none">
   <g transform="translate(30, 35)">
     <svg width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/>
-      <path d="M10 19v-4"/>
-      <path d="M7 19h5"/>
-      <rect width="6" height="10" x="16" y="12" rx="2"/>
+      <rect width="13" height="10" x="2" y="4" rx="2" />
+      <path d="M8.5 14v4" />
+      <path d="M5.5 18h6" />
+      <rect width="6" height="11" x="16" y="7" rx="2" />
+      <path d="M19 15.5h.01" />
     </svg>
   </g>
   <text x="210" y="145" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="95" font-weight="850" letter-spacing="-1">

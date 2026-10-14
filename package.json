@@ -51,6 +51,7 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "license": "build/license.txt",
+      "include": "build/installer.nsh",
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "Driver Hub",
