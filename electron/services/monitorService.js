@@ -13,22 +13,30 @@ const execPromise = util.promisify(exec);
 const SCRIPT_DIR = path.join(os.homedir(), 'AppData', 'Local', 'DriverHub', 'scripts');
 const stagedScriptPath = path.join(SCRIPT_DIR, 'detectDevices.ps1');
 
+let scriptSynced = false;
 function getScriptPath() {
   const bundled = path.join(__dirname, 'detectDevices.ps1');
-  try {
-    if (!fs.existsSync(SCRIPT_DIR)) fs.mkdirSync(SCRIPT_DIR, { recursive: true });
-    if (fs.existsSync(bundled)) {
-      fs.copyFileSync(bundled, stagedScriptPath);
-      return stagedScriptPath;
-    }
-  } catch {}
+  if (!scriptSynced) {
+    try {
+      if (!fs.existsSync(SCRIPT_DIR)) fs.mkdirSync(SCRIPT_DIR, { recursive: true });
+      if (fs.existsSync(bundled)) {
+        fs.copyFileSync(bundled, stagedScriptPath);
+        scriptSynced = true;
+        return stagedScriptPath;
+      }
+    } catch {}
+  }
 
   if (fs.existsSync(stagedScriptPath)) return stagedScriptPath;
 
   if (process.resourcesPath) {
     const unpacked = path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'services', 'detectDevices.ps1');
     if (fs.existsSync(unpacked)) {
-      try { fs.copyFileSync(unpacked, stagedScriptPath); return stagedScriptPath; } catch {}
+      try { 
+        fs.copyFileSync(unpacked, stagedScriptPath); 
+        scriptSynced = true;
+        return stagedScriptPath; 
+      } catch {}
       return unpacked;
     }
   }
@@ -36,8 +44,12 @@ function getScriptPath() {
 }
 
 let isChecking = false;
-
 let lastKnownPhysicalDevice = null;
+
+// Caches to avoid hammering USB sockets & adbd on device
+const fastbootCache = new Map(); // serial -> { product, manufacturer, unlocked, isUserspace }
+const adbStaticCache = new Map(); // serial -> { androidVersion, bootloaderState }
+const adbDynamicCache = new Map(); // serial -> { batteryInfo, storageInfo, lastChecked }
 
 // Dynamically discover candidate ADB executable paths
 function getAdbExecutable() {
@@ -109,31 +121,41 @@ async function checkFastbootDirect() {
         let isUserspace = false;
         let manufacturer = null;
 
-        try {
-          const { stdout: pOut, stderr: pErr } = await execPromise(`${fbCmd} -s ${serial} getvar product`, { timeout: 1000 });
-          const m = ((pOut || '') + (pErr || '')).match(/product:\s*([^\r\n]+)/i);
-          if (m) product = m[1].trim();
-        } catch {}
+        if (fastbootCache.has(serial)) {
+          const cached = fastbootCache.get(serial);
+          product = cached.product;
+          unlocked = cached.unlocked;
+          isUserspace = cached.isUserspace;
+          manufacturer = cached.manufacturer;
+        } else {
+          try {
+            const { stdout: pOut, stderr: pErr } = await execPromise(`${fbCmd} -s ${serial} getvar product`, { timeout: 1000 });
+            const m = ((pOut || '') + (pErr || '')).match(/product:\s*([^\r\n]+)/i);
+            if (m) product = m[1].trim();
+          } catch {}
 
-        try {
-          const { stdout: mOut, stderr: mErr } = await execPromise(`${fbCmd} -s ${serial} getvar manufacturer`, { timeout: 800 });
-          const m = ((mOut || '') + (mErr || '')).match(/manufacturer:\s*([^\r\n]+)/i);
-          if (m) manufacturer = m[1].trim();
-        } catch {}
+          try {
+            const { stdout: mOut, stderr: mErr } = await execPromise(`${fbCmd} -s ${serial} getvar manufacturer`, { timeout: 800 });
+            const m = ((mOut || '') + (mErr || '')).match(/manufacturer:\s*([^\r\n]+)/i);
+            if (m) manufacturer = m[1].trim();
+          } catch {}
 
-        try {
-          const { stdout: uOut, stderr: uErr } = await execPromise(`${fbCmd} -s ${serial} getvar unlocked`, { timeout: 1000 });
-          const m = ((uOut || '') + (uErr || '')).match(/unlocked:\s*([^\r\n]+)/i);
-          if (m) {
-            const v = m[1].trim().toLowerCase();
-            unlocked = (v === 'yes' || v === 'true' || v === '1') ? 'Unlocked 🟢' : 'Locked 🔒';
-          }
-        } catch {}
+          try {
+            const { stdout: uOut, stderr: uErr } = await execPromise(`${fbCmd} -s ${serial} getvar unlocked`, { timeout: 1000 });
+            const m = ((uOut || '') + (uErr || '')).match(/unlocked:\s*([^\r\n]+)/i);
+            if (m) {
+              const v = m[1].trim().toLowerCase();
+              unlocked = (v === 'yes' || v === 'true' || v === '1') ? 'Unlocked 🟢' : 'Locked 🔒';
+            }
+          } catch {}
 
-        try {
-          const { stdout: sOut } = await execPromise(`${fbCmd} -s ${serial} getvar is-userspace`, { timeout: 800 });
-          if ((sOut || '').includes('yes')) isUserspace = true;
-        } catch {}
+          try {
+            const { stdout: sOut } = await execPromise(`${fbCmd} -s ${serial} getvar is-userspace`, { timeout: 800 });
+            if ((sOut || '').includes('yes')) isUserspace = true;
+          } catch {}
+
+          fastbootCache.set(serial, { product, unlocked, isUserspace, manufacturer });
+        }
 
         let resolved = null;
         if (product) {
@@ -141,7 +163,6 @@ async function checkFastbootDirect() {
         }
 
         // Strict physical serial comparison:
-        // Cache is ONLY valid if the physical hardware serial numbers match exactly!
         const isSamePhysicalSerial = Boolean(
           lastKnownPhysicalDevice &&
           lastKnownPhysicalDevice.serial &&
@@ -149,7 +170,6 @@ async function checkFastbootDirect() {
           lastKnownPhysicalDevice.serial.trim().toLowerCase() === serial.trim().toLowerCase()
         );
 
-        // If a different device is plugged in, immediately purge stale cache
         if (lastKnownPhysicalDevice && !isSamePhysicalSerial) {
           lastKnownPhysicalDevice = null;
         }
@@ -245,49 +265,68 @@ async function checkAdbDirect() {
           let storageInfo = null;
 
           if (state === 'device') {
-            try {
-              const { stdout: osRelease } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.build.version.release`, { timeout: 1200 });
-              if (osRelease.trim()) androidVersion = `Android ${osRelease.trim()}`;
-            } catch {}
+            // Check static cache first
+            if (adbStaticCache.has(serial)) {
+              const cached = adbStaticCache.get(serial);
+              androidVersion = cached.androidVersion;
+              bootloaderState = cached.bootloaderState;
+            } else {
+              try {
+                const { stdout: osRelease } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.build.version.release`, { timeout: 1200 });
+                if (osRelease.trim()) androidVersion = `Android ${osRelease.trim()}`;
+              } catch {}
 
-            try {
-              const { stdout: bDump } = await execPromise(`${adbCmd} -s ${serial} shell dumpsys battery`, { timeout: 1200 });
-              const levelMatch = bDump.match(/level:\s*(\d+)/i);
-              const statusMatch = bDump.match(/status:\s*(\d+)/i);
-              const isCharging = statusMatch && (statusMatch[1] === '2' || statusMatch[1] === '5');
-              if (levelMatch) {
-                batteryInfo = {
-                  level: `${levelMatch[1]}%`,
-                  status: isCharging ? 'Charging' : 'On Battery',
-                  isCharging: Boolean(isCharging)
-                };
-              }
-            } catch {}
+              try {
+                const { stdout: blProp } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.boot.flash.locked`, { timeout: 1000 });
+                if (blProp.trim() === '1') bootloaderState = 'Locked';
+                else if (blProp.trim() === '0') bootloaderState = 'Unlocked';
+              } catch {}
 
-            try {
-              const { stdout: blProp } = await execPromise(`${adbCmd} -s ${serial} shell getprop ro.boot.flash.locked`, { timeout: 1000 });
-              if (blProp.trim() === '1') bootloaderState = 'Locked';
-              else if (blProp.trim() === '0') bootloaderState = 'Unlocked';
-            } catch {}
+              adbStaticCache.set(serial, { androidVersion, bootloaderState });
+            }
 
-            try {
-              const { stdout: dfOut } = await execPromise(`${adbCmd} -s ${serial} shell df -h /data`, { timeout: 1200 });
-              const lines = dfOut.trim().split('\n');
-              if (lines.length > 1) {
-                const parts = lines[1].trim().split(/\s+/);
-                if (parts.length >= 5) {
-                  storageInfo = {
-                    total: parts[1],
-                    used: parts[2],
-                    free: parts[3],
-                    percent: parts[4]
+            // Check dynamic cache (refresh battery & storage at most once every 15 seconds)
+            const now = Date.now();
+            const dyn = adbDynamicCache.get(serial);
+            if (dyn && (now - dyn.lastChecked < 15000)) {
+              batteryInfo = dyn.batteryInfo;
+              storageInfo = dyn.storageInfo;
+            } else {
+              try {
+                const { stdout: bDump } = await execPromise(`${adbCmd} -s ${serial} shell dumpsys battery`, { timeout: 1200 });
+                const levelMatch = bDump.match(/level:\s*(\d+)/i);
+                const statusMatch = bDump.match(/status:\s*(\d+)/i);
+                const isCharging = statusMatch && (statusMatch[1] === '2' || statusMatch[1] === '5');
+                if (levelMatch) {
+                  batteryInfo = {
+                    level: `${levelMatch[1]}%`,
+                    status: isCharging ? 'Charging' : 'On Battery',
+                    isCharging: Boolean(isCharging)
                   };
-                  if (lastKnownPhysicalDevice) {
-                    lastKnownPhysicalDevice.storage = storageInfo;
+                }
+              } catch {}
+
+              try {
+                const { stdout: dfOut } = await execPromise(`${adbCmd} -s ${serial} shell df -h /data`, { timeout: 1200 });
+                const dLines = dfOut.trim().split('\n');
+                if (dLines.length > 1) {
+                  const dParts = dLines[1].trim().split(/\s+/);
+                  if (dParts.length >= 5) {
+                    storageInfo = {
+                      total: dParts[1],
+                      used: dParts[2],
+                      free: dParts[3],
+                      percent: dParts[4]
+                    };
+                    if (lastKnownPhysicalDevice) {
+                      lastKnownPhysicalDevice.storage = storageInfo;
+                    }
                   }
                 }
-              }
-            } catch {}
+              } catch {}
+
+              adbDynamicCache.set(serial, { batteryInfo, storageInfo, lastChecked: now });
+            }
           }
 
           let batteryDisplay = 'Charging';
@@ -340,7 +379,7 @@ async function doCheckConnectedDevices() {
     // Tier 2: Query Windows USB PnP (For Fastboot, MTK BROM, Preloader, VCOM, MTP, Charging)
     const effectiveScript = getScriptPath();
     const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${effectiveScript}"`;
-    const { stdout } = await execPromise(cmd, { timeout: 5000 });
+    const { stdout } = await execPromise(cmd, { timeout: 8000 });
     
     const trimmed = stdout.trim();
     if (!trimmed) {
@@ -349,7 +388,7 @@ async function doCheckConnectedDevices() {
         adb: false, 
         fastboot: false, 
         mtk: false, 
-        mtp: false,
+        mtp: false, 
         brand: null, 
         model: null, 
         mode: null 
@@ -404,7 +443,7 @@ async function doCheckConnectedDevices() {
         hasUsbPhysical = true;
       }
       // 5. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, etc.)
-      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d)/i)) {
+      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d|0b05|0fce|1004|0bb4)/i)) {
         hasUsbPhysical = true;
       }
     }
@@ -511,7 +550,11 @@ async function doCheckConnectedDevices() {
       bootloaderState: hasFastboot ? 'Fastboot Bootloader' : null
     };
   } catch (err) {
-    console.error('Device monitor error:', err.message);
+    console.warn('Device monitor probe delayed/warning:', err.message);
+    // Retain previous connected state during transient OS query latency so we don't cause false drops
+    if (lastKnownDevice && lastKnownDevice.connected) {
+      return lastKnownDevice;
+    }
     return { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
   }
 }
@@ -533,17 +576,20 @@ export async function checkConnectedDevices() {
       return rawResult;
     }
 
-    // Debounce temporary 1-frame connection loss during USB mode switch / plug handshake
+    // Debounce temporary connection loss during USB mode switch / plug handshake / sleep
+    // Require 3 consecutive confirmed disconnect polls (~7.5s) before broadcasting unplug
     consecutiveDisconnects++;
-    if (consecutiveDisconnects < 2 && lastKnownDevice && lastKnownDevice.connected) {
+    if (consecutiveDisconnects < 3 && lastKnownDevice && lastKnownDevice.connected) {
       return lastKnownDevice;
     }
 
     lastKnownDevice = null;
     lastKnownPhysicalDevice = null; // Clean cache completely on true physical disconnect
+    fastbootCache.clear();
+    adbStaticCache.clear();
+    adbDynamicCache.clear();
     return rawResult || { connected: false, adb: false, fastboot: false, mtk: false, mtp: false, brand: null, model: null, mode: null };
   } finally {
     isChecking = false;
   }
 }
-
