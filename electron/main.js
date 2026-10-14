@@ -42,9 +42,22 @@ let isQuitting = false;
 let lastConnectedState = false;
 let lastConnectedModel = null;
 
+function getAppIconPath() {
+  const candidates = [
+    path.join(__dirname, '../dist/logo/icon.ico'),
+    path.join(__dirname, '../public/logo/icon.ico'),
+    path.join(__dirname, '../dist/logo/driverhub_app_icon_squircle.png'),
+    path.join(__dirname, '../public/logo/driverhub_app_icon_squircle.png'),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return undefined;
+}
+
 function createTray() {
-  const iconPath = path.join(__dirname, '../public/logo/driverhub_app_icon_squircle.png');
-  if (fs.existsSync(iconPath)) {
+  const iconPath = getAppIconPath();
+  if (iconPath) {
     try {
       tray = new Tray(iconPath);
       const contextMenu = Menu.buildFromTemplate([
@@ -89,7 +102,7 @@ function createWindow() {
     height: 700,
     minWidth: 900,
     minHeight: 600,
-    icon: path.join(__dirname, '../public/logo/driverhub_app_icon_squircle.png'),
+    ...(getAppIconPath() ? { icon: getAppIconPath() } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
