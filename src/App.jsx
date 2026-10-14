@@ -49,13 +49,6 @@ function App() {
   const viewsContainerRef = useRef(null);
   const terminalLogsRef = useRef(null);
 
-  // Auto-scroll terminal log to bottom on new log entry
-  useEffect(() => {
-    if (terminalLogsRef.current) {
-      terminalLogsRef.current.scrollTop = terminalLogsRef.current.scrollHeight;
-    }
-  }, [logs]);
-
   // Universal Tab Scroll Memory Reset:
   // When switching away and returning to any section, start cleanly from the top
   useEffect(() => {
@@ -359,6 +352,13 @@ function App() {
   const addLog = (type, text) => {
     setLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
   };
+
+  // Auto-scroll terminal log to bottom on new log entry
+  useEffect(() => {
+    if (terminalLogsRef.current) {
+      terminalLogsRef.current.scrollTop = terminalLogsRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   useEffect(() => {
     // 1. Listen for progressive scan events from Electron backend
