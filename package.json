@@ -65,7 +65,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "autoprefixer": "^10.4.19",
     "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "electron": "^30.0.0",
     "electron-builder": "^24.13.3",
     "oxlint": "^1.81.0",
