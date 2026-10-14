@@ -12,9 +12,10 @@
   "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently -k \"cross-env BROWSER=none vite\" \"wait-on tcp:5173 && electron .\"",
+    "build:icons": "electron scripts/buildIcoFromAssets.cjs",
     "build:vite": "vite build",
     "build:electron": "electron-builder",
-    "build": "npm run build:vite && npm run build:electron",
+    "build": "npm run build:icons && npm run build:vite && npm run build:electron",
     "lint": "oxlint",
     "preview": "vite preview"
   },
