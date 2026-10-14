@@ -1,0 +1,105 @@
+================================================================================
+DRIVER HUB - END USER LICENSE AGREEMENT & TERMS OF SERVICE
+================================================================================
+Product: Driver Hub (All-in-One Android Driver Suite & Platform-Tools)
+Version: 1.0.0
+Author & Maintainer: Aniket Sharma (https://github.com/aniketlab)
+License: MIT License with Hardware Diagnostic Addendum
+Release Date: 2026
+
+PLEASE READ THIS END USER LICENSE AGREEMENT AND TERMS OF SERVICE CAREFULLY
+BEFORE PROCEEDING WITH INSTALLATION.
+
+BY CLICKING "I AGREE" OR INSTALLING, COPYING, OR USING DRIVER HUB, YOU
+EXPRESSLY AGREE TO BE BOUND BY ALL THE TERMS AND CONDITIONS OF THIS AGREEMENT.
+IF YOU DO NOT AGREE TO THESE TERMS, CLICK "CANCEL" TO EXIT THE INSTALLER.
+
+--------------------------------------------------------------------------------
+1. GRANT OF LICENSE & PERMITTED USE
+--------------------------------------------------------------------------------
+Driver Hub is free and open-source software distributed under the terms of the
+MIT License. Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation files, to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+Driver Hub is authorized for personal, developer, educational, enterprise, and
+professional mobile technician/repair workshop use.
+
+--------------------------------------------------------------------------------
+2. SYSTEM PRIVILEGES & HARDWARE INTEGRATION
+--------------------------------------------------------------------------------
+Driver Hub interfaces directly with low-level Windows hardware subsystems:
+(a) DriverStore Management: Driver packages are staged and injected into the
+    Windows DriverStore using native Microsoft Windows utilities (pnputil.exe).
+(b) Environment Variables: System and User PATH variables may be updated to
+    integrate Google Android Platform-Tools (adb, fastboot) system-wide.
+(c) System Restore Protection: For maximum safety, Driver Hub includes an
+    automated Windows System Restore Point creator via Volume Shadow Copy (VSS)
+    prior to executing driver store modifications.
+(d) Administrator Elevation: Certain tasks (DriverStore injection, PATH registry
+    broadcast) require Windows User Account Control (UAC) administrative consent.
+
+--------------------------------------------------------------------------------
+3. USER RESPONSIBILITY & HARDWARE MODIFICATIONS
+--------------------------------------------------------------------------------
+(a) Flashing & Debugging Awareness: Android firmware flashing, bootloader
+    unlocking (Fastboot), and memory dump operations (MediaTek BROM/Preloader)
+    carry inherent technical risks. You acknowledge that executing improper
+    flashing commands or flashing incompatible partitions may cause hardware
+    malfunction or bricking of your mobile device.
+(b) Backup Recommendation: You are strongly advised to maintain regular
+    backups of your device data prior to executing low-level firmware or
+    bootloader procedures.
+
+--------------------------------------------------------------------------------
+4. THIRD-PARTY PACKAGES & INTELLECTUAL PROPERTY
+--------------------------------------------------------------------------------
+(a) Google Platform-Tools (ADB & Fastboot) binaries bundled with or downloaded by
+    Driver Hub are developed by Google LLC and distributed under the Apache
+    License, Version 2.0.
+(b) Certified OEM driver packages (Google USB Driver, MediaTek Inc., Motorola
+    Mobility LLC) are provided solely for device compatibility and remain the
+    intellectual property of their respective manufacturers.
+(c) Driver Hub is an independent open-source utility and is not affiliated with,
+    sponsored, or endorsed by Google LLC, MediaTek Inc., or any device OEM.
+
+--------------------------------------------------------------------------------
+5. PRIVACY, TELEMETRY & SECURITY GUARANTEE
+--------------------------------------------------------------------------------
+(a) Zero Telemetry Tracking: Driver Hub does NOT collect, harvest, log, or
+    transmit your personal data, phone contacts, storage files, or hardware
+    serial numbers to any remote server.
+(b) 100% Offline Operation: All hardware bus detection, device identification,
+    and driver installations are performed locally and offline on your computer.
+(c) Clean Software: Driver Hub is 100% free of adware, spyware, third-party
+    bundled toolbars, cryptocurrency miners, or background bloatware.
+
+--------------------------------------------------------------------------------
+6. DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY
+--------------------------------------------------------------------------------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHOR (ANIKET SHARMA), CONTRIBUTORS, OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, LOSS OF DATA, DEVICE BRICKING, OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+
+--------------------------------------------------------------------------------
+7. GOVERNING LAW & SEVERABILITY
+--------------------------------------------------------------------------------
+This Agreement shall be governed by and construed in accordance with the laws
+of India. If any provision of this Agreement is held to be invalid or
+unenforceable, the remaining provisions shall remain in full force and effect.
+
+--------------------------------------------------------------------------------
+By clicking "I Agree", you acknowledge that you have read, understood, and
+agree to be bound by the terms and conditions outlined above.
+================================================================================

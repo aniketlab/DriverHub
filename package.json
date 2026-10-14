@@ -43,12 +43,18 @@
       "target": [
         "nsis",
         "portable"
-      ]
+      ],
+      "icon": "public/logo/driverhub_app_icon_squircle.png"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "license": "build/license.txt",
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Driver Hub",
+      "runAfterFinish": true
     }
   },
   "dependencies": {
