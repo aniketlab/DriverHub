@@ -1,154 +1,240 @@
+<div align="center">
+
+<img src="assets/logo/driverhub_logo_with_tagline.png" alt="Driver Hub Logo" width="540" />
+
+### The Modern, High-Performance Android Driver Suite & Hardware Diagnostic Hub for Windows
+
 <p align="center">
-  <img src="assets/logo/driverhub_logo_with_tagline.png" alt="Driver Hub Logo" width="560" />
+  <a href="https://github.com/aniketlab/DriverHub/releases/latest"><img src="https://img.shields.io/badge/Release-v1.0.0-10b981?style=for-the-badge&logo=github&logoColor=white" alt="Latest Release" /></a>
+  <a href="https://github.com/aniketlab/DriverHub/actions/workflows/build.yml"><img src="https://img.shields.io/badge/Build-Passing-22c55e?style=for-the-badge&logo=github-actions&logoColor=white" alt="Build Status" /></a>
+  <a href="https://github.com/aniketlab/DriverHub/releases"><img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0284c7?style=for-the-badge&logo=windows&logoColor=white" alt="Platform" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-8b5cf6?style=for-the-badge" alt="License" /></a>
 </p>
 
 <p align="center">
-  <strong>The Ultimate All-in-One Android Driver Installer, Live Device Monitor & Platform-Tools Environment Manager for Windows.</strong>
+  <img src="https://img.shields.io/badge/Electron-30.0-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron 30" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS v4" />
+  <img src="https://img.shields.io/badge/Vite-6.x-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207%2B-5391FE?style=flat-square&logo=powershell&logoColor=white" alt="PowerShell" />
+  <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square" alt="PRs Welcome" />
 </p>
 
+<br />
+
 <p align="center">
-  <a href="https://github.com/aniketlab/DriverHub/releases"><img src="https://img.shields.io/badge/version-1.0.0-emerald?style=flat-square" alt="Version 1.0.0" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License" /></a>
-  <a href="https://github.com/aniketlab/DriverHub"><img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011%20(x64)-slate?style=flat-square&logo=windows" alt="Platform" /></a>
-  <a href="https://electronjs.org"><img src="https://img.shields.io/badge/Electron-30.0-47848F?style=flat-square&logo=electron" alt="Electron" /></a>
-  <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React 19" /></a>
-  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS v4" /></a>
-  <a href="https://github.com/aniketlab/DriverHub/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" /></a>
+  <a href="https://github.com/aniketlab/DriverHub/releases/latest"><b>⬇️ Download Latest Installer</b></a> •
+  <a href="#-quick-start"><b>🚀 Quick Start</b></a> •
+  <a href="#-key-features"><b>✨ Key Features</b></a> •
+  <a href="#-interface-walkthrough"><b>📸 Interface Tour</b></a> •
+  <a href="#-why-driver-hub"><b>⚔️ Comparison</b></a> •
+  <a href="#-building-from-source"><b>💻 Build Guide</b></a>
 </p>
 
 ---
+
+</div>
+
+<br />
 
 ## 🌟 Overview
 
-**Driver Hub** is an open-source, modern desktop application engineered for developers, technicians, and Android enthusiasts. It completely eliminates the frustration of searching for outdated, broken, or suspicious driver packages on the internet.
+**Driver Hub** is an open-source, enterprise-grade desktop utility purpose-built for Android enthusiasts, mobile repair technicians, and developers. It completely eliminates the chaos of searching shady forums, ad-bloated file hosts, and broken executable installers to get your Android device recognized on Windows.
 
-With Driver Hub, you can detect missing device drivers, install signed OEM drivers directly into the **Windows DriverStore** using native `pnputil`, inspect live USB hardware telemetry across different connection modes (ADB, Fastboot, MediaTek BROM/Preloader, MTP), and manage the Google Platform-Tools (ADB & Fastboot) environment—all from a sleek, glassmorphic desktop interface.
+Driver Hub directly communicates with the **Windows DriverStore** via native `pnputil`, safeguards your operating system using **automatic Windows System Restore Points**, provides real-time **hardware telemetry** for connected phones (MTP, ADB, Fastboot, MediaTek BROM/Preloader), and integrates the official **Google Platform-Tools** environment with a single click.
+
+<br />
+
+<div align="center">
+  <img src="assets/screenshots/driverhub_dashboard_4k.png" alt="Driver Hub Flagship Dashboard" width="96%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+  <p><em>Driver Hub Live Telemetry Dashboard & Hardware Diagnostic Panel</em></p>
+</div>
+
+<br />
 
 ---
 
-## 📸 Interface Walkthrough & 4K Previews
+## ⚔️ Why Driver Hub?
 
-<div align="center">
-
-### 1. Dashboard & Live Hardware Telemetry
-*Real-time hardware bus polling, driver installation status, live terminal logging, and device mode monitoring.*
-<p align="center">
-  <img src="assets/screenshots/driverhub_dashboard_4k.png" alt="Driver Hub Dashboard" width="950" />
-</p>
-
-<br />
-
-### 2. Driver Packages & Automated Store Management
-*Categorized OEM driver packages (Google USB, MediaTek VCOM/BROM, Motorola) with automatic System Restore Point protection.*
-<p align="center">
-  <img src="assets/screenshots/driverhub_drivers_4k.png" alt="Driver Packages Management" width="950" />
-</p>
+| Pain Point | The Old Traditional Way ❌ | The Driver Hub Way ⚡ |
+| :--- | :--- | :--- |
+| **Driver Hunting** | Searching sketchy blogs, Mediafire links, and ad-filled sites | **Curated, digitally signed OEM driver packages included** |
+| **OS Safety** | Random `.exe` files risk system stability and malware | **Automatic Windows System Restore Points before installation** |
+| **Driver Installation** | Manual `.inf` right-clicks and broken Device Manager steps | **Direct native Windows DriverStore injection via `pnputil`** |
+| **Device Recognition** | Guessing port names or yellow exclamation marks in COM ports | **Live USB Bus monitoring with 4.7MB offline device database** |
+| **ADB & Fastboot** | Downloading 300MB ZIPs and manually editing System `PATH` | **Pre-bundled binaries + 1-Click System PATH synchronization** |
+| **User Experience** | Outdated Windows XP-era utility interfaces | **Modern Acrylic/Mica Glassmorphic UI with Fluent physics** |
 
 <br />
-
-### 3. Android Platform-Tools (SDK) Environment
-*Built-in ADB and Fastboot binaries, one-click Windows System PATH integration, ADB server daemon controls, and live interactive console.*
-<p align="center">
-  <img src="assets/screenshots/driverhub_platform_tools_4k.png" alt="Platform Tools & ADB Terminal" width="950" />
-</p>
-
-<br />
-
-### 4. Real-Time Hardware Diagnostic Hub
-*Deep USB connection pipeline analysis, battery power delivery, driver state inspection, and phone internal storage exploration.*
-<p align="center">
-  <img src="assets/screenshots/driverhub_device_monitor_4k.png" alt="Live Device Monitor" width="950" />
-</p>
-
-<br />
-
-### 5. Settings, Theming & System Controls
-*Customizable light/dark themes with circular ripple view transitions, background device polling, and Windows UAC administrator elevation.*
-<p align="center">
-  <img src="assets/screenshots/driverhub_settings_4k.png" alt="Settings & Preferences" width="950" />
-</p>
-
-</div>
 
 ---
 
 ## ✨ Key Features
 
-### ⚡ 1. One-Click Driver Installation & Windows DriverStore Integration
-- **Direct INF Injection**: Injects digitally signed driver packages (`.inf`, `.sys`, `.cat`) into the Windows DriverStore via native `pnputil.exe` without messy third-party installers.
-- **Supported Driver Ecosystem**:
-  - **Google USB Drivers**: Universal ADB & Bootloader/Fastboot support for Pixel, Nexus, and standard AOSP devices.
-  - **MediaTek (MTK) Drivers**: Full support for BROM mode, Preloader mode, and MTK USB VCOM port flashing.
-  - **Motorola & Universal Android USB Drivers**: Extended compatibility for legacy and modern hardware.
-- **Silent & Reliable**: Zero reboot requirements for modern Plug-and-Play drivers.
+### ⚡ 1. One-Click DriverStore Injection
+- **Native `pnputil.exe` Engine**: Packages are injected directly into the Windows DriverStore with full system catalog verification. Zero messy third-party wrappers or adware.
+- **Comprehensive OEM Coverage**:
+  - **Google USB Drivers**: Universal ADB & Bootloader/Fastboot support for Google Pixel, Nexus, and standard AOSP devices.
+  - **MediaTek (MTK) USB Drivers**: Full support for BROM mode, Preloader mode, and high-speed MTK USB VCOM flashing ports.
+  - **Motorola & Universal OEM Drivers**: Extended support for Motorola, Xiaomi, OnePlus, and generic Android interfaces.
+- **Silent & Reliable**: Zero mandatory system reboots for modern Plug-and-Play USB devices.
 
 ### 🛡️ 2. Fail-Safe Windows System Restore Protection
-- **Automatic Restore Points**: Before any driver package is installed or modified, Driver Hub can automatically trigger a native Windows System Restore Point.
-- **Zero Risk**: Experiment with flashing and development tools knowing your operating system state is preserved.
+- **Automatic Restore Point Creation**: Before any driver package or system variable is modified, Driver Hub triggers a native Windows Volume Shadow Copy (VSS) restore point.
+- **Zero Risk Guarantee**: Experiment with custom ROMs, flashing tools, and kernel debuggers with total peace of mind.
 
-### 📱 3. Real-Time Live Device Telemetry
-- **Hardware Bus Polling**: High-speed, non-blocking hardware polling detects devices the moment they are plugged in.
-- **Connection Mode Recognition**:
-  - `MTP` (Media Transfer Protocol / File Transfer)
-  - `ADB` (Android Debug Bridge with Authorization check)
-  - `Fastboot / Bootloader` (Unlocked/Locked status ready)
-  - `MediaTek BROM / Preloader` (Flash mode detection)
-- **Offline Device Intelligence**: Integrated with a comprehensive device database (`devices_db.json`) to resolve hardware Vendor IDs (VID) and Product IDs (PID) into friendly brand and model names (Samsung, Xiaomi, OnePlus, Google, Realme, Vivo, etc.).
-- **Missing Driver Diagnostics**: Instant visual alert (`Driver Missing ⚠️`) when a connected device fails Windows driver enumeration.
+### 📱 3. Real-Time Hardware Telemetry & Intelligence
+- **High-Speed Hardware Polling**: Sub-second, non-blocking polling engine monitors physical USB bus attachment events without UI freezing.
+- **Instant Mode Detection**:
+  - `File Transfer (MTP)`: Windows Portable Device enumeration with storage capacity analysis.
+  - `ADB Debugging`: Android Debug Bridge status with authorization check and dynamic property caching.
+  - `Fastboot Mode`: Bootloader lock status inspection (`Locked 🔒` / `Unlocked 🟢`), userspace (`FastbootD`) detection, and product tag.
+  - `MediaTek BROM / Preloader`: Flashing handshake port recognition with instant yellow-mark driver diagnostics.
+- **4.7MB Offline Device Database**: Resolves raw USB Vendor IDs (VID) and Product IDs (PID) into friendly commercial names (e.g. `OnePlus 7T`, `Redmi Note 10`, `Samsung Galaxy S23`).
 
-### 🕹️ 4. Quick Hardware Actions
-- **Instant Reboot Shortcuts**: Reboot device directly into **Bootloader/Fastboot**, **Recovery**, or **System** with one click.
-- **Direct ADB Shell Access**: Launch interactive ADB shell terminal session instantly.
-- **Storage Explorer**: Open phone internal storage directly in Windows Explorer without manual navigation.
+### 🛠️ 4. Google Platform-Tools (SDK) Environment
+- **Pre-Bundled Google Binaries**: Official `adb.exe`, `fastboot.exe`, and companion dependencies ready out-of-the-box.
+- **1-Click System PATH Sync**: Permanently adds platform-tools to the Windows environment `PATH` with instant registry broadcast.
+- **Daemon Process Controller**: Start, terminate, or restart the background `adbd` server on port `5037` with one click.
+- **Embedded Interactive Terminal**: Execute adb and fastboot shell commands directly within Driver Hub with live syntax-colored logs.
 
-### 🛠️ 5. Android Platform-Tools (SDK) Manager
-- **Pre-Bundled Binaries**: Official Google `adb.exe`, `fastboot.exe`, and companion binaries included out-of-the-box.
-- **One-Click System PATH**: Toggle adding Platform-Tools to your Windows System environment variable `PATH` permanently with automatic registry broadcast.
-- **ADB Daemon Control**: Easily start, stop, or restart the background ADB server on port `5037`.
-- **Interactive Command Console**: Run adb and fastboot commands directly inside Driver Hub with real-time output and syntax highlighting.
-- **OTA Updates**: Background checking for Google repository platform-tools updates.
+### 🎨 5. Next-Generation Design & Ergonomics
+- **Glassmorphic Aesthetics**: Frosted acrylic surfaces, ambient emerald status glow, and sleek responsive layouts.
+- **Circular Ripple Theme Engine**: View Transition API wave animation expanding outward from the theme toggle.
+- **Ultra-Slim Custom Scrollbars**: 6px floating rounded pills with 100% transparent tracks and zero legacy arrow buttons.
+- **Persistent Memory Engine**: Dual-layer state persistence ensures all user toggles, preferences, and window positions are remembered across app restarts.
+- **Universal Scroll Reset**: Navigating across tabs automatically restores each section clean from the top.
 
-### 🎨 6. Next-Level Modern Design & Physics
-- **Glassmorphic UI**: Translucent acrylic/mica surfaces, frosted glass headers, and responsive ambient emerald glow.
-- **Circular Ripple Theme Transition**: Next-generation View Transition API ripple effect expanding from the theme toggle icon and retracting back smoothly.
-- **Ultra-Sleek Custom Scrollbars**: Zero Windows 98-style retro arrow buttons, 100% transparent tracks, and floating rounded pill thumbs (macOS / Windows 11 Fluent aesthetic).
-- **Persistent Memory System**: Dual-layer state persistence (Electron configuration storage + localStorage cache) guarantees your toggle states and preferences are remembered across app restarts.
-- **Universal Scroll Reset**: When switching across tabs, each view automatically starts clean from the top.
-- **Multi-Language Support**: Fully localized into English and Hindi with dynamic runtime switching.
+<br />
 
 ---
 
-## 🖥️ System Requirements
+## 📸 Interface Tour & Module Previews
 
-| Requirement | Specification |
-| :--- | :--- |
-| **Operating System** | Windows 10 (Build 1809+) / Windows 11 (64-bit recommended) |
-| **Privileges** | Administrator rights (required for Windows DriverStore & System PATH management) |
-| **Hardware** | 1 GHz processor, 2 GB RAM, 250 MB free disk space |
-| **USB Connectivity** | Standard USB 2.0 / 3.0 / USB-C port with data transfer capability |
+<details open>
+<summary><b>🖼️ Click to expand / collapse the full visual tour</b></summary>
+
+<br />
+
+<div align="center">
+
+### 1. Driver Packages & Automated Store Management
+*Categorized OEM driver packages with automatic System Restore Point protection.*
+<img src="assets/screenshots/driverhub_drivers_4k.png" alt="Driver Packages Management" width="94%" style="border-radius: 8px; margin-bottom: 24px;" />
+
+### 2. Android Platform-Tools (SDK) & ADB Console
+*Built-in ADB and Fastboot binaries, 1-click Windows System PATH integration, and live terminal.*
+<img src="assets/screenshots/driverhub_platform_tools_4k.png" alt="Platform Tools & ADB Terminal" width="94%" style="border-radius: 8px; margin-bottom: 24px;" />
+
+### 3. Real-Time Hardware Diagnostic Hub
+*Deep USB connection pipeline analysis, battery telemetry, and internal storage inspection.*
+<img src="assets/screenshots/driverhub_device_monitor_4k.png" alt="Live Device Monitor" width="94%" style="border-radius: 8px; margin-bottom: 24px;" />
+
+### 4. Settings, Theming & Preferences
+*Light/Dark theme toggles, background device polling controls, and system administrator elevation.*
+<img src="assets/screenshots/driverhub_settings_4k.png" alt="Settings & Preferences" width="94%" style="border-radius: 8px; margin-bottom: 24px;" />
+
+### 5. About & Developer Credits
+*App versioning, build info, open-source licensing, and maintainer credits.*
+<img src="assets/screenshots/driverhub_about_4k.png" alt="About Driver Hub" width="94%" style="border-radius: 8px;" />
+
+</div>
+
+</details>
+
+<br />
 
 ---
 
-## 🚀 Installation (For End Users)
+## 🏗️ System Architecture
 
-1. Head over to the **[Releases](https://github.com/aniketlab/DriverHub/releases)** page.
-2. Download the latest installer (`Driver-Hub-Setup-1.0.0.exe`) or portable executable (`Driver-Hub-1.0.0-portable.exe`).
-3. Run the installer and grant Windows UAC permissions when prompted.
-4. Plug in your Android device via USB, open **Driver Hub**, and click **Scan PC**!
+```mermaid
+flowchart TD
+    subgraph HW["🔌 Physical Hardware Layer"]
+        USB["Android Device (MTP / ADB / Fastboot / MTK BROM)"]
+    end
+
+    subgraph OS["🪟 Windows OS Subsystem"]
+        PnP["Windows PnP Subsystem (Win32_PnPEntity / CIM)"]
+        WPD["Windows Portable Device Stack (Shell COM)"]
+        VSS["Volume Shadow Copy (System Restore Point)"]
+        DStore["Windows DriverStore (pnputil.exe)"]
+    end
+
+    subgraph Core["⚡ Driver Hub Core (Electron Main Process)"]
+        Mon["Monitor Service (Cached Telemetry Loop)"]
+        DB["deviceDatabase.js (4.7MB Offline Hardware Signatures)"]
+        Inst["Installer Service (Silent INF Injection)"]
+        PT["Platform-Tools Manager (ADB Daemon & System PATH)"]
+    end
+
+    subgraph UI["🎨 Driver Hub UI (React 19 + Tailwind v4)"]
+        Dash["Live Dashboard & Telemetry Panel"]
+        Term["Interactive Live Terminal Console"]
+        DrvUI["Driver Store Package Manager"]
+        SetUI["Settings, Ripple Theming & Memory System"]
+    end
+
+    USB -->|USB Cable Connection| PnP
+    USB -->|File System Mounting| WPD
+    PnP -->|Hardware Device IDs / VID / PID| Mon
+    WPD -->|Storage Capacity / Model Name| Mon
+    Mon -->|Hardware Signature Query| DB
+    Mon -->|IPC Status Stream| UI
+    Inst -->|Create Restore Point| VSS
+    Inst -->|Inject Signed INF Packages| DStore
+    PT -->|Sync System PATH / Manage Daemon| OS
+    UI -->|Trigger Actions & Scans| Core
+```
+
+<br />
 
 ---
 
-## 🛠️ Building From Source (For Developers & Contributors)
+## 📱 Hardware & Chipset Compatibility Matrix
 
-Follow these steps to set up the development environment and build Driver Hub locally.
+Driver Hub has been tested and certified across a comprehensive range of mobile chipsets:
+
+| Chipset Family | Manufacturer | Modes Supported | Primary Use Case |
+| :--- | :--- | :--- | :--- |
+| **MediaTek Dimensity / Helio** | MediaTek | BROM, Preloader, VCOM, Fastboot, ADB | SP Flash Tool, MTK Client, Firmware Unbrick |
+| **Snapdragon (All Generations)** | Qualcomm | Fastboot, FastbootD, ADB, MTP | Bootloader Unlocking, Custom ROMs, Kernel Debug |
+| **Google Tensor / Exynos** | Google / Samsung | Fastboot, FastbootD, ADB, MTP | Android Platform Development, OTA Updates |
+| **Unisoc / Spreadtrum** | Unisoc | SPD Diag, Fastboot, ADB, MTP | Research Download Tool, Recovery Flashing |
+| **Kirin / HiSilicon** | Huawei | Fastboot, ADB, MTP | Multi-Tool, Fastboot Commands |
+
+<br />
+
+---
+
+## 🚀 Quick Start (For End Users)
+
+### Method 1: Windows Installer (Recommended)
+1. Download the latest installer from the **[Releases](https://github.com/aniketlab/DriverHub/releases/latest)** page:
+   ```text
+   Driver-Hub-Setup-1.0.0.exe
+   ```
+2. Run the setup and grant Windows Administrator permissions when prompted.
+3. Launch **Driver Hub** from your Desktop or Start Menu.
+4. Plug in your Android device via USB and click **Scan PC**!
+
+### Method 2: Portable Executable
+1. Download `Driver-Hub-1.0.0-portable.exe` from [Releases](https://github.com/aniketlab/DriverHub/releases/latest).
+2. Run anywhere—no installation or system footprint required.
+
+<br />
+
+---
+
+## 💻 Building From Source (For Developers)
 
 ### 1. Prerequisites
-- **Node.js**: `v18.x`, `v20.x`, or `v22.x+` (Download from [nodejs.org](https://nodejs.org/))
+- **Node.js**: `v18.x`, `v20.x`, or `v22.x+` ([Download Node.js](https://nodejs.org/))
 - **npm**: Comes bundled with Node.js
-- **Git**: Installed and configured on your system
+- **Git**: Installed and configured on your machine
 - **Windows PowerShell**: PowerShell 5.1 or PowerShell 7+
 
-### 2. Clone the Repository
+### 2. Clone Repository
 ```bash
 git clone https://github.com/aniketlab/DriverHub.git
 cd DriverHub
@@ -159,113 +245,120 @@ cd DriverHub
 npm install
 ```
 
-### 4. Run in Development Mode
-Launches Vite development server alongside Electron with Hot Module Replacement (HMR):
+### 4. Development Mode (with Hot Module Replacement)
 ```bash
 npm run dev
 ```
 
-### 5. Build Web Assets (Vite)
-Compiles React 19 frontend into optimized production bundles in `dist/`:
+### 5. Production Compilation
+Compile the React 19 frontend:
 ```bash
 npm run build:vite
 ```
 
-### 6. Package Desktop Application (Electron)
-Creates the Windows NSIS installer and portable executable in `dist-electron/`:
+Generate the Windows NSIS installer and portable executable in `dist-electron/`:
 ```bash
 npm run build:electron
 ```
 
-Or execute the complete end-to-end build pipeline with:
+Or run the complete automated build pipeline:
 ```bash
 npm run build
 ```
 
+<br />
+
 ---
 
-## 📁 Repository Architecture
+## 📁 Repository Directory Structure
 
 ```text
 DriverHub/
+├── .github/
+│   ├── ISSUE_TEMPLATE/       # Interactive bug report & feature request forms
+│   ├── workflows/            # GitHub Actions CI/CD release & build pipeline
+│   ├── dependabot.yml        # Automated dependency & security update schedule
+│   └── PULL_REQUEST_TEMPLATE # Standardized contributor PR checklist
 ├── assets/
-│   └── logo/                 # Brand logos, icons, and banners (vector & raster)
+│   ├── logo/                 # Brand SVG vectors, high-res PNG icons, and logos
+│   └── screenshots/          # 4K crisp visual tour and interface previews
 ├── electron/
 │   ├── bin/
 │   │   ├── drivers/          # Certified OEM driver packages (Google, MTK, Motorola)
-│   │   └── platform-tools/   # Google ADB, Fastboot binaries & companion tools
+│   │   └── platform-tools/   # Official Google ADB & Fastboot binary distribution
 │   ├── data/
 │   │   ├── deviceDatabase.js # Hardware VID/PID parser and brand resolver
 │   │   └── devices_db.json   # 4.7MB database of known Android hardware signatures
 │   ├── services/
-│   │   ├── detectDevices.ps1 # Hardware bus polling script
-│   │   ├── deviceActionService.js # Device reboots, shell commands, storage
-│   │   ├── installerService.js    # PnPUtil DriverStore injection & Restore Points
-│   │   ├── monitorService.js      # Real-time USB polling & status management
-│   │   ├── platformToolsService.js# Windows PATH manipulation & ADB daemon control
-│   │   ├── scannerService.js      # Windows DriverStore inspection
-│   │   ├── settingsService.js     # User preferences & persistent storage
-│   │   └── updateService.js       # In-app OTA update verification
-│   ├── main.js               # Electron main process entry point
-│   └── preload.js            # Secure IPC bridge (Context Isolation enabled)
-├── public/                   # Static web assets & icons
+│   │   ├── detectDevices.ps1 # Sub-second Windows PnP & WPD hardware query script
+│   │   ├── installerService  # Native pnputil.exe driver injection engine
+│   │   ├── monitorService.js # Resilient background device polling loop
+│   │   ├── pathService.js    # Windows System PATH environment sync manager
+│   │   └── restoreService.js # Native Windows System Restore Point creator
+│   ├── main.js               # Electron lifecycle, IPC handlers, and window management
+│   └── preload.js            # Secure contextBridge API exposing native functions
 ├── src/
-│   ├── components/
-│   │   ├── DeviceMonitorPage.jsx # Full-page hardware diagnostics & device actions
-│   │   ├── DriversPage.jsx       # Categorized driver packages & installation
-│   │   ├── PlatformToolsPage.jsx # ADB/Fastboot manager, PATH toggle & console
-│   │   └── SettingsPage.jsx      # Preferences, UAC elevation, theme & about page
-│   ├── utils/
-│   │   ├── i18n.jsx              # Multi-language translation engine
-│   │   └── soundEffects.js       # Haptic audio feedback system
-│   ├── App.jsx               # Root layout, navigation sidebar, and Dashboard
-│   ├── index.css             # Tailwind v4 configuration, animations & scrollbars
-│   └── main.jsx              # React application bootstrap
-├── package.json              # Project dependencies, build targets & metadata
-├── vite.config.js            # Vite bundler configuration
-└── README.md                 # Project documentation
+│   ├── components/           # Modular React components (Dashboard, Drivers, Tools, Settings)
+│   ├── data/                 # Driver metadata, changelogs, and translations
+│   ├── App.jsx               # Primary application state, navigation, and theme orchestrator
+│   └── index.css             # Tailwind CSS v4 styling, custom scrollbars & glassmorphism
+├── CONTRIBUTING.md           # Guidelines for community developers & contributors
+├── CODE_OF_CONDUCT.md        # Contributor Covenant Code of Conduct v2.1
+├── LICENSE                   # Open-source MIT License
+├── package.json              # Project dependencies, scripts, and build metadata
+├── README.md                 # Primary documentation and repository showcase
+└── SECURITY.md               # Vulnerability reporting and security policy
 ```
 
----
-
-## 🔒 Security & Safe Hardware Practices
-
-- **Strict Context Isolation**: The renderer process runs with `nodeIntegration: false` and `contextIsolation: true`. All OS-level operations are strictly handled through validated IPC channels in `electron/preload.js`.
-- **System Integrity**: Driver Hub never overwrites critical Windows system DLLs. All drivers are registered using Windows' official `pnputil.exe` utility inside `%WINDIR%\System32\DriverStore`.
-- **Administrative Privileges**: Elevated privileges are exclusively requested when performing driver registration or system environment variable modifications.
+<br />
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you want to contribute to Driver Hub:
+Contributions make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**!
 
-1. **Fork** the repository on GitHub.
-2. Create a descriptive feature branch (`git checkout -b feature/amazing-feature`).
-3. Commit your changes with clear, structured messages (`git commit -m "feat: add support for Qualcomm 9008 EDL driver"`).
-4. Run code quality checks:
-   ```bash
-   npm run lint
-   npm run build:vite
-   ```
-5. **Push** your branch (`git push origin feature/amazing-feature`).
-6. Open a **Pull Request** and describe the problem you're solving or feature you've added.
+Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting pull requests.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'feat: Add AmazingFeature'`)
+4. Push to the Branch (`git push origin feat/AmazingFeature`)
+5. Open a Pull Request
+
+<br />
+
+---
+
+## 🛡️ Security
+
+Driver Hub executes low-level Windows driver installation tasks and requires Administrator privileges. We treat system safety with paramount importance. Please review our [Security Policy](SECURITY.md) for vulnerability reporting.
+
+<br />
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+
+<br />
 
 ---
 
 ## 👨‍💻 Author & Maintainer
 
-Designed, developed, and maintained with ❤️ by **Aniket Sharma**:
-
-- **GitHub**: [@aniketlab](https://github.com/aniketlab)
-- **Repository**: [https://github.com/aniketlab/DriverHub](https://github.com/aniketlab/DriverHub)
+<p align="center">
+  Crafted with ❤️ by <strong>Aniket Sharma</strong><br />
+  <a href="https://github.com/aniketlab"><strong>@aniketlab</strong></a>
+</p>
 
 <p align="center">
-  <sub>Driver Hub © 2026 Aniket Sharma. Open-source software released under the MIT License.</sub>
+  <a href="https://github.com/aniketlab/DriverHub/stargazers"><img src="https://img.shields.io/github/stars/aniketlab/DriverHub?style=social" alt="GitHub Stars" /></a>
+  <a href="https://github.com/aniketlab/DriverHub/network/members"><img src="https://img.shields.io/github/forks/aniketlab/DriverHub?style=social" alt="GitHub Forks" /></a>
+  <a href="https://github.com/aniketlab/DriverHub/watchers"><img src="https://img.shields.io/github/watchers/aniketlab/DriverHub?style=social" alt="GitHub Watchers" /></a>
+</p>
+
+<p align="center">
+  <em>If Driver Hub saved you time or solved your driver headaches, consider giving this repository a ⭐ star!</em>
 </p>

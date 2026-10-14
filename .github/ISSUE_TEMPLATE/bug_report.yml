@@ -1,0 +1,74 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve Driver Hub
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please provide as much detail as possible so we can diagnose and resolve the problem quickly.
+  - type: input
+    id: version
+    attributes:
+      label: Driver Hub Version
+      description: What version of Driver Hub are you using? (e.g., v1.0.0)
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11 (64-bit)
+        - Windows 10 (64-bit, 22H2 / 21H2)
+        - Windows 10 (32-bit)
+        - Windows Server
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: phone_model
+    attributes:
+      label: Connected Phone / Device Model
+      description: Exact device model and chipset (e.g., OnePlus 7T, Redmi Note 10 Pro, Poco X3 Pro, MTK Helio G95)
+      placeholder: e.g. OnePlus 7T (Snapdragon 855+)
+    validations:
+      required: false
+  - type: dropdown
+    id: connection_mode
+    attributes:
+      label: Connection Mode
+      options:
+        - File Transfer (MTP)
+        - ADB Debugging
+        - Fastboot / Bootloader
+        - MediaTek BROM / Preloader
+        - Unknown / Not Detected
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Open Driver Hub
+        2. Plug in device via USB
+        3. Click 'Scan PC'
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Live Terminal Console Logs
+      description: Paste any logs from the in-app Terminal Console or DevTools.
+      render: shell
