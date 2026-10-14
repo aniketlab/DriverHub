@@ -20,7 +20,10 @@ import {
   Sparkles,
   Download,
   ArrowDownToLine,
-  Rocket
+  Rocket,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -193,7 +196,7 @@ export function SettingsPage({
   }, [theme]);
 
   // Handle setting toggle or value change
-  const updateSetting = async (key, val) => {
+  const updateSetting = async (key, val, event = null) => {
     const updated = { ...settings, [key]: val };
     setSettings(updated);
     try {
@@ -201,7 +204,7 @@ export function SettingsPage({
     } catch {}
 
     if (key === 'theme' && onThemeChange) {
-      onThemeChange(val);
+      onThemeChange(val, event);
     }
 
     try {
@@ -426,24 +429,30 @@ export function SettingsPage({
                       </span>
                     </div>
 
-                    <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs">
-                      {(['light', 'dark', 'system']).map((m) => {
-                        const isCurrent = settings.theme === m;
+                    <div className="inline-flex items-center bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs gap-0.5">
+                      {[
+                        { id: 'light', label: t('settings.themeLight'), icon: Sun },
+                        { id: 'dark', label: t('settings.themeDark'), icon: Moon },
+                        { id: 'system', label: t('settings.themeSystem'), icon: Monitor }
+                      ].map((m) => {
+                        const isCurrent = settings.theme === m.id;
+                        const Icon = m.icon;
                         return (
                           <button
-                            key={m}
-                            onClick={() => {
+                            key={m.id}
+                            onClick={(e) => {
                               haptic.tick();
-                              updateSetting('theme', m);
+                              updateSetting('theme', m.id, e);
                             }}
                             className={cn(
-                              "px-2.5 py-1 text-xs font-semibold rounded-lg capitalize transition-all duration-200 cursor-pointer active:scale-95",
+                              "px-2.5 py-1 text-xs font-semibold rounded-lg capitalize transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1.5",
                               isCurrent
                                 ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs"
                                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                             )}
                           >
-                            {m === 'light' ? t('settings.themeLight') : m === 'dark' ? t('settings.themeDark') : t('settings.themeSystem')}
+                            <Icon className={cn("w-3.5 h-3.5", isCurrent ? "text-emerald-500" : "opacity-70")} />
+                            <span>{m.label}</span>
                           </button>
                         );
                       })}

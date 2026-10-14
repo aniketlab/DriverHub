@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { 
   Download, 
   MonitorSmartphone, 
@@ -44,29 +45,85 @@ function App() {
     }
   });
 
-  const applyTheme = (targetTheme) => {
-    let isDark = false;
-    if (targetTheme === 'dark') {
-      isDark = true;
-    } else if (targetTheme === 'system') {
-      isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } else {
-      isDark = false;
+  const applyTheme = (targetTheme, event = null, isInitial = false) => {
+    const computeIsDark = (th) => {
+      if (th === 'dark') return true;
+      if (th === 'system') {
+        return Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      }
+      return false;
+    };
+
+    const commitThemeChange = () => {
+      const isDark = computeIsDark(targetTheme);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      setTheme(targetTheme);
+      try {
+        localStorage.setItem('driverhub_theme', targetTheme);
+      } catch {}
+
+      if (window.electronAPI?.setWindowTheme) {
+        window.electronAPI.setWindowTheme(isDark ? 'dark' : 'light');
+      }
+    };
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+    // Fast-path: initial boot, or unsupported view transition, or user prefers reduced motion
+    if (isInitial || !document.startViewTransition || prefersReducedMotion) {
+      commitThemeChange();
+      return;
     }
 
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    // Determine circular expansion epicenter (x, y) from event or center of screen
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+
+    if (event) {
+      if (typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX !== 0 || event.clientY !== 0)) {
+        x = event.clientX;
+        y = event.clientY;
+      } else if (event.target && typeof event.target.getBoundingClientRect === 'function') {
+        const rect = event.target.getBoundingClientRect();
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      }
     }
 
-    setTheme(targetTheme);
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
     try {
-      localStorage.setItem('driverhub_theme', targetTheme);
-    } catch {}
+      const transition = document.startViewTransition(() => {
+        flushSync(() => {
+          commitThemeChange();
+        });
+      });
 
-    if (window.electronAPI?.setWindowTheme) {
-      window.electronAPI.setWindowTheme(isDark ? 'dark' : 'light');
+      transition.ready.then(() => {
+        document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${x}px ${y}px)`,
+              `circle(${endRadius}px at ${x}px ${y}px)`
+            ]
+          },
+          {
+            duration: 460,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            pseudoElement: '::view-transition-new(root)'
+          }
+        );
+      }).catch(() => {});
+    } catch {
+      commitThemeChange();
     }
   };
 
@@ -80,14 +137,14 @@ function App() {
               localStorage.setItem('driverhub_settings_cache', JSON.stringify(s));
             } catch {}
             if (s.theme) {
-              applyTheme(s.theme);
+              applyTheme(s.theme, null, true);
               return;
             }
           }
         }
       } catch {}
       const saved = localStorage.getItem('driverhub_theme') || 'light';
-      applyTheme(saved);
+      applyTheme(saved, null, true);
     };
     initTheme();
   }, []);
@@ -95,7 +152,7 @@ function App() {
   useEffect(() => {
     if (theme !== 'system') return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = () => applyTheme('system');
+    const handler = () => applyTheme('system', null, false);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, [theme]);
@@ -675,7 +732,7 @@ function App() {
         <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Settings' ? "animate-motion-tab-enter" : "hidden")}>
           <SettingsPage 
             theme={theme}
-            onThemeChange={applyTheme}
+            onThemeChange={(newTheme, event) => applyTheme(newTheme, event, false)}
             isAdmin={isAdmin}
             onElevateAdmin={handleElevateAdmin}
             addLog={addLog}
