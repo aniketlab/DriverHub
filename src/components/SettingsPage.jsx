@@ -47,6 +47,41 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
+const SETTINGS_CACHE_KEY = 'driverhub_settings_cache';
+
+const getDefaultSettings = (currentTheme) => ({
+  theme: currentTheme || 'light',
+  language: 'English',
+  startWithWindows: false,
+  minimizeToTray: true,
+  autoDetectDevices: true,
+  connectionNotifications: true,
+  createRestorePoint: true,
+  checkForDriverUpdates: true,
+  downloadFolder: 'C:\\Android\\drivers',
+  isAdmin: false,
+  version: '1.0.0',
+  platform: 'Windows 10 / 11, 64-bit'
+});
+
+const getCachedSettings = (currentTheme) => {
+  const defaults = getDefaultSettings(currentTheme);
+  try {
+    const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      return {
+        ...defaults,
+        ...parsed,
+        theme: currentTheme || parsed.theme || defaults.theme
+      };
+    }
+  } catch (err) {
+    console.warn('Failed to parse cached settings:', err);
+  }
+  return defaults;
+};
+
 export function SettingsPage({
   theme,
   onThemeChange,
@@ -91,21 +126,8 @@ export function SettingsPage({
     };
   }, []);
 
-  // Settings State
-  const [settings, setSettings] = useState({
-    theme: theme || 'light',
-    language: 'English',
-    startWithWindows: false,
-    minimizeToTray: true,
-    autoDetectDevices: true,
-    connectionNotifications: true,
-    createRestorePoint: true,
-    checkForDriverUpdates: true,
-    downloadFolder: 'C:\\Android\\drivers',
-    isAdmin: false,
-    version: '1.0.0',
-    platform: 'Windows 10 / 11, 64-bit'
-  });
+  // Settings State - initialized synchronously from persistent cache to prevent toggle flash/glitch
+  const [settings, setSettings] = useState(() => getCachedSettings(theme));
 
   const handleElevate = async () => {
     if (onElevateAdmin) {
@@ -134,11 +156,17 @@ export function SettingsPage({
         if (window.electronAPI?.getSettings) {
           const res = await window.electronAPI.getSettings();
           if (res) {
-            setSettings(prev => ({
-              ...prev,
-              ...res,
-              theme: theme || res.theme || 'light'
-            }));
+            setSettings(prev => {
+              const merged = {
+                ...prev,
+                ...res,
+                theme: theme || res.theme || prev.theme || 'light'
+              };
+              try {
+                localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(merged));
+              } catch {}
+              return merged;
+            });
           }
         }
       } catch (err) {
@@ -154,6 +182,9 @@ export function SettingsPage({
   const updateSetting = async (key, val) => {
     const updated = { ...settings, [key]: val };
     setSettings(updated);
+    try {
+      localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(updated));
+    } catch {}
 
     if (key === 'theme' && onThemeChange) {
       onThemeChange(val);
@@ -173,7 +204,13 @@ export function SettingsPage({
     try {
       if (window.electronAPI?.resetSettings) {
         const res = await window.electronAPI.resetSettings();
-        setSettings(prev => ({ ...prev, ...res }));
+        setSettings(prev => {
+          const merged = { ...prev, ...res };
+          try {
+            localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
         if (onThemeChange) onThemeChange(res.theme || 'light');
       }
     } catch (err) {
@@ -187,7 +224,13 @@ export function SettingsPage({
       if (window.electronAPI?.changeDownloadFolder) {
         const res = await window.electronAPI.changeDownloadFolder();
         if (res && res.success && res.path) {
-          setSettings(prev => ({ ...prev, downloadFolder: res.path }));
+          setSettings(prev => {
+            const merged = { ...prev, downloadFolder: res.path };
+            try {
+              localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(merged));
+            } catch {}
+            return merged;
+          });
         }
       }
     } catch (err) {

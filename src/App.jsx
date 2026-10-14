@@ -74,9 +74,14 @@ function App() {
       try {
         if (window.electronAPI?.getSettings) {
           const s = await window.electronAPI.getSettings();
-          if (s && s.theme) {
-            applyTheme(s.theme);
-            return;
+          if (s) {
+            try {
+              localStorage.setItem('driverhub_settings_cache', JSON.stringify(s));
+            } catch {}
+            if (s.theme) {
+              applyTheme(s.theme);
+              return;
+            }
           }
         }
       } catch {}
@@ -617,7 +622,8 @@ function App() {
           </div>
         </div>
 
-        {activeTab === 'Device Monitor' ? (
+        {/* VIEW 1: Device Monitor */}
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Device Monitor' && "hidden")}>
           <DeviceMonitorPage
             deviceStatus={deviceStatus}
             onRefresh={handleScan}
@@ -634,7 +640,10 @@ function App() {
             }))}
             isRefreshing={isScanning}
           />
-        ) : activeTab === 'Drivers' ? (
+        </div>
+
+        {/* VIEW 2: Drivers */}
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Drivers' && "hidden")}>
           <DriversPage
             packageStates={packageStates}
             isScanning={isScanning}
@@ -644,7 +653,10 @@ function App() {
             onScan={handleScan}
             onInstallDrivers={handleInstallDrivers}
           />
-        ) : activeTab === 'Platform Tools' ? (
+        </div>
+
+        {/* VIEW 3: Platform Tools */}
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Platform Tools' && "hidden")}>
           <PlatformToolsPage 
             deviceStatus={deviceStatus}
             isInstalling={isInstalling}
@@ -656,7 +668,10 @@ function App() {
             onNavigateToDeviceMonitor={() => setActiveTab('Device Monitor')}
             addLog={addLog}
           />
-        ) : activeTab === 'Settings' ? (
+        </div>
+
+        {/* VIEW 4: Settings */}
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Settings' && "hidden")}>
           <SettingsPage 
             theme={theme}
             onThemeChange={applyTheme}
@@ -664,8 +679,10 @@ function App() {
             onElevateAdmin={handleElevateAdmin}
             addLog={addLog}
           />
-        ) : (
-          <>
+        </div>
+
+        {/* VIEW 5: Dashboard */}
+        <div className={cn("flex-1 h-full min-w-0 flex", activeTab !== 'Dashboard' && "hidden")}>
             {/* MAIN CONTENT AREA */}
             <div className="flex-1 flex flex-col h-full bg-transparent relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
               <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
@@ -919,8 +936,7 @@ function App() {
           />
         </div>
       </div>
-        </>
-      )}
+    </div>
 
       </div>
     </div>
