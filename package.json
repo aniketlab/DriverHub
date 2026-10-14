@@ -67,7 +67,7 @@
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.81.0",
     "postcss": "^8.4.38",
     "tailwindcss": "^4.0.0",
