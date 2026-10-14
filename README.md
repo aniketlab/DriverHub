@@ -26,6 +26,52 @@ With Driver Hub, you can detect missing device drivers, install signed OEM drive
 
 ---
 
+## 📸 Interface Walkthrough & 4K Previews
+
+<div align="center">
+
+### 1. Dashboard & Live Hardware Telemetry
+*Real-time hardware bus polling, driver installation status, live terminal logging, and device mode monitoring.*
+<p align="center">
+  <img src="assets/screenshots/driverhub_dashboard_4k.png" alt="Driver Hub Dashboard" width="950" />
+</p>
+
+<br />
+
+### 2. Driver Packages & Automated Store Management
+*Categorized OEM driver packages (Google USB, MediaTek VCOM/BROM, Motorola) with automatic System Restore Point protection.*
+<p align="center">
+  <img src="assets/screenshots/driverhub_drivers_4k.png" alt="Driver Packages Management" width="950" />
+</p>
+
+<br />
+
+### 3. Android Platform-Tools (SDK) Environment
+*Built-in ADB and Fastboot binaries, one-click Windows System PATH integration, ADB server daemon controls, and live interactive console.*
+<p align="center">
+  <img src="assets/screenshots/driverhub_platform_tools_4k.png" alt="Platform Tools & ADB Terminal" width="950" />
+</p>
+
+<br />
+
+### 4. Real-Time Hardware Diagnostic Hub
+*Deep USB connection pipeline analysis, battery power delivery, driver state inspection, and phone internal storage exploration.*
+<p align="center">
+  <img src="assets/screenshots/driverhub_device_monitor_4k.png" alt="Live Device Monitor" width="950" />
+</p>
+
+<br />
+
+### 5. Settings, Theming & System Controls
+*Customizable light/dark themes with circular ripple view transitions, background device polling, and Windows UAC administrator elevation.*
+<p align="center">
+  <img src="assets/screenshots/driverhub_settings_4k.png" alt="Settings & Preferences" width="950" />
+</p>
+
+</div>
+
+---
+
 ## ✨ Key Features
 
 ### ⚡ 1. One-Click Driver Installation & Windows DriverStore Integration
