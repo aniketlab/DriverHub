@@ -151,11 +151,11 @@ export function PlatformToolsPage({
 
   // When device connection changes: automatically refresh terminal output with real adb devices
   useEffect(() => {
-    if (prevDeviceRef.current !== deviceStatus?.serial) {
-      prevDeviceRef.current = deviceStatus?.serial;
-      handleRunCommand('adb devices', true);
+    if (prevDeviceRef.current !== (deviceStatus?.serial || (deviceStatus?.adb ? 'adb' : 'none'))) {
+      prevDeviceRef.current = deviceStatus?.serial || (deviceStatus?.adb ? 'adb' : 'none');
+      handleRunCommand(deviceStatus?.fastboot ? 'fastboot devices' : 'adb devices', true);
     }
-  }, [deviceStatus?.serial, deviceStatus?.connected]);
+  }, [deviceStatus?.serial, deviceStatus?.connected, deviceStatus?.adb, deviceStatus?.fastboot]);
 
   // When global installation finishes, refresh local status
   useEffect(() => {
@@ -474,8 +474,8 @@ export function PlatformToolsPage({
                 </h4>
               </div>
 
-              {/* Live Connected Device Awareness inside ADB Server card */}
-              {deviceStatus?.connected ? (
+              {/* Live Connected Device Awareness inside ADB Server card (Only for real ADB devices) */}
+              {deviceStatus?.adb ? (
                 <div 
                   onClick={onNavigateToDeviceMonitor}
                   className="mt-3.5 p-2.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/90 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/40 border border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-200 dark:hover:border-emerald-800 transition-all cursor-pointer flex items-center justify-between gap-2 group"
@@ -490,7 +490,7 @@ export function PlatformToolsPage({
                         {deviceStatus.model || 'Android Phone'}
                       </span>
                       <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 leading-none mt-0.5">
-                        {deviceStatus.serial ? `${deviceStatus.serial} · ${deviceStatus.adb ? 'Authorized' : 'Connected'}` : 'ADB Link Active'}
+                        {deviceStatus.serial ? `${deviceStatus.serial} · ${deviceStatus.adbAuthorized !== false ? 'Authorized' : 'Unauthorized'}` : 'ADB Link Active'}
                       </span>
                     </div>
                   </div>
@@ -499,7 +499,9 @@ export function PlatformToolsPage({
               ) : (
                 <div className="mt-3.5 p-2 rounded-xl bg-slate-50/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-slate-400 dark:text-slate-500">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-                  <span className="text-[11px] font-mono truncate">No devices attached</span>
+                  <span className="text-[11px] font-mono truncate">
+                    {deviceStatus?.fastboot ? 'Device in Fastboot Mode' : deviceStatus?.connected ? 'No ADB device (MTP Active)' : 'No devices attached'}
+                  </span>
                 </div>
               )}
             </div>
@@ -585,16 +587,21 @@ export function PlatformToolsPage({
                 {t('tools.quickCommands')}
               </span>
 
-              {/* Real Live Hardware Telemetry Pill */}
-              {deviceStatus?.connected ? (
+              {/* Real Live Hardware Telemetry Pill (Only for real ADB or Fastboot connections) */}
+              {deviceStatus?.adb ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/90 dark:border-emerald-800/70 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>{deviceStatus.model || 'Device'} Online ({deviceStatus.serial || 'ADB'})</span>
+                  <span>{deviceStatus.model || 'Device'} Online (ADB)</span>
+                </span>
+              ) : deviceStatus?.fastboot ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/90 dark:border-blue-800/70 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span>{deviceStatus.model || 'Device'} Online (Fastboot)</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
-                  <span>Waiting for USB device</span>
+                  <span>{deviceStatus?.connected ? `${deviceStatus.model || 'Device'} (MTP Mode)` : 'Waiting for ADB / Fastboot device'}</span>
                 </span>
               )}
             </div>
