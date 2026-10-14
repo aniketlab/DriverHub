@@ -21,6 +21,7 @@ import { DriversPage } from './components/DriversPage';
 import { PlatformToolsPage } from './components/PlatformToolsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { useLanguage } from './utils/i18n.jsx';
+import { haptic } from './utils/soundEffects';
 
 function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -623,7 +624,7 @@ function App() {
         </div>
 
         {/* VIEW 1: Device Monitor */}
-        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Device Monitor' && "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Device Monitor' ? "animate-motion-tab-enter" : "hidden")}>
           <DeviceMonitorPage
             deviceStatus={deviceStatus}
             onRefresh={handleScan}
@@ -643,7 +644,7 @@ function App() {
         </div>
 
         {/* VIEW 2: Drivers */}
-        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Drivers' && "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Drivers' ? "animate-motion-tab-enter" : "hidden")}>
           <DriversPage
             packageStates={packageStates}
             isScanning={isScanning}
@@ -656,7 +657,7 @@ function App() {
         </div>
 
         {/* VIEW 3: Platform Tools */}
-        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Platform Tools' && "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Platform Tools' ? "animate-motion-tab-enter" : "hidden")}>
           <PlatformToolsPage 
             deviceStatus={deviceStatus}
             isInstalling={isInstalling}
@@ -671,7 +672,7 @@ function App() {
         </div>
 
         {/* VIEW 4: Settings */}
-        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab !== 'Settings' && "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex flex-col", activeTab === 'Settings' ? "animate-motion-tab-enter" : "hidden")}>
           <SettingsPage 
             theme={theme}
             onThemeChange={applyTheme}
@@ -682,7 +683,7 @@ function App() {
         </div>
 
         {/* VIEW 5: Dashboard */}
-        <div className={cn("flex-1 h-full min-w-0 flex", activeTab !== 'Dashboard' && "hidden")}>
+        <div className={cn("flex-1 h-full min-w-0 flex", activeTab === 'Dashboard' ? "animate-motion-tab-enter" : "hidden")}>
             {/* MAIN CONTENT AREA */}
             <div className="flex-1 flex flex-col h-full bg-transparent relative p-6 pt-5 no-drag-region overflow-y-auto min-w-[500px]">
               <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col gap-5">
@@ -946,16 +947,22 @@ function App() {
 function NavItem({ icon: Icon, label, active, onClick }) {
   return (
     <button 
-      onClick={onClick}
+      onClick={() => {
+        haptic.tick();
+        onClick();
+      }}
       className={cn(
-        "group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 whitespace-nowrap cursor-pointer border text-left active:scale-[0.98]",
+        "group relative flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 whitespace-nowrap cursor-pointer border text-left active:scale-[0.96]",
         active 
-          ? "bg-green-50 dark:bg-emerald-950/60 text-green-800 dark:text-emerald-300 font-semibold border-green-200/90 dark:border-emerald-800/70 shadow-2xs" 
-          : "border-transparent text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-200/70 dark:hover:border-slate-700/60 hover:shadow-2xs"
+          ? "bg-green-50/90 dark:bg-emerald-950/70 text-green-800 dark:text-emerald-300 font-semibold border-green-200/90 dark:border-emerald-800/80 shadow-2xs shadow-emerald-500/10" 
+          : "border-transparent text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-200/60 dark:hover:border-slate-700/50 hover:shadow-2xs"
       )}
     >
-      <Icon className={cn("w-4 h-4 shrink-0 transition-colors", active ? "text-green-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300")} />
-      {label}
+      {active && (
+        <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+      )}
+      <Icon className={cn("w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110", active ? "text-green-600 dark:text-emerald-400 scale-105" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300")} />
+      <span>{label}</span>
     </button>
   );
 }

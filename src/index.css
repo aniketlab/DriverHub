@@ -168,3 +168,89 @@ body {
   animation: cursorBlink 0.8s infinite;
 }
 
+/* ==========================================================================
+   DRIVER HUB COMPREHENSIVE MOTION & PHYSICS ENGINE
+   (Fluid Deceleration + Natural Spring Physics + Tactile Micro-Interactions)
+   ========================================================================== */
+
+/* 1. Global Deceleration & Spring Easing Curves */
+:root {
+  --motion-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. Tab Navigation Transition (Smooth vertical float + soft fade) */
+@keyframes motionTabEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.994);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-motion-tab-enter {
+  animation: motionTabEnter 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* 3. Directional Sub-Page Slides (Settings <-> About) */
+@keyframes motionSlideForward {
+  0% {
+    opacity: 0;
+    transform: translate3d(26px, 0, 0) scale(0.988);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes motionSlideBackward {
+  0% {
+    opacity: 0;
+    transform: translate3d(-26px, 0, 0) scale(0.988);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-motion-slide-forward {
+  animation: motionSlideForward 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-motion-slide-backward {
+  animation: motionSlideBackward 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* 4. Modal & Dialog Spring Animation */
+@keyframes motionModalEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-motion-modal {
+  animation: motionModalEnter 0.28s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+  will-change: transform, opacity;
+}
+
+/* 5. Staggered Card Entrances */
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 160ms; }
+
+
