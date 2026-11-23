@@ -4,7 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
-import { installAdb, installGoogleDriver, installMtkDriver, createSystemRestorePoint } from './services/installerService.js';
+import { installAdb, installGoogleDriver, installMtkDriver, installUnisocDriver, installUsbDkDriver, createSystemRestorePoint } from './services/installerService.js';
 import { syncDeviceDatabase } from './services/deviceSyncService.js';
 import { rebootDevice, openAdbShell, openPhoneStorage } from './services/deviceActionService.js';
 import { 
@@ -455,7 +455,47 @@ function setupIpc() {
       }
     }
 
+    if (targets.includes('unisoc_spd') || targets.includes('unisoc')) {
+      try {
+        results.unisoc_spd = await installUnisocDriver(sender);
+      } catch (err) {
+        console.error('Unisoc driver install error:', err);
+        sender.send('install-step', {
+          target: 'unisoc_spd',
+          percent: 0,
+          error: true,
+          message: `Unisoc driver install failed: ${err.message}`
+        });
+        results.unisoc_spd = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('usbdk')) {
+      try {
+        results.usbdk = await installUsbDkDriver(sender);
+      } catch (err) {
+        console.error('UsbDk install error:', err);
+        sender.send('install-step', {
+          target: 'usbdk',
+          percent: 0,
+          error: true,
+          message: `UsbDk install failed: ${err.message}`
+        });
+        results.usbdk = { success: false, error: err.message };
+      }
+    }
+
     return results;
+  });
+
+  ipcMain.handle('device:search', async (_, query) => {
+    try {
+      const { searchDevices } = await import('./services/deviceIntelligenceService.js');
+      return searchDevices(query);
+    } catch (e) {
+      console.warn('device:search error:', e.message);
+      return [];
+    }
   });
 }
 

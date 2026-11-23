@@ -73,10 +73,12 @@ Driver Hub directly communicates with the **Windows DriverStore** via native `pn
 
 ### ⚡ 1. One-Click DriverStore Injection
 - **Native `pnputil.exe` Engine**: Packages are injected directly into the Windows DriverStore with full system catalog verification. Zero messy third-party wrappers or adware.
-- **Comprehensive OEM Coverage**:
+- **Comprehensive OEM & Chipset Coverage**:
   - **Google USB Drivers**: Universal ADB & Bootloader/Fastboot support for Google Pixel, Nexus, and standard AOSP devices.
   - **MediaTek (MTK) USB Drivers**: Full support for BROM mode, Preloader mode, and high-speed MTK USB VCOM flashing ports.
-  - **Motorola & Universal OEM Drivers**: Extended support for Motorola, Xiaomi, OnePlus, and generic Android interfaces.
+  - **Unisoc / Spreadtrum (SPD) Drivers**: Complete flash & diag mode support for Unisoc SC9863, Tiger T606, T612, T616 budget devices.
+  - **UsbDk (USB Development Kit)**: Low-level kernel driver for MediaTek BROM auth bypass and high-speed packet filtering.
+  - **Motorola & Universal OEM Drivers**: Extended support for Motorola, Xiaomi, OnePlus, Samsung, and generic Android interfaces.
 - **Silent & Reliable**: Zero mandatory system reboots for modern Plug-and-Play USB devices.
 
 ### 🛡️ 2. Fail-Safe Windows System Restore Protection
@@ -90,7 +92,7 @@ Driver Hub directly communicates with the **Windows DriverStore** via native `pn
   - `ADB Debugging`: Android Debug Bridge status with authorization check and dynamic property caching.
   - `Fastboot Mode`: Bootloader lock status inspection (`Locked 🔒` / `Unlocked 🟢`), userspace (`FastbootD`) detection, and product tag.
   - `MediaTek BROM / Preloader`: Flashing handshake port recognition with instant yellow-mark driver diagnostics.
-- **4.7MB Offline Device Database**: Resolves raw USB Vendor IDs (VID) and Product IDs (PID) into friendly commercial names (e.g. `OnePlus 7T`, `Redmi Note 10`, `Samsung Galaxy S23`).
+- **17,000+ Device Intelligence Database**: Offline database powered by MFDL intelligence resolves raw hardware strings, model numbers, and USB VIDs into friendly commercial names (e.g. `Samsung Galaxy A27`, `Xiaomi Poco M8s`, `OnePlus 7T`) alongside their exact **Processor/SoC** (`Snapdragon`, `Dimensity`, `Helio`, `Unisoc`, `Tensor`, `Exynos`) and dynamic driver recommendations.
 
 ### 🛠️ 4. Google Platform-Tools (SDK) Environment
 - **Pre-Bundled Google Binaries**: Official `adb.exe`, `fastboot.exe`, and companion dependencies ready out-of-the-box.
@@ -320,6 +322,19 @@ Contributions make the open-source community an amazing place to learn, inspire,
 3. Commit your Changes (`git commit -m 'feat: Add AmazingFeature'`)
 4. Push to the Branch (`git push origin feat/AmazingFeature`)
 5. Open a Pull Request
+
+<br />
+
+---
+
+## 💖 Acknowledgements & Community Credits
+
+Driver Hub stands on the shoulders of the amazing Android open-source & repair community:
+
+- **[MFDL / AndroidUtility](https://www.mfdl.io/)**: Special gratitude to the MFDL team for their open community smartphone database (17,000+ devices, chipsets, model numbers, and SoC specifications).
+- **[Google Android Platform-Tools](https://developer.android.com/tools/releases/platform-tools)**: Official Android Debug Bridge (ADB) and Fastboot binaries.
+- **[Daynix / Red Hat](https://github.com/daynix/UsbDk)**: UsbDk (USB Development Kit) open-source kernel filter driver.
+- **[Electron](https://www.electronjs.org/)** & **[Tailwind CSS](https://tailwindcss.com/)**: Desktop runtime and modern styling framework.
 
 <br />
 

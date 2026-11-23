@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { enrichDevice } from '../services/deviceIntelligenceService.js';
 
 let cachedDb = null;
 
@@ -512,13 +513,24 @@ export const DEVICE_CATALOG = {
 /**
  * Smart lookup function to resolve brand and friendly model name.
  * Supports exact matching, 50,000+ device database matching, regex prefix matching, and fuzzy fallback.
+ * Automatically enriched with chipset, processor code, release year, and recommended drivers from MFDL.
  */
 export function resolveDevice(rawModel, detectedBrand) {
-  if (!rawModel && !detectedBrand) {
+  const clean = (rawModel || '').trim();
+  const raw = _resolveRaw(clean, detectedBrand);
+  try {
+    return enrichDevice({ ...raw, rawModel: clean });
+  } catch (err) {
+    console.warn('Device enrichment warning:', err.message);
+    return raw;
+  }
+}
+
+function _resolveRaw(clean, detectedBrand) {
+  if (!clean && !detectedBrand) {
     return { brand: 'Android', model: 'Android Device' };
   }
 
-  const clean = (rawModel || '').trim();
   if (!clean) {
     return { brand: detectedBrand || 'Android', model: `${detectedBrand || 'Android'} Device` };
   }

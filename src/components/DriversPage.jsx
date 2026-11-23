@@ -73,6 +73,26 @@ export const DRIVER_DEFS = [
     modeColor: 'bg-blue-50 dark:bg-sky-950/60 text-blue-700 dark:text-sky-300 border-blue-200/60 dark:border-sky-800/80',
     iconType: 'chip',
     iconBg: 'bg-blue-50 dark:bg-sky-500/15 border border-blue-200/60 dark:border-sky-500/30 text-blue-600 dark:text-sky-400 dark:shadow-[0_0_12px_rgba(14,165,233,0.2)]',
+  },
+  {
+    id: 'unisoc_spd',
+    category: 'UNISOC (SPREADTRUM)',
+    title: 'Unisoc / Spreadtrum (SPD) Drivers',
+    desc: 'Diag & Flash mode for Unisoc SC9863, Tiger T606/T612/T616 budget phones',
+    modeTag: 'SPRD Diag',
+    modeColor: 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800/80',
+    iconType: 'chip',
+    iconBg: 'bg-purple-50 dark:bg-purple-500/15 border border-purple-200/60 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 dark:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+  },
+  {
+    id: 'usbdk',
+    category: 'KERNEL USB FILTER',
+    title: 'UsbDk USB Development Kit',
+    desc: 'Low-level USB driver for MediaTek BROM auth bypass & high-speed packet filtering',
+    modeTag: 'Kernel Hook',
+    modeColor: 'bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border-cyan-200/60 dark:border-cyan-800/80',
+    iconType: 'chip',
+    iconBg: 'bg-cyan-50 dark:bg-cyan-500/15 border border-cyan-200/60 dark:border-cyan-500/30 text-cyan-600 dark:text-cyan-400 dark:shadow-[0_0_12px_rgba(6,182,212,0.2)]',
   }
 ];
 

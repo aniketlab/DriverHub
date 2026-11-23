@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDeviceMonitorUpdate: (callback) => ipcRenderer.on('device-monitor-update', (_event, value) => callback(value)),
   removeDeviceMonitorListener: () => ipcRenderer.removeAllListeners('device-monitor-update'),
   getConnectedDevices: () => ipcRenderer.invoke('get-connected-devices'),
+  searchDevices: (query) => ipcRenderer.invoke('device:search', query),
   openFolder: (path) => ipcRenderer.invoke('open-folder', path),
   rebootDevice: (mode) => ipcRenderer.invoke('reboot-device', mode),
   openAdbShell: () => ipcRenderer.invoke('open-adb-shell'),

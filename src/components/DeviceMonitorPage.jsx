@@ -429,6 +429,20 @@ export function DeviceMonitorPage({
                         {deviceStatus?.adb ? 'ADB mode' : deviceStatus?.fastboot ? 'Fastboot mode' : deviceStatus?.mtk ? 'MTK BROM mode' : 'MTP mode'}
                       </span>
 
+                      {deviceStatus?.chipset && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                          <Cpu className="w-3.5 h-3.5 text-indigo-500" />
+                          <span>{deviceStatus.chipset}</span>
+                          {deviceStatus.chipCode && <span className="opacity-70 text-[10px] font-mono">({deviceStatus.chipCode})</span>}
+                        </span>
+                      )}
+
+                      {deviceStatus?.releaseYear && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          {deviceStatus.releaseYear}
+                        </span>
+                      )}
+
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                         {deviceStatus?.adb ? 'Authorized' : deviceStatus?.driverError ? 'Attention Required' : 'Connected'}
                       </span>

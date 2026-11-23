@@ -301,7 +301,9 @@ function App() {
     google_usb: { installed: false, version: null, updateAvailable: false, isScanning: false },
     google_bootloader: { installed: false, version: null, updateAvailable: false, isScanning: false },
     mtk_vcom: { installed: false, version: null, updateAvailable: false, isScanning: false },
-    mtk_brom: { installed: false, version: null, updateAvailable: false, isScanning: false }
+    mtk_brom: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    unisoc_spd: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    usbdk: { installed: false, version: null, updateAvailable: false, isScanning: false }
   });
 
   // Real-time live connected device state (with Brand & Model)
@@ -1060,6 +1062,13 @@ function App() {
               <h5 className="text-[13px] font-semibold text-slate-800 dark:text-white leading-tight truncate max-w-full">
                 {deviceStatus.model || 'Android Phone'}
               </h5>
+              {deviceStatus.chipset && (
+                <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/70 max-w-full truncate shadow-2xs">
+                  <Cpu className="w-3 h-3 text-indigo-500 shrink-0" />
+                  <span className="truncate">{deviceStatus.chipset}</span>
+                  {deviceStatus.releaseYear && <span className="opacity-70 text-[9.5px]">({deviceStatus.releaseYear})</span>}
+                </div>
+              )}
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-normal mt-0.5 truncate max-w-full">
                 {deviceStatus.rawModel && deviceStatus.model !== deviceStatus.rawModel ? `${deviceStatus.rawModel} • ` : ''}
                 {deviceStatus.mode || 'USB Mode'}

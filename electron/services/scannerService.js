@@ -153,6 +153,7 @@ export async function checkDriverStore() {
     const bootloaderList = [];
     const mtkVcomList = [];
     const mtkBromList = [];
+    const unisocList = [];
 
     for (const block of blocks) {
       const lower = block.toLowerCase();
@@ -207,6 +208,16 @@ export async function checkDriverStore() {
       if (isBrom && driverVer) {
         mtkBromList.push(driverEntry);
       }
+
+      // 5. Unisoc / Spreadtrum Drivers
+      const isUnisoc = lower.includes('sprd') || 
+                       lower.includes('unisoc') || 
+                       lower.includes('spreadtrum') || 
+                       lower.includes('sci_usb2serial');
+
+      if (isUnisoc && driverVer) {
+        unisocList.push(driverEntry);
+      }
     }
 
     // Pick the newest/highest installed driver in each category
@@ -214,6 +225,16 @@ export async function checkDriverStore() {
     const bestBootloader = pickLatestDriver(bootloaderList);
     const bestMtkVcom = pickLatestDriver(mtkVcomList);
     const bestMtkBrom = pickLatestDriver(mtkBromList);
+    const bestUnisoc = pickLatestDriver(unisocList);
+
+    // Check UsbDk kernel service
+    let usbdkInstalled = false;
+    try {
+      const { stdout: scOut } = await execPromise('sc.exe query UsbDk', { timeout: 2000 });
+      if (scOut.includes('RUNNING') || scOut.includes('STATE')) {
+        usbdkInstalled = true;
+      }
+    } catch {}
 
     // Target reference baselines from application bundle:
     // Google USB: android_winusb.inf -> Date: 01/04/2023, Version: 11.0.0.0
@@ -267,6 +288,18 @@ export async function checkDriverStore() {
         version: bestMtkBrom?.ver || TARGET_MTK_BROM_VER,
         updateAvailable: mtkBromUpdateAvailable,
         name: 'MTK BROM Driver'
+      },
+      unisoc_spd: {
+        installed: Boolean(bestUnisoc),
+        version: bestUnisoc?.ver || '4.21.39.134',
+        updateAvailable: false,
+        name: 'Unisoc / Spreadtrum (SPD) Drivers'
+      },
+      usbdk: {
+        installed: usbdkInstalled,
+        version: '1.0.22',
+        updateAvailable: false,
+        name: 'UsbDk Kernel USB Filter'
       }
     };
 
@@ -279,6 +312,14 @@ export async function checkDriverStore() {
         installed: Boolean(bestMtkVcom || bestMtkBrom), 
         name: 'MediaTek USB VCOM / Preloader Driver' 
       },
+      unisoc: {
+        installed: Boolean(bestUnisoc),
+        name: 'Unisoc / Spreadtrum USB Driver'
+      },
+      usbdk: {
+        installed: usbdkInstalled,
+        name: 'UsbDk Kernel USB Filter'
+      },
       packages
     };
   } catch (err) {
@@ -286,11 +327,15 @@ export async function checkDriverStore() {
     return {
       google: { installed: false },
       mtk: { installed: false },
+      unisoc: { installed: false },
+      usbdk: { installed: false },
       packages: {
         google_usb: { installed: false, updateAvailable: false },
         google_bootloader: { installed: false, updateAvailable: false },
         mtk_vcom: { installed: false, updateAvailable: false },
-        mtk_brom: { installed: false, updateAvailable: false }
+        mtk_brom: { installed: false, updateAvailable: false },
+        unisoc_spd: { installed: false, updateAvailable: false },
+        usbdk: { installed: false, updateAvailable: false }
       }
     };
   }
