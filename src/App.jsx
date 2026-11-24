@@ -13,7 +13,9 @@ import {
   RefreshCw,
   Terminal,
   ShieldCheck,
-  ShieldAlert
+  ShieldAlert,
+  Copy,
+  Check
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -356,8 +358,17 @@ function App() {
     { type: 'info', text: 'DriverHub v1.0 initialized. Live Device Monitor active.' }
   ]);
 
-  const addLog = (type, text) => {
-    setLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
+  const [copiedLogs, setCopiedLogs] = useState(false);
+
+  const copyLogsToClipboard = () => {
+    try {
+      const text = logs.map(l => `[${l.time || ''}] [${l.type}] ${l.text}`).join('\n');
+      navigator.clipboard.writeText(text);
+      setCopiedLogs(true);
+      setTimeout(() => setCopiedLogs(false), 2000);
+    } catch (e) {
+      console.warn('Copy logs failed:', e);
+    }
   };
 
   // Auto-scroll terminal log to bottom on new log entry
@@ -1010,7 +1021,27 @@ function App() {
           <div className="bg-white/92 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 h-32 font-mono text-[11px] text-slate-600 dark:text-slate-300 mt-1 shadow-xs shrink-0 flex flex-col transition-colors">
             <div className="flex items-center justify-between mb-2 shrink-0">
               <h4 className="font-semibold text-slate-800 dark:text-slate-200 font-sans text-[10px] uppercase tracking-wider">{t('dashboard.terminalLogs')}</h4>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={copyLogsToClipboard}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-sans font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all cursor-pointer border border-slate-200/60 dark:border-slate-700/60 active:scale-95"
+                  title="Copy terminal logs to clipboard"
+                >
+                  {copiedLogs ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+                      <span>Copy Logs</span>
+                    </>
+                  )}
+                </button>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans">Live Console</span>
+              </div>
             </div>
             <div ref={terminalLogsRef} className="flex-1 overflow-y-auto flex flex-col gap-1 pr-1.5 custom-scrollbar-slim">
               {logs.map((log, index) => (
