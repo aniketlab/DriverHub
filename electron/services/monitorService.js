@@ -406,12 +406,14 @@ async function doCheckConnectedDevices() {
     let hasAdb = false;
     let hasFastboot = false;
     let hasMtk = false;
+    let hasQualcomm = false;
     let hasMtp = false;
     let hasUsbPhysical = false;
 
     let adbDriverError = false;
     let fastbootDriverError = false;
     let mtkDriverError = false;
+    let qualcommDriverError = false;
 
     for (const item of deviceList) {
       const name = (item.FriendlyName || '').toLowerCase();
@@ -431,27 +433,35 @@ async function doCheckConnectedDevices() {
         hasUsbPhysical = true;
         if (isProblematic) mtkDriverError = true;
       } 
-      // 3. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
+      // 3. Check Qualcomm EDL / QDLoader 9008 (Vol Up + Down mode)
+      else if (name.includes('9008') || name.includes('qdloader') || id.includes('pid_9008') || (id.includes('vid_05c6') && name.includes('qualcomm')) || id.includes('vid_22d9&pid_0006')) {
+        hasQualcomm = true;
+        hasUsbPhysical = true;
+        if (isProblematic) qualcommDriverError = true;
+      }
+      // 4. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
       else if (name.includes('adb') || (pnpClass === 'androidusbdeviceclass' && !name.includes('bootloader') && !name.includes('fastboot'))) {
         hasAdb = true;
         hasUsbPhysical = true;
         if (isProblematic) adbDriverError = true;
       }
-      // 4. Check File Transfer / MTP (WPD class or MTP description)
+      // 5. Check File Transfer / MTP (WPD class or MTP description)
       else if (pnpClass === 'wpd' || name.includes('mtp') || id.includes('ms_comp_mtp')) {
         hasMtp = true;
         hasUsbPhysical = true;
       }
-      // 5. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, etc.)
-      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d|0b05|0fce|1004|0bb4)/i)) {
+      // 6. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, etc.)
+      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d|05c6|0b05|0fce|1004|0bb4)/i)) {
         hasUsbPhysical = true;
       }
     }
 
-    const isConnected = hasUsbPhysical || hasAdb || hasFastboot || hasMtk || hasMtp || !!parsed.Model;
+    const isConnected = hasUsbPhysical || hasAdb || hasFastboot || hasMtk || hasQualcomm || hasMtp || !!parsed.Model;
 
     let detectedMode = 'USB Connected';
-    if (hasFastboot) {
+    if (hasQualcomm) {
+      detectedMode = qualcommDriverError ? 'Qualcomm EDL (Driver Error ⚠️)' : 'Qualcomm EDL Mode (9008)';
+    } else if (hasFastboot) {
       detectedMode = fastbootDriverError ? 'Fastboot (Driver Missing ⚠️)' : 'Fastboot Mode';
     } else if (hasMtk) {
       detectedMode = mtkDriverError ? 'MediaTek (Driver Missing ⚠️)' : 'MediaTek BROM / Preloader';
@@ -536,14 +546,16 @@ async function doCheckConnectedDevices() {
       fastbootError: fastbootDriverError,
       mtk: hasMtk && !mtkDriverError,
       mtkError: mtkDriverError,
+      qualcomm: hasQualcomm && !qualcommDriverError,
+      qualcommError: qualcommDriverError,
       mtp: hasMtp,
       mode: isConnected ? detectedMode : null,
-      driverError: fastbootDriverError || adbDriverError || mtkDriverError,
+      driverError: fastbootDriverError || adbDriverError || mtkDriverError || qualcommDriverError,
       brand: resolved.brand || (isConnected ? (parsed.Brand || 'Android') : null),
       model: resolved.model || parsed.Model,
       rawModel: rawModel,
       usbSpeed: parsed.UsbSpeed || 'USB 2.0',
-      driverName: parsed.DriverName || (hasMtp ? 'MTP USB Device' : (hasFastboot ? 'Android Bootloader Interface' : 'Android USB Driver')),
+      driverName: parsed.DriverName || (hasQualcomm ? 'Qualcomm HS-USB QDLoader 9008' : (hasMtp ? 'MTP USB Device' : (hasFastboot ? 'Android Bootloader Interface' : 'Android USB Driver'))),
       storage: storageDisplay,
       battery: isConnected ? 'USB Powered' : null,
       androidVersion: hasMtp ? 'File Transfer (MTP)' : (hasFastboot ? 'Fastboot Bootloader' : null),

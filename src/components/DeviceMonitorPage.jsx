@@ -44,7 +44,8 @@ export function DeviceMonitorPage({
   const isAdb = Boolean(deviceStatus?.adb);
   const isFastboot = Boolean(deviceStatus?.fastboot);
   const isMtk = Boolean(deviceStatus?.mtk);
-  const isMtp = Boolean(deviceStatus?.mtp) && !isAdb && !isFastboot && !isMtk;
+  const isQualcomm = Boolean(deviceStatus?.qualcomm);
+  const isMtp = Boolean(deviceStatus?.mtp) && !isAdb && !isFastboot && !isMtk && !isQualcomm;
 
   const rawSpeed = deviceStatus?.usbSpeed || 'USB 3.0';
   const isUsb3 = /3\.|superspeed/i.test(rawSpeed);
@@ -426,7 +427,7 @@ export function DeviceMonitorPage({
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        {deviceStatus?.adb ? 'ADB mode' : deviceStatus?.fastboot ? 'Fastboot mode' : deviceStatus?.mtk ? 'MTK BROM mode' : 'MTP mode'}
+                        {deviceStatus?.adb ? 'ADB mode' : deviceStatus?.fastboot ? 'Fastboot mode' : deviceStatus?.mtk ? 'MTK BROM mode' : deviceStatus?.qualcomm ? 'Qualcomm EDL mode' : 'MTP mode'}
                       </span>
 
                       {deviceStatus?.chipset && (
@@ -951,6 +952,17 @@ export function DeviceMonitorPage({
                   subtitle="Power off, then plug in"
                   active={deviceStatus?.mtk}
                   hasError={deviceStatus?.mtkError}
+                  isConnected={isConnected}
+                />
+
+                {/* 5. Qualcomm EDL Card */}
+                <ModeCard
+                  icon={<Cpu className="w-4 h-4 text-rose-600 dark:text-rose-400" />}
+                  iconBg="bg-rose-50 dark:bg-rose-500/15 border border-rose-200/60 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 dark:shadow-[0_0_10px_rgba(244,63,94,0.18)]"
+                  title="Qualcomm EDL (9008)"
+                  subtitle="Vol Up + Down, then plug in"
+                  active={deviceStatus?.qualcomm}
+                  hasError={deviceStatus?.qualcommError}
                   isConnected={isConnected}
                 />
 

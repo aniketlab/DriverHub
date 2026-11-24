@@ -1,5 +1,5 @@
 # Fast query via CimInstance (< 800ms)
-$query = "SELECT DeviceID, Name, Manufacturer, Status, Present, PNPClass, ConfigManagerErrorCode, Description FROM Win32_PnPEntity WHERE Present = True AND (PNPClass = 'AndroidUsbDeviceClass' OR PNPClass = 'WPD' OR (PNPClass = 'Ports' AND (Name LIKE '%MediaTek%' OR Name LIKE '%Preloader%' OR Name LIKE '%VCOM%')) OR DeviceID LIKE 'USB\\VID_22B8%' OR DeviceID LIKE 'USB\\VID_22D9%' OR DeviceID LIKE 'USB\\VID_2717%' OR DeviceID LIKE 'USB\\VID_04E8%' OR DeviceID LIKE 'USB\\VID_18D1%' OR DeviceID LIKE 'USB\\VID_0E8D%' OR DeviceID LIKE 'USB\\VID_2A70%' OR DeviceID LIKE 'USB\\VID_2B4B%' OR DeviceID LIKE 'USB\\VID_19D2%' OR DeviceID LIKE 'USB\\VID_2E04%' OR DeviceID LIKE 'USB\\VID_12D1%' OR DeviceID LIKE 'USB\\VID_0B05%' OR DeviceID LIKE 'USB\\VID_0FCE%' OR DeviceID LIKE 'USB\\VID_1004%' OR DeviceID LIKE 'USB\\VID_0BB4%')"
+$query = "SELECT DeviceID, Name, Manufacturer, Status, Present, PNPClass, ConfigManagerErrorCode, Description FROM Win32_PnPEntity WHERE Present = True AND (PNPClass = 'AndroidUsbDeviceClass' OR PNPClass = 'WPD' OR (PNPClass = 'Ports' AND (Name LIKE '%MediaTek%' OR Name LIKE '%Preloader%' OR Name LIKE '%VCOM%' OR Name LIKE '%Qualcomm%' OR Name LIKE '%9008%' OR Name LIKE '%QDLoader%')) OR DeviceID LIKE 'USB\\VID_05C6%' OR DeviceID LIKE 'USB\\VID_22B8%' OR DeviceID LIKE 'USB\\VID_22D9%' OR DeviceID LIKE 'USB\\VID_2717%' OR DeviceID LIKE 'USB\\VID_04E8%' OR DeviceID LIKE 'USB\\VID_18D1%' OR DeviceID LIKE 'USB\\VID_0E8D%' OR DeviceID LIKE 'USB\\VID_2A70%' OR DeviceID LIKE 'USB\\VID_2B4B%' OR DeviceID LIKE 'USB\\VID_19D2%' OR DeviceID LIKE 'USB\\VID_2E04%' OR DeviceID LIKE 'USB\\VID_12D1%' OR DeviceID LIKE 'USB\\VID_0B05%' OR DeviceID LIKE 'USB\\VID_0FCE%' OR DeviceID LIKE 'USB\\VID_1004%' OR DeviceID LIKE 'USB\\VID_0BB4%')"
 
 $rawDevices = Get-CimInstance -Query $query -ErrorAction SilentlyContinue
 
@@ -17,8 +17,8 @@ foreach ($d in $rawDevices) {
     $mfg = ($d.Manufacturer -as [string])
 
     $isAndroidClass = ($d.PNPClass -eq 'AndroidUsbDeviceClass') -or ($d.PNPClass -eq 'WPD')
-    $hasAndroidName = ($name -like "*ADB*") -or ($name -like "*Bootloader*") -or ($name -like "*Fastboot*") -or ($name -like "*Preloader*") -or ($name -like "*MediaTek*") -or ($name -like "*VCOM*")
-    $matchesKnownVid = ($id -match 'VID_0E8D|VID_18D1|VID_2717|VID_22B8|VID_22D9|VID_04E8|VID_2A70|VID_2B4B|VID_19D2|VID_2E04|VID_12D1|VID_0B05|VID_0FCE|VID_1004|VID_0BB4')
+    $hasAndroidName = ($name -like "*ADB*") -or ($name -like "*Bootloader*") -or ($name -like "*Fastboot*") -or ($name -like "*Preloader*") -or ($name -like "*MediaTek*") -or ($name -like "*VCOM*") -or ($name -like "*Qualcomm*") -or ($name -like "*9008*") -or ($name -like "*QDLoader*")
+    $matchesKnownVid = ($id -match 'VID_05C6|VID_0E8D|VID_18D1|VID_2717|VID_22B8|VID_22D9|VID_04E8|VID_2A70|VID_2B4B|VID_19D2|VID_2E04|VID_12D1|VID_0B05|VID_0FCE|VID_1004|VID_0BB4')
 
     # Capture any device matching Android class, names, or OEM Vendor IDs
     if ($isAndroidClass -or $hasAndroidName -or $matchesKnownVid) {
@@ -63,6 +63,7 @@ if (-not $phoneBrand -and $activeDevices.Count -gt 0) {
     $firstId = ($activeDevices[0].DeviceID -as [string]).ToUpper()
     if ($firstId -match 'VID_([0-9A-F]{4})') {
         switch ($matches[1]) {
+            "05C6" { $phoneBrand = "Qualcomm (EDL)" }
             "2717" { $phoneBrand = "Xiaomi" }
             "22B8" { $phoneBrand = "Motorola" }
             "22D9" { $phoneBrand = "OnePlus / OPPO" }

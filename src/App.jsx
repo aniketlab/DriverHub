@@ -303,6 +303,7 @@ function App() {
     mtk_vcom: { installed: false, version: null, updateAvailable: false, isScanning: false },
     mtk_brom: { installed: false, version: null, updateAvailable: false, isScanning: false },
     unisoc_spd: { installed: false, version: null, updateAvailable: false, isScanning: false },
+    qualcomm_9008: { installed: false, version: null, updateAvailable: false, isScanning: false },
     usbdk: { installed: false, version: null, updateAvailable: false, isScanning: false }
   });
 
@@ -312,10 +313,12 @@ function App() {
     adb: false,
     fastboot: false,
     mtk: false,
+    qualcomm: false,
     mtp: false,
     fastbootError: false,
     adbError: false,
     mtkError: false,
+    qualcommError: false,
     driverError: false,
     brand: null,
     model: null,
@@ -341,8 +344,10 @@ function App() {
     adb: false, 
     fastboot: false, 
     mtk: false, 
+    qualcomm: false,
     mtp: false,
     fastbootError: false,
+    qualcommError: false,
     driverError: false 
   });
 
@@ -1101,6 +1106,11 @@ function App() {
             label="MTK BROM / Preloader" 
             connected={deviceStatus.mtk} 
             hasError={deviceStatus.mtkError}
+          />
+          <MonitorStatus 
+            label="Qualcomm EDL (9008)" 
+            connected={deviceStatus.qualcomm} 
+            hasError={deviceStatus.qualcommError}
           />
         </div>
       </div>

@@ -154,6 +154,7 @@ export async function checkDriverStore() {
     const mtkVcomList = [];
     const mtkBromList = [];
     const unisocList = [];
+    const qualcommList = [];
 
     for (const block of blocks) {
       const lower = block.toLowerCase();
@@ -218,6 +219,15 @@ export async function checkDriverStore() {
       if (isUnisoc && driverVer) {
         unisocList.push(driverEntry);
       }
+
+      // 6. Qualcomm HS-USB QDLoader 9008 Driver
+      const isQualcomm = lower.includes('qcser.inf') || 
+                         lower.includes('qdloader 9008') || 
+                         (lower.includes('qualcomm') && (lower.includes('9008') || lower.includes('ports')));
+
+      if (isQualcomm && driverVer) {
+        qualcommList.push(driverEntry);
+      }
     }
 
     // Pick the newest/highest installed driver in each category
@@ -226,6 +236,7 @@ export async function checkDriverStore() {
     const bestMtkVcom = pickLatestDriver(mtkVcomList);
     const bestMtkBrom = pickLatestDriver(mtkBromList);
     const bestUnisoc = pickLatestDriver(unisocList);
+    const bestQualcomm = pickLatestDriver(qualcommList);
 
     // Check UsbDk kernel service
     let usbdkInstalled = false;
@@ -295,6 +306,12 @@ export async function checkDriverStore() {
         updateAvailable: false,
         name: 'Unisoc / Spreadtrum (SPD) Drivers'
       },
+      qualcomm_9008: {
+        installed: Boolean(bestQualcomm),
+        version: bestQualcomm?.ver || '2.1.5.2',
+        updateAvailable: false,
+        name: 'Qualcomm HS-USB QDLoader 9008'
+      },
       usbdk: {
         installed: usbdkInstalled,
         version: '1.0.22',
@@ -316,6 +333,10 @@ export async function checkDriverStore() {
         installed: Boolean(bestUnisoc),
         name: 'Unisoc / Spreadtrum USB Driver'
       },
+      qualcomm: {
+        installed: Boolean(bestQualcomm),
+        name: 'Qualcomm HS-USB QDLoader 9008 Driver'
+      },
       usbdk: {
         installed: usbdkInstalled,
         name: 'UsbDk Kernel USB Filter'
@@ -328,6 +349,7 @@ export async function checkDriverStore() {
       google: { installed: false },
       mtk: { installed: false },
       unisoc: { installed: false },
+      qualcomm: { installed: false },
       usbdk: { installed: false },
       packages: {
         google_usb: { installed: false, updateAvailable: false },
@@ -335,6 +357,7 @@ export async function checkDriverStore() {
         mtk_vcom: { installed: false, updateAvailable: false },
         mtk_brom: { installed: false, updateAvailable: false },
         unisoc_spd: { installed: false, updateAvailable: false },
+        qualcomm_9008: { installed: false, updateAvailable: false },
         usbdk: { installed: false, updateAvailable: false }
       }
     };

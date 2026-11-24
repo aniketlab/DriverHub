@@ -4,7 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { checkAdbStatus, checkDriverStore } from './services/scannerService.js';
 import { checkConnectedDevices } from './services/monitorService.js';
-import { installAdb, installGoogleDriver, installMtkDriver, installUnisocDriver, installUsbDkDriver, createSystemRestorePoint } from './services/installerService.js';
+import { installAdb, installGoogleDriver, installMtkDriver, installUnisocDriver, installUsbDkDriver, installQualcommDriver, createSystemRestorePoint } from './services/installerService.js';
 import { syncDeviceDatabase } from './services/deviceSyncService.js';
 import { rebootDevice, openAdbShell, openPhoneStorage } from './services/deviceActionService.js';
 import { 
@@ -467,6 +467,21 @@ function setupIpc() {
           message: `Unisoc driver install failed: ${err.message}`
         });
         results.unisoc_spd = { success: false, error: err.message };
+      }
+    }
+
+    if (targets.includes('qualcomm_9008') || targets.includes('qualcomm')) {
+      try {
+        results.qualcomm_9008 = await installQualcommDriver(sender);
+      } catch (err) {
+        console.error('Qualcomm driver install error:', err);
+        sender.send('install-step', {
+          target: 'qualcomm_9008',
+          percent: 0,
+          error: true,
+          message: `Qualcomm driver install failed: ${err.message}`
+        });
+        results.qualcomm_9008 = { success: false, error: err.message };
       }
     }
 

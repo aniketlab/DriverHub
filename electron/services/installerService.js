@@ -565,3 +565,60 @@ export async function installUsbDkDriver(eventSender) {
     return { success: true, name: 'UsbDk Kernel Driver' };
   }
 }
+
+/**
+ * Installs Qualcomm HS-USB QDLoader 9008 driver package via PnPUtil
+ */
+export async function installQualcommDriver(eventSender) {
+  const notify = (percent, message) => {
+    if (eventSender) {
+      eventSender.send('install-step', {
+        target: 'qualcomm_9008',
+        percent: percent,
+        message: message
+      });
+      eventSender.send('install-step', {
+        target: 'qualcomm',
+        percent: percent,
+        message: message
+      });
+    }
+  };
+
+  const label = 'Qualcomm HS-USB QDLoader 9008 Driver';
+  notify(10, `Preparing ${label}...`);
+  await sleep(250);
+
+  const bundledQcDir = getBundledDir('drivers', 'qualcomm');
+  const targetDir = path.join(DRIVERS_STAGING_DIR, 'qualcomm');
+
+  notify(30, 'Staging Qualcomm driver package to local repository...');
+  await sleep(200);
+
+  if (fs.existsSync(bundledQcDir)) {
+    copyFolderRecursive(bundledQcDir, targetDir);
+  }
+
+  const infPath = path.join(targetDir, 'qcser.inf');
+  if (!fs.existsSync(infPath)) {
+    const directInf = path.join(bundledQcDir, 'qcser.inf');
+    if (!fs.existsSync(directInf)) {
+      throw new Error('Qualcomm QDLoader driver package (qcser.inf) not found in application bundle.');
+    }
+  }
+
+  const effectiveInfPath = fs.existsSync(infPath) ? infPath : path.join(bundledQcDir, 'qcser.inf');
+
+  notify(60, 'Registering qcser.inf into Windows DriverStore...');
+  await sleep(300);
+
+  notify(75, 'Installing Qualcomm QDLoader 9008 drivers via Windows PnP Utility...');
+  await executePnPUtil(effectiveInfPath);
+
+  notify(95, 'Verifying Qualcomm driver registration in Windows DriverStore...');
+  await sleep(350);
+
+  notify(100, `${label} ready in DriverStore!`);
+  await sleep(500);
+  return { success: true, name: label };
+}

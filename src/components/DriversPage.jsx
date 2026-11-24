@@ -85,6 +85,16 @@ export const DRIVER_DEFS = [
     iconBg: 'bg-purple-50 dark:bg-purple-500/15 border border-purple-200/60 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 dark:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
   },
   {
+    id: 'qualcomm_9008',
+    category: 'QUALCOMM (SNAPDRAGON)',
+    title: 'Qualcomm HS-USB QDLoader 9008',
+    desc: 'Emergency Download (EDL) mode for unbricking and flashing Qualcomm Snapdragon devices (Hold Vol+ & Vol- and connect)',
+    modeTag: 'EDL 9008',
+    modeColor: 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200/60 dark:border-rose-800/80',
+    iconType: 'chip',
+    iconBg: 'bg-rose-50 dark:bg-rose-500/15 border border-rose-200/60 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 dark:shadow-[0_0_12px_rgba(244,63,94,0.2)]',
+  },
+  {
     id: 'usbdk',
     category: 'KERNEL USB FILTER',
     title: 'UsbDk USB Development Kit',
