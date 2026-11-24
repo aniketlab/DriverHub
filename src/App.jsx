@@ -15,7 +15,13 @@ import {
   ShieldCheck,
   ShieldAlert,
   Copy,
-  Check
+  Check,
+  AlertTriangle,
+  Zap,
+  CheckCircle2,
+  Cpu,
+  ExternalLink,
+  Radio
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -290,11 +296,13 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Individual driver scan states (legacy dashboard)
+  // Individual driver scan states (Dashboard)
   const [driverStates, setDriverStates] = useState({
     adb: { scanning: false, scanned: false, installed: false, path: null },
     google: { scanning: false, scanned: false, installed: false },
-    mtk: { scanning: false, scanned: false, installed: false, name: null }
+    qualcomm: { scanning: false, scanned: false, installed: false, name: null },
+    mtk: { scanning: false, scanned: false, installed: false, name: null },
+    unisoc: { scanning: false, scanned: false, installed: false, name: null }
   });
 
   // Granular driver packages state for dedicated Drivers page
@@ -331,14 +339,21 @@ function App() {
   const [selectedDrivers, setSelectedDrivers] = useState({
     adb: true,
     google: false,
-    mtk: false
+    qualcomm: false,
+    mtk: false,
+    unisoc: false
   });
 
   const [isInstalling, setIsInstalling] = useState(false);
+  const [isQuickFixing, setIsQuickFixing] = useState(false);
   const [installProgress, setInstallProgress] = useState({
     adb: { percent: 0, message: '' },
     google: { percent: 0, message: '' },
-    mtk: { percent: 0, message: '' }
+    qualcomm: { percent: 0, message: '' },
+    qualcomm_9008: { percent: 0, message: '' },
+    mtk: { percent: 0, message: '' },
+    unisoc: { percent: 0, message: '' },
+    unisoc_spd: { percent: 0, message: '' }
   });
 
   const prevDeviceRef = useRef({ 
@@ -385,7 +400,7 @@ function App() {
         const { target, state, data } = event;
 
         if (state === 'scanning') {
-          if (['adb', 'google', 'mtk'].includes(target)) {
+          if (['adb', 'google', 'qualcomm', 'mtk', 'unisoc'].includes(target)) {
             setDriverStates(prev => ({
               ...prev,
               [target]: { ...prev[target], scanning: true }
@@ -399,10 +414,12 @@ function App() {
 
           if (target === 'adb') addLog('pending', 'Searching system PATH & LocalAppData for ADB Platform-Tools...');
           if (target === 'google') addLog('pending', 'Querying Windows DriverStore for Google USB Bootloader Driver...');
+          if (target === 'qualcomm') addLog('pending', 'Scanning DriverStore for Qualcomm HS-USB QDLoader 9008 Drivers...');
           if (target === 'mtk') addLog('pending', 'Scanning DriverStore for MediaTek VCOM & Preloader Drivers...');
+          if (target === 'unisoc') addLog('pending', 'Scanning DriverStore for Unisoc / Spreadtrum (SPD) Drivers...');
         } 
         else if (state === 'done') {
-          if (['adb', 'google', 'mtk'].includes(target)) {
+          if (['adb', 'google', 'qualcomm', 'mtk', 'unisoc'].includes(target)) {
             setDriverStates(prev => ({
               ...prev,
               [target]: { 
@@ -434,9 +451,17 @@ function App() {
             if (data.installed) addLog('success', `Bootloader Driver detected (${data.name || 'Android WinUSB'}).`);
             else addLog('warning', 'Android Bootloader Driver missing from DriverStore.');
           }
+          if (target === 'qualcomm') {
+            if (data.installed) addLog('success', `Qualcomm Drivers detected (${data.name || 'QDLoader 9008'}).`);
+            else addLog('warning', 'Qualcomm QDLoader 9008 drivers not found.');
+          }
           if (target === 'mtk') {
             if (data.installed) addLog('success', `MediaTek Drivers detected (${data.name || 'VCOM'}).`);
             else addLog('warning', 'MediaTek BROM/Preloader drivers not found.');
+          }
+          if (target === 'unisoc') {
+            if (data.installed) addLog('success', `Unisoc Drivers detected (${data.name || 'SPD Diag'}).`);
+            else addLog('warning', 'Unisoc / Spreadtrum drivers not found.');
           }
         }
       });
@@ -576,13 +601,78 @@ function App() {
         }));
         addLog('success', `${results.mtk.name || 'MediaTek Drivers'} installed into Windows DriverStore.`);
       }
+      if ((results.qualcomm && results.qualcomm.success) || (results.qualcomm_9008 && results.qualcomm_9008.success)) {
+        const qRes = results.qualcomm || results.qualcomm_9008;
+        setDriverStates(prev => ({
+          ...prev,
+          qualcomm: {
+            ...prev.qualcomm,
+            scanned: true,
+            installed: true,
+            name: qRes.name || 'Qualcomm HS-USB QDLoader 9008 Driver'
+          }
+        }));
+        addLog('success', `${qRes.name || 'Qualcomm HS-USB QDLoader 9008'} installed into Windows DriverStore.`);
+      }
+      if ((results.unisoc && results.unisoc.success) || (results.unisoc_spd && results.unisoc_spd.success)) {
+        const uRes = results.unisoc || results.unisoc_spd;
+        setDriverStates(prev => ({
+          ...prev,
+          unisoc: {
+            ...prev.unisoc,
+            scanned: true,
+            installed: true,
+            name: uRes.name || 'Unisoc / Spreadtrum SPD Driver'
+          }
+        }));
+        addLog('success', `${uRes.name || 'Unisoc / Spreadtrum SPD Driver'} installed into Windows DriverStore.`);
+      }
       // Hold 100% completion state for a smooth visual transition
       await new Promise(r => setTimeout(r, 600));
+      handleScan();
     } catch (err) {
       console.error('Installation error:', err);
       addLog('error', `Installation interrupted: ${err.message || 'Unknown error'}`);
     } finally {
       setIsInstalling(false);
+    }
+  };
+
+  const handleQuickFixDriver = async (target, driverKey) => {
+    const installTarget = target || (driverKey === 'qualcomm' ? 'qualcomm_9008' : (driverKey === 'unisoc' ? 'unisoc_spd' : driverKey));
+    if (!installTarget) return;
+
+    setIsInstalling(true);
+    setIsQuickFixing(true);
+    addLog('info', `--- ⚡ Initiating 1-Click Smart Quick-Fix for: ${installTarget.toUpperCase()} ---`);
+
+    try {
+      if (window.electronAPI?.installDrivers) {
+        const results = await window.electronAPI.installDrivers([installTarget]);
+        const res = results[installTarget] || (driverKey && results[driverKey]);
+        if (res && res.success) {
+          addLog('success', `⚡ Driver successfully fixed and registered in DriverStore: ${res.name || installTarget}`);
+          if (driverKey) {
+            setDriverStates(prev => ({
+              ...prev,
+              [driverKey]: {
+                ...prev[driverKey],
+                scanned: true,
+                installed: true,
+                name: res.name || installTarget
+              }
+            }));
+          }
+        }
+        await new Promise(r => setTimeout(r, 600));
+        await handleScan();
+      }
+    } catch (err) {
+      console.error('Quick fix failed:', err);
+      addLog('error', `Quick-fix error: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsInstalling(false);
+      setIsQuickFixing(false);
     }
   };
 
@@ -918,6 +1008,146 @@ function App() {
             </div>
           </div>
 
+          {/* DYNAMIC SMART CARD (DEVICE DETECTION & INSTANT QUICK-FIX) */}
+          {deviceStatus.connected && (
+            <div className={cn(
+              "rounded-2xl p-4 transition-all duration-300 relative overflow-hidden shadow-xs",
+              deviceStatus.driverError
+                ? "bg-gradient-to-r from-amber-50/95 via-orange-50/85 to-rose-50/75 dark:from-amber-950/60 dark:via-orange-950/45 dark:to-rose-950/40 border-2 border-amber-400/90 dark:border-amber-500/80 shadow-amber-500/10"
+                : "bg-gradient-to-r from-emerald-50/90 via-teal-50/80 to-emerald-50/90 dark:from-emerald-950/50 dark:via-teal-950/40 dark:to-emerald-950/50 border border-emerald-300/90 dark:border-emerald-700/80 shadow-emerald-500/5"
+            )}>
+              {/* Background ambient blur */}
+              <div className={cn(
+                "absolute -right-12 -top-12 w-48 h-48 rounded-full blur-2xl pointer-events-none opacity-40",
+                deviceStatus.driverError ? "bg-amber-400/30" : "bg-emerald-400/30"
+              )} />
+
+              {deviceStatus.driverError ? (
+                /* ERROR / DRIVER MISSING STATE */
+                <div className="flex flex-col gap-3 relative z-10">
+                  <div className="flex items-start justify-between gap-4 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-start gap-3.5 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5 text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="w-5 h-5 animate-pulse" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">
+                            ⚠️ Driver Missing / Error Code {deviceStatus.missingDriverInfo?.errorCode || '28'}
+                          </span>
+                          {(deviceStatus.chipset || deviceStatus.missingDriverInfo?.chipset) && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1 shadow-2xs">
+                              <Cpu className="w-3 h-3 text-indigo-500" />
+                              <span>{deviceStatus.chipset || deviceStatus.missingDriverInfo?.chipset}</span>
+                            </span>
+                          )}
+                          {deviceStatus.missingDriverInfo?.problemName && (
+                            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[240px]">
+                              ({deviceStatus.missingDriverInfo.problemName})
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-[14px] font-bold text-slate-900 dark:text-white leading-snug">
+                          {deviceStatus.model || deviceStatus.brand || 'Connected Device'} — Action Required
+                        </h4>
+                        <p className="text-[12px] text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                          {deviceStatus.missingDriverInfo?.description || 'Windows detected this device, but cannot communicate with it because the required driver is missing or has a warning in Device Manager.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 shrink-0 sm:self-center">
+                      <button
+                        onClick={() => handleQuickFixDriver(deviceStatus.missingDriverInfo?.target, deviceStatus.missingDriverInfo?.driverKey)}
+                        disabled={isInstalling || isQuickFixing}
+                        className="h-9 px-4 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-sm shadow-amber-700/20 transition-all duration-150 text-[12.5px] whitespace-nowrap cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        {isQuickFixing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Fixing Driver...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-4 h-4 text-amber-200 fill-amber-200" />
+                            <span>⚡ Fix & Install Driver Now</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => window.electronAPI?.openDeviceManager?.()}
+                        className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 underline flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Open Windows Device Manager (devmgmt.msc)"
+                      >
+                        <span>View in Device Manager</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick-fix Progress Bar */}
+                  {isQuickFixing && (
+                    <div className="mt-1 pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+                      <div className="flex items-center justify-between text-[11px] font-medium text-amber-900 dark:text-amber-200 mb-1.5">
+                        <span className="flex items-center gap-1.5">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                          <span>Installing driver into Windows DriverStore...</span>
+                        </span>
+                        <span className="tabular-nums font-bold">In progress</span>
+                      </div>
+                      <div className="w-full bg-amber-200/60 dark:bg-amber-950/60 rounded-full h-2 overflow-hidden">
+                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full animate-pulse transition-all duration-300 w-3/4" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* HEALTHY / CONNECTED & READY STATE */
+                <div className="flex items-center justify-between gap-4 relative z-10 flex-wrap sm:flex-nowrap">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Device Ready & Verified 🟢</span>
+                        </span>
+                        {(deviceStatus.chipset) && (
+                          <span className="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                            <Cpu className="w-3 h-3 text-emerald-500" />
+                            <span>{deviceStatus.chipset}</span>
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-[13.5px] font-bold text-slate-800 dark:text-white truncate">
+                        {deviceStatus.model || deviceStatus.brand || 'Android Device'}
+                      </h4>
+                      <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">{deviceStatus.mode || 'USB Mode'}</span>
+                        <span>•</span>
+                        <span>{deviceStatus.driverName || 'Verified Driver Active'}</span>
+                        <span>•</span>
+                        <span className="font-mono text-[10.5px]">{deviceStatus.usbSpeed || 'USB 2.0'}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => setActiveTab('Device Monitor')}
+                      className="h-8 px-3 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-[11.5px] font-semibold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Device Diagnostics</span>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Cards List */}
           <div className="flex flex-col gap-3 flex-1">
             
@@ -984,20 +1214,51 @@ function App() {
               borderColor={driverStates.google.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
             />
 
-            {/* 3. MediaTek MTK Card */}
+            {/* 3. Qualcomm HS-USB QDLoader 9008 Card */}
+            <DriverCard 
+              icon={<Cpu className="w-4 h-4 text-rose-500 dark:text-rose-400" />}
+              title="Qualcomm HS-USB QDLoader 9008"
+              desc="Unbrick & flash Snapdragon devices in Emergency Download (EDL) mode"
+              tags={['EDL 9008', 'Unbrick', 'Snapdragon']}
+              isScanning={driverStates.qualcomm.scanning}
+              progress={isInstalling && selectedDrivers.qualcomm ? (installProgress.qualcomm?.percent || installProgress.qualcomm_9008?.percent || 0) : 0}
+              progressMessage={installProgress.qualcomm?.message || installProgress.qualcomm_9008?.message}
+              status={
+                driverStates.qualcomm.scanning
+                  ? 'Scanning...'
+                  : isInstalling && selectedDrivers.qualcomm && (installProgress.qualcomm?.percent || installProgress.qualcomm_9008?.percent || 0) > 0 && (installProgress.qualcomm?.percent || installProgress.qualcomm_9008?.percent || 0) < 100
+                    ? `Installing ${installProgress.qualcomm?.percent || installProgress.qualcomm_9008?.percent}%`
+                    : driverStates.qualcomm.scanned
+                      ? (driverStates.qualcomm.installed ? 'Installed' : 'Not installed')
+                      : 'Not Scanned'
+              }
+              statusColor={
+                driverStates.qualcomm.scanning || (isInstalling && selectedDrivers.qualcomm)
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60'
+                  : driverStates.qualcomm.scanned
+                    ? (driverStates.qualcomm.installed ? 'text-green-700 dark:text-emerald-400 bg-green-50 dark:bg-emerald-950/60 border border-green-200 dark:border-emerald-800/60' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60')
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
+              }
+              checkboxLabel={driverStates.qualcomm.installed ? 'Reinstall' : 'Selected'}
+              checked={selectedDrivers.qualcomm}
+              onToggle={() => setSelectedDrivers(prev => ({ ...prev, qualcomm: !prev.qualcomm }))}
+              borderColor={driverStates.qualcomm.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
+            />
+
+            {/* 4. MediaTek MTK Card */}
             <DriverCard 
               icon={<Database className="w-4 h-4 text-blue-500 dark:text-blue-400" />}
               title="MediaTek (MTK) Drivers"
               desc="For flashing and unbricking MTK devices"
               tags={['BROM mode', 'Preloader mode', 'VCOM']}
               isScanning={driverStates.mtk.scanning}
-              progress={isInstalling && selectedDrivers.mtk ? installProgress.mtk?.percent : 0}
-              progressMessage={installProgress.mtk?.message}
+              progress={isInstalling && selectedDrivers.mtk ? (installProgress.mtk?.percent || installProgress.mtk_vcom?.percent || installProgress.mtk_brom?.percent || 0) : 0}
+              progressMessage={installProgress.mtk?.message || installProgress.mtk_vcom?.message || installProgress.mtk_brom?.message}
               status={
                 driverStates.mtk.scanning
                   ? 'Scanning...'
-                  : isInstalling && selectedDrivers.mtk && installProgress.mtk?.percent > 0 && installProgress.mtk?.percent < 100
-                    ? `Installing ${installProgress.mtk.percent}%`
+                  : isInstalling && selectedDrivers.mtk && (installProgress.mtk?.percent || installProgress.mtk_vcom?.percent || installProgress.mtk_brom?.percent || 0) > 0 && (installProgress.mtk?.percent || installProgress.mtk_vcom?.percent || installProgress.mtk_brom?.percent || 0) < 100
+                    ? `Installing ${installProgress.mtk?.percent || installProgress.mtk_vcom?.percent || installProgress.mtk_brom?.percent}%`
                     : driverStates.mtk.scanned
                       ? (driverStates.mtk.installed ? 'Installed' : 'Not installed')
                       : 'Not Scanned'
@@ -1013,6 +1274,37 @@ function App() {
               checked={selectedDrivers.mtk}
               onToggle={() => setSelectedDrivers(prev => ({ ...prev, mtk: !prev.mtk }))}
               borderColor={driverStates.mtk.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
+            />
+
+            {/* 5. Unisoc / Spreadtrum (SPD) Card */}
+            <DriverCard 
+              icon={<Radio className="w-4 h-4 text-purple-500 dark:text-purple-400" />}
+              title="Unisoc / Spreadtrum (SPD) Drivers"
+              desc="SPRD Diag and Flash mode drivers for Unisoc Tiger & SC processors"
+              tags={['SPRD Diag', 'Flash mode', 'Unisoc']}
+              isScanning={driverStates.unisoc.scanning}
+              progress={isInstalling && selectedDrivers.unisoc ? (installProgress.unisoc?.percent || installProgress.unisoc_spd?.percent || 0) : 0}
+              progressMessage={installProgress.unisoc?.message || installProgress.unisoc_spd?.message}
+              status={
+                driverStates.unisoc.scanning
+                  ? 'Scanning...'
+                  : isInstalling && selectedDrivers.unisoc && (installProgress.unisoc?.percent || installProgress.unisoc_spd?.percent || 0) > 0 && (installProgress.unisoc?.percent || installProgress.unisoc_spd?.percent || 0) < 100
+                    ? `Installing ${installProgress.unisoc?.percent || installProgress.unisoc_spd?.percent}%`
+                    : driverStates.unisoc.scanned
+                      ? (driverStates.unisoc.installed ? 'Installed' : 'Not installed')
+                      : 'Not Scanned'
+              }
+              statusColor={
+                driverStates.unisoc.scanning || (isInstalling && selectedDrivers.unisoc)
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60'
+                  : driverStates.unisoc.scanned
+                    ? (driverStates.unisoc.installed ? 'text-green-700 dark:text-emerald-400 bg-green-50 dark:bg-emerald-950/60 border border-green-200 dark:border-emerald-800/60' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60')
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800'
+              }
+              checkboxLabel={driverStates.unisoc.installed ? 'Reinstall' : 'Selected'}
+              checked={selectedDrivers.unisoc}
+              onToggle={() => setSelectedDrivers(prev => ({ ...prev, unisoc: !prev.unisoc }))}
+              borderColor={driverStates.unisoc.installed ? 'border-green-200 dark:border-emerald-800/60' : 'border-slate-200 dark:border-slate-800/80'}
             />
 
           </div>
@@ -1142,6 +1434,11 @@ function App() {
             label="Qualcomm EDL (9008)" 
             connected={deviceStatus.qualcomm} 
             hasError={deviceStatus.qualcommError}
+          />
+          <MonitorStatus 
+            label="Unisoc Flash / Diag" 
+            connected={deviceStatus.unisoc} 
+            hasError={deviceStatus.unisocError}
           />
         </div>
       </div>

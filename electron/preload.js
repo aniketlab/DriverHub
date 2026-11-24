@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFolder: (path) => ipcRenderer.invoke('open-folder', path),
   rebootDevice: (mode) => ipcRenderer.invoke('reboot-device', mode),
   openAdbShell: () => ipcRenderer.invoke('open-adb-shell'),
+  openDeviceManager: () => ipcRenderer.invoke('open-device-manager'),
   openPhoneStorage: (storagePath) => ipcRenderer.invoke('open-phone-storage', storagePath),
   runCommand: (command) => ipcRenderer.invoke('run-command', command),
   onLogMessage: (callback) => ipcRenderer.on('log-message', (_event, value) => callback(value)),

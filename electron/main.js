@@ -209,10 +209,36 @@ function setupIpc() {
       sender.send('scan-step', { target: 'mtk_brom', state: 'done', data: driverStore.packages.mtk_brom });
     }
 
+    // Step 4: Qualcomm Drivers
+    sender.send('scan-step', { target: 'qualcomm', state: 'scanning' });
+    sender.send('scan-step', { target: 'qualcomm_9008', state: 'scanning' });
+    await delay(250);
+    sender.send('scan-step', { target: 'qualcomm', state: 'done', data: driverStore.qualcomm });
+    if (driverStore.packages) {
+      sender.send('scan-step', { target: 'qualcomm_9008', state: 'done', data: driverStore.packages.qualcomm_9008 });
+    }
+
+    // Step 5: Unisoc / Spreadtrum Drivers
+    sender.send('scan-step', { target: 'unisoc', state: 'scanning' });
+    sender.send('scan-step', { target: 'unisoc_spd', state: 'scanning' });
+    await delay(250);
+    sender.send('scan-step', { target: 'unisoc', state: 'done', data: driverStore.unisoc });
+    if (driverStore.packages) {
+      sender.send('scan-step', { target: 'unisoc_spd', state: 'done', data: driverStore.packages.unisoc_spd });
+    }
+
+    // Step 6: UsbDk
+    sender.send('scan-step', { target: 'usbdk', state: 'scanning' });
+    await delay(200);
+    sender.send('scan-step', { target: 'usbdk', state: 'done', data: driverStore.usbdk });
+
     return {
       adb,
       google: driverStore.google,
       mtk: driverStore.mtk,
+      qualcomm: driverStore.qualcomm,
+      unisoc: driverStore.unisoc,
+      usbdk: driverStore.usbdk,
       packages: driverStore.packages
     };
   });
@@ -237,6 +263,16 @@ function setupIpc() {
 
   ipcMain.handle('open-adb-shell', async () => {
     return await openAdbShell();
+  });
+
+  ipcMain.handle('open-device-manager', async () => {
+    try {
+      const { exec } = await import('child_process');
+      exec('start devmgmt.msc');
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   });
 
   ipcMain.handle('open-phone-storage', async (event, storagePath) => {

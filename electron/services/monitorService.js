@@ -16,16 +16,13 @@ const stagedScriptPath = path.join(SCRIPT_DIR, 'detectDevices.ps1');
 let scriptSynced = false;
 function getScriptPath() {
   const bundled = path.join(__dirname, 'detectDevices.ps1');
-  if (!scriptSynced) {
-    try {
-      if (!fs.existsSync(SCRIPT_DIR)) fs.mkdirSync(SCRIPT_DIR, { recursive: true });
-      if (fs.existsSync(bundled)) {
-        fs.copyFileSync(bundled, stagedScriptPath);
-        scriptSynced = true;
-        return stagedScriptPath;
-      }
-    } catch {}
-  }
+  try {
+    if (!fs.existsSync(SCRIPT_DIR)) fs.mkdirSync(SCRIPT_DIR, { recursive: true });
+    if (fs.existsSync(bundled)) {
+      fs.copyFileSync(bundled, stagedScriptPath);
+      return stagedScriptPath;
+    }
+  } catch {}
 
   if (fs.existsSync(stagedScriptPath)) return stagedScriptPath;
 
@@ -407,6 +404,7 @@ async function doCheckConnectedDevices() {
     let hasFastboot = false;
     let hasMtk = false;
     let hasQualcomm = false;
+    let hasUnisoc = false;
     let hasMtp = false;
     let hasUsbPhysical = false;
 
@@ -414,6 +412,10 @@ async function doCheckConnectedDevices() {
     let fastbootDriverError = false;
     let mtkDriverError = false;
     let qualcommDriverError = false;
+    let unisocDriverError = false;
+    let genericDriverError = false;
+
+    let problematicItem = null;
 
     for (const item of deviceList) {
       const name = (item.FriendlyName || '').toLowerCase();
@@ -421,42 +423,72 @@ async function doCheckConnectedDevices() {
       const pnpClass = (item.PNPClass || '').toLowerCase();
       const isProblematic = (typeof item.ConfigManagerErrorCode === 'number' && item.ConfigManagerErrorCode !== 0) || (item.Status && item.Status !== 'OK');
 
-      // 1. Check Fastboot / Bootloader
-      if (name.includes('bootloader') || name.includes('fastboot') || id.includes('pid_d00d') || id.includes('pid_4ee0')) {
+      // 1. Check Qualcomm EDL / QDLoader 9008 (Vol Up + Down mode)
+      if (name.includes('9008') || name.includes('qdloader') || name.includes('qusb') || id.includes('pid_9008') || (id.includes('vid_05c6') && (name.includes('qualcomm') || name.includes('bulk'))) || id.includes('vid_22d9&pid_0006') || id.includes('vid_22d9&pid_276c')) {
+        hasQualcomm = true;
+        hasUsbPhysical = true;
+        if (isProblematic) {
+          qualcommDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
+      }
+      // 2. Check Fastboot / Bootloader
+      else if (name.includes('bootloader') || name.includes('fastboot') || id.includes('pid_d00d') || id.includes('pid_4ee0')) {
         hasFastboot = true;
         hasUsbPhysical = true;
-        if (isProblematic) fastbootDriverError = true;
+        if (isProblematic) {
+          fastbootDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       } 
-      // 2. Check MTK BROM / Preloader / VCOM
+      // 3. Check MTK BROM / Preloader / VCOM
       else if (name.includes('preloader') || name.includes('vcom') || id.includes('vid_0e8d') || name.includes('mediatek')) {
         hasMtk = true;
         hasUsbPhysical = true;
-        if (isProblematic) mtkDriverError = true;
+        if (isProblematic) {
+          mtkDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       } 
-      // 3. Check Qualcomm EDL / QDLoader 9008 (Vol Up + Down mode)
-      else if (name.includes('9008') || name.includes('qdloader') || id.includes('pid_9008') || (id.includes('vid_05c6') && name.includes('qualcomm')) || id.includes('vid_22d9&pid_0006')) {
-        hasQualcomm = true;
+      // 4. Check Unisoc / Spreadtrum (SPD)
+      else if (name.includes('sprd') || name.includes('spreadtrum') || name.includes('unisoc') || id.includes('vid_1782')) {
+        hasUnisoc = true;
         hasUsbPhysical = true;
-        if (isProblematic) qualcommDriverError = true;
+        if (isProblematic) {
+          unisocDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       }
-      // 4. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
+      // 5. Check ADB (ONLY if interface name actually contains 'adb' or class is AndroidUsbDeviceClass without bootloader)
       else if (name.includes('adb') || (pnpClass === 'androidusbdeviceclass' && !name.includes('bootloader') && !name.includes('fastboot'))) {
         hasAdb = true;
         hasUsbPhysical = true;
-        if (isProblematic) adbDriverError = true;
+        if (isProblematic) {
+          adbDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       }
-      // 5. Check File Transfer / MTP (WPD class or MTP description)
+      // 6. Check File Transfer / MTP (WPD class or MTP description)
       else if (pnpClass === 'wpd' || name.includes('mtp') || id.includes('ms_comp_mtp')) {
         hasMtp = true;
         hasUsbPhysical = true;
+        if (isProblematic) {
+          genericDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       }
-      // 6. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, etc.)
-      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d|05c6|0b05|0fce|1004|0bb4)/i)) {
+      // 7. Generic physical USB phone connection (Motorola, Xiaomi, OnePlus, Samsung, Google, Vivo, Unisoc, etc.)
+      else if (id.match(/vid_(22b8|2717|22d9|2a70|04e8|18d1|2b4b|19d2|2e04|12d1|0e8d|05c6|0b05|0fce|1004|0bb4|1782)/i) || name.includes('android')) {
         hasUsbPhysical = true;
+        if (isProblematic) {
+          genericDriverError = true;
+          if (!problematicItem) problematicItem = item;
+        }
       }
     }
 
-    const isConnected = hasUsbPhysical || hasAdb || hasFastboot || hasMtk || hasQualcomm || hasMtp || !!parsed.Model;
+    const hasDriverError = Boolean(qualcommDriverError || fastbootDriverError || mtkDriverError || unisocDriverError || adbDriverError || genericDriverError);
+    const isConnected = hasUsbPhysical || hasAdb || hasFastboot || hasMtk || hasQualcomm || hasUnisoc || hasMtp || !!parsed.Model;
 
     let detectedMode = 'USB Connected';
     if (hasQualcomm) {
@@ -465,12 +497,80 @@ async function doCheckConnectedDevices() {
       detectedMode = fastbootDriverError ? 'Fastboot (Driver Missing ⚠️)' : 'Fastboot Mode';
     } else if (hasMtk) {
       detectedMode = mtkDriverError ? 'MediaTek (Driver Missing ⚠️)' : 'MediaTek BROM / Preloader';
+    } else if (hasUnisoc) {
+      detectedMode = unisocDriverError ? 'Unisoc SPD (Driver Missing ⚠️)' : 'Unisoc Flash / Diag';
     } else if (hasAdb) {
       detectedMode = adbDriverError ? 'ADB (Driver Missing ⚠️)' : 'ADB Debugging';
     } else if (hasMtp) {
       detectedMode = 'File Transfer (MTP)';
     } else if (isConnected) {
-      detectedMode = 'USB Connected';
+      detectedMode = hasDriverError ? 'Device Connected (Driver Missing ⚠️)' : 'USB Connected';
+    }
+
+    // Compose smart dynamic fix intelligence
+    let missingDriverInfo = null;
+    if (hasDriverError) {
+      if (qualcommDriverError || hasQualcomm) {
+        missingDriverInfo = {
+          driverKey: 'qualcomm',
+          target: 'qualcomm_9008',
+          driverTitle: 'Qualcomm HS-USB QDLoader 9008 Driver',
+          chipset: 'Qualcomm Snapdragon (EDL 9008 Mode)',
+          description: 'Windows detected your device in Emergency Download (EDL) mode, but the Qualcomm QDLoader 9008 driver is missing or has a digital signature error (Code 28 / 52).',
+          problemName: problematicItem?.FriendlyName || 'Qualcomm HS-USB QDLoader 9008',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      } else if (mtkDriverError || hasMtk) {
+        missingDriverInfo = {
+          driverKey: 'mtk',
+          target: 'mtk',
+          driverTitle: 'MediaTek USB VCOM / Preloader Driver',
+          chipset: 'MediaTek Helio / Dimensity (BROM / Preloader)',
+          description: 'Phone is connected in MediaTek BROM / Preloader mode, but Windows does not have the VCOM USB driver installed in DriverStore.',
+          problemName: problematicItem?.FriendlyName || 'MT65xx Preloader / VCOM',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      } else if (unisocDriverError || hasUnisoc) {
+        missingDriverInfo = {
+          driverKey: 'unisoc',
+          target: 'unisoc_spd',
+          driverTitle: 'Unisoc / Spreadtrum (SPD) Driver',
+          chipset: 'Unisoc Tiger / Spreadtrum (SPRD Diag)',
+          description: 'Unisoc device detected in Flash / Diag mode, but SPRD USB driver is missing from Windows DriverStore.',
+          problemName: problematicItem?.FriendlyName || 'SPRD U2S Diag',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      } else if (fastbootDriverError || hasFastboot) {
+        missingDriverInfo = {
+          driverKey: 'google',
+          target: 'google_bootloader',
+          driverTitle: 'Google Android Bootloader Driver',
+          chipset: 'Fastboot Bootloader Interface',
+          description: 'Device connected in Fastboot mode, but Android Bootloader Interface driver is not recognized by Windows (Code 28).',
+          problemName: problematicItem?.FriendlyName || 'Android Bootloader Interface',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      } else if (adbDriverError || hasAdb) {
+        missingDriverInfo = {
+          driverKey: 'google',
+          target: 'google_usb',
+          driverTitle: 'Google USB / ADB Driver',
+          chipset: 'ADB Debugging Interface',
+          description: 'Device connected with USB Debugging enabled, but Android Composite ADB Interface driver is not installed.',
+          problemName: problematicItem?.FriendlyName || 'Android ADB Interface',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      } else {
+        missingDriverInfo = {
+          driverKey: 'google',
+          target: 'google',
+          driverTitle: 'Google USB & Bootloader Driver',
+          chipset: 'Android USB Interface',
+          description: 'Android device connected via USB, but Windows has no matching driver installed in Device Manager (Code 28).',
+          problemName: problematicItem?.FriendlyName || 'Android Device',
+          errorCode: problematicItem?.ConfigManagerErrorCode || 28
+        };
+      }
     }
 
     let rawModel = parsed.Model || null;
@@ -548,14 +648,19 @@ async function doCheckConnectedDevices() {
       mtkError: mtkDriverError,
       qualcomm: hasQualcomm && !qualcommDriverError,
       qualcommError: qualcommDriverError,
+      unisoc: hasUnisoc && !unisocDriverError,
+      unisocError: unisocDriverError,
       mtp: hasMtp,
       mode: isConnected ? detectedMode : null,
-      driverError: fastbootDriverError || adbDriverError || mtkDriverError || qualcommDriverError,
+      driverError: hasDriverError,
+      missingDriverInfo: missingDriverInfo,
       brand: resolved.brand || (isConnected ? (parsed.Brand || 'Android') : null),
       model: resolved.model || parsed.Model,
       rawModel: rawModel,
+      chipset: resolved.chipset || (hasQualcomm ? 'Qualcomm Snapdragon' : (hasMtk ? 'MediaTek' : (hasUnisoc ? 'Unisoc' : null))),
+      releaseYear: resolved.releaseYear || null,
       usbSpeed: parsed.UsbSpeed || 'USB 2.0',
-      driverName: parsed.DriverName || (hasQualcomm ? 'Qualcomm HS-USB QDLoader 9008' : (hasMtp ? 'MTP USB Device' : (hasFastboot ? 'Android Bootloader Interface' : 'Android USB Driver'))),
+      driverName: parsed.DriverName || (hasQualcomm ? 'Qualcomm HS-USB QDLoader 9008' : (hasMtk ? 'MediaTek USB Port' : (hasUnisoc ? 'Unisoc SPRD Diag Port' : (hasMtp ? 'MTP USB Device' : (hasFastboot ? 'Android Bootloader Interface' : 'Android USB Driver'))))),
       storage: storageDisplay,
       battery: isConnected ? 'USB Powered' : null,
       androidVersion: hasMtp ? 'File Transfer (MTP)' : (hasFastboot ? 'Fastboot Bootloader' : null),
